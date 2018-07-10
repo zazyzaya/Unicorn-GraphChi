@@ -16,6 +16,7 @@
 #include <cassert>
 #include <cmath>
 #include <cstdlib>
+#include <string>
 
 #include "logger/logger.hpp"
 #include "def.hpp"
@@ -43,6 +44,7 @@ namespace graphchi {
 	    char *ss = (char *) s;
 	    char delims[] = ":";
 	    unsigned char *t;
+	    char *k;
 	    
 	    t = (unsigned char *)strtok(ss, delims);
 	    if (t == NULL)
@@ -62,8 +64,14 @@ namespace graphchi {
 	    assert (t != NULL);
 	    x.edge = hash(t);
 
-	    t = (unsigned char *)strtok(NULL, delims);
-	    if (t != NULL)
+	    k = strtok(NULL, delims);
+	    if (k == NULL)
+	        logstream(LOG_FATAL) << "Time label does not exist." << std::endl;
+	    assert (k != NULL);
+	    x.time = std::stoi(k);
+
+	    k = strtok(NULL, delims);
+	    if (k != NULL)
 	        logstream(LOG_FATAL) << "Extra info will be ignored." << std::endl;
 
 	    return;

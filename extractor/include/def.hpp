@@ -17,12 +17,12 @@ struct edge_label {
 	unsigned long prev;
 	unsigned long curr;
 	unsigned long edge;
-	signed int time;
+	int time;
 };
 
 struct node_label {
 	unsigned long orig;
-	signed int time;
+	int time;
 };
 
 /* node_label struct includes:
