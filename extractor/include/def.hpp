@@ -20,16 +20,7 @@ struct edge_label {
 	int time;
 };
 
-struct node_label {
-	unsigned long orig;
-	int time;
-};
-
-/* node_label struct includes:
- * 1. "orig" is the original label of the vertex. It is constant and does not change with iterations.
- * 2. "time" is the timestamp of the vertex. At the beginning, the value is undefined (all set to 0).
- */
-typedef node_label VertexDataType; /* VertexDataType stores only the original label of the vertex. */
+typedef unsigned long VertexDataType; /* VertexDataType stores only the original label of the vertex. */
 
 /* edge_label sttuct serves multiple purposes.
  * 1. "prev":
@@ -43,5 +34,12 @@ typedef node_label VertexDataType; /* VertexDataType stores only the original la
  * "prev" and "curr" are needed because we simulate synchronous execution on asynchronous GraphChi graph processing system.
  */
 typedef edge_label EdgeDataType;
+
+struct {
+	bool operator()(struct edge_label a, struct edge_label b) {
+		return a.time < b.time;
+	}
+} compareEdges;
+
 
 #endif

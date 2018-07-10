@@ -11,8 +11,6 @@
  *
  */
 
-#include <iostream>
-
 #include "include/def.hpp"
 #include "include/helper.hpp"
 #include "include/histogram.hpp"
