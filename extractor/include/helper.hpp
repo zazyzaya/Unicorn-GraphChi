@@ -10,48 +10,62 @@
  * or (at your option) any later version.
  *
  */
-#ifndef helper_h
-#define helper_h
+#ifndef helper_hpp
+#define helper_hpp
 
-#include <string>
 #include <cassert>
+#include <cmath>
+#include <cstdlib>
 
 #include "logger/logger.hpp"
-#include "def.h"
+#include "def.hpp"
 
 namespace graphchi {
+	
+	/*!
+	 * @brief Deterministically hash character strings to a unique unsigned long integer.
+	 *
+	 */
+	unsigned long hash(unsigned char *str) {
+		unsigned long hash = 5381;
+		int c;
+
+		while (c = *str++)
+			hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+		return hash;
+	}
 
 	/*!
 	 * @brief Customized parse funtion to parse edge values from edgelist-formatted file.
 	 *
 	 */
-	void parse(edge_labels &x, const char * s) {
-	    char * ss = (char *) s;
+	void parse(edge_labels &x, const char *s) {
+	    char *ss = (char *) s;
 	    char delims[] = ":";
-	    char * t;
+	    unsigned char *t;
 	    
-	    t = strtok(ss, delims);
+	    t = (unsigned char *)strtok(ss, delims);
 	    if (t == NULL)
 	        logstream(LOG_FATAL) << "Source label does not exist." << std::endl;
 	    assert(t != NULL);
-	    x.prev = std::string(t);
+	    x.prev = hash(t);
 	    
-	    t = strtok(NULL, delims);
+	    t = (unsigned char *)strtok(NULL, delims);
 	    if (t == NULL)
 	        logstream(LOG_FATAL) << "Destination label does not exist." << std::endl;
 	    assert (t != NULL);
-	    x.curr = atoi(t);
+	    x.curr = hash(t);
 
-	    t = strtok(NULL, delims);
+	    t = (unsigned char *)strtok(NULL, delims);
 	    if (t == NULL)
 	        logstream(LOG_FATAL) << "Edge label does not exist." << std::endl;
 	    assert (t != NULL);
-	    x.edge = atoi(t);
+	    x.edge = hash(t);
 
-	    t = strtok(NULL, delims);
+	    t = (unsigned char *)strtok(NULL, delims);
 	    if (t != NULL)
 	        logstream(LOG_FATAL) << "Extra info will be ignored." << std::endl;
-	    
+
 	    return;
 	}
 

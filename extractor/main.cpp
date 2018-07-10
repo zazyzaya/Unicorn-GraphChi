@@ -11,10 +11,14 @@
  *
  */
 
-#include "include/def.h"
-#include "include/helper.h"
+#include <iostream>
+
+#include "include/def.hpp"
+#include "include/helper.hpp"
+#include "include/histogram.hpp"
 #include "graphchi_basic_includes.hpp"
 #include "logger/logger.hpp"
+#include "wl.hpp"
 
 using namespace graphchi;
 

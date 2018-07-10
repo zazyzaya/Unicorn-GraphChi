@@ -35,6 +35,10 @@ extractor/% : extractor/%.cpp $(HEADERS)
 	@mkdir -p bin/$(@D)
 	$(CPP) $(CPPFLAGS) -Iextractor/ $@.cpp -o bin/$@ $(LINKERFLAGS)
 
+debug: CPPFLAGS += -DDEBUG -g
+debug: extractor/main
+
+
 myapps/% : myapps/%.cpp $(HEADERS)
 	@mkdir -p bin/$(@D)
 	$(CPP) $(CPPFLAGS) -Imyapps/ $@.cpp -o bin/$@ $(LINKERFLAGS)

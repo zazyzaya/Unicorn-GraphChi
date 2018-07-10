@@ -10,18 +10,16 @@
  * or (at your option) any later version.
  *
  */
-#ifndef def_h
-#define def_h
-
-#include <string>
+#ifndef def_hpp
+#define def_hpp
 
 struct edge_labels {
-	std::string prev;
-	std::string curr;
-	std::string edge;
+	unsigned long prev;
+	unsigned long curr;
+	unsigned long edge;
 };
 
-typedef std::string VertexDataType; /* VertexDataType stores only the original label of the vertex. */
+typedef unsigned long VertexDataType; /* VertexDataType stores only the original label of the vertex. */
 
 /* edge_labels sturct serves multiple purposes.
  * 1. "prev":
