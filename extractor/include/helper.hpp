@@ -39,7 +39,7 @@ namespace graphchi {
 	 * @brief Customized parse funtion to parse edge values from edgelist-formatted file.
 	 *
 	 */
-	void parse(edge_labels &x, const char *s) {
+	void parse(edge_label &x, const char *s) {
 	    char *ss = (char *) s;
 	    char delims[] = ":";
 	    unsigned char *t;

@@ -36,6 +36,8 @@ void Histogram::insert_label(unsigned long label) {
 		logstream(LOG_DEBUG) << "The label " << label << " is already in the map. Updating the value only." << std::endl;
 #endif
 		rst.first->second++;
+	} else {
+		this->size++;
 	}
 
 	return;
