@@ -76,8 +76,8 @@ namespace graphchi {
 #ifdef DEBUG
 				logstream(LOG_DEBUG) << "The original label of vertex #" << vertex.id() << " is: " << orig << std::endl;
 #endif
-			} else if (gcontext.iteration == 1) {
-				/* During this iteration, we include edge labels when relabeling. */
+			} else if (gcontext.iteration % 2 == 1) { /* Odd-numbered iteration updates time and label values to "prev_time" and "prev". */
+				/* During the 1st iteration, we include edge labels when relabeling. */
 				std::vector<struct edge_label> neighborhood; /* We reuse edge_label struct to store neighbor vertex's label ("prev"), edge label ("edge"), and use "prev_time" for sorting. */
 				/* We only consider immediate ancestors. */
 				for (int i = 0; i < vertex.num_inedges(); i++) {
@@ -89,7 +89,7 @@ namespace graphchi {
 				}
 				/* Labels are sorted based on the timestamps of the in_edges. */
 				std::sort(neighborhood.begin(), neighborhood.end(), compareEdges);
-				/* Appending neighborhood labels (nodes + edges) with the label of the current vertex itself.*/
+				/* Appending neighborhood labels with the label of the current vertex itself.*/
 				/* First construct the string of the vertex itself. */
 				std::string new_label_str = "";
 				std::string first_str;
@@ -99,11 +99,13 @@ namespace graphchi {
 				new_label_str += first_str + " "; /* Use space to separate number strings. */
 				/* Then append neighborhood labels. */
 				for (std::vector<struct edge_label>::iterator it = neighborhood.begin(); it != neighborhood.end(); ++it) {
-					std::string edge_str;
-					std::stringstream edge_out;
-					edge_out << it->edge;
-					edge_str = edge_out.str();
-					new_label_str += edge_str + " ";
+					if (gcontext.iteration == 1) { /* The first iteration includes edge labels. */
+						std::string edge_str;
+						std::stringstream edge_out;
+						edge_out << it->edge;
+						edge_str = edge_out.str();
+						new_label_str += edge_str + " ";
+					}
 					std::string node_str;
 					std::stringstream node_out;
 					node_out << it->prev;
@@ -128,10 +130,18 @@ namespace graphchi {
 					el.curr = new_label;
 					out_edge->set_data(el);
 				}
-			} else {
-
+			} else { /* Even-numbered iterations swap time and label values. */
+				for (int i = 0; i < vertex.num_outedges(); i++) {
+					graphchi_edge<EdgeDataType> * out_edge = vertex.outedge(i);
+					struct edge_label el = out_edge->get_data();
+					el.prev = el.curr;
+					el.prev_time = el.curr_time;
+					out_edge->set_data(el);
+#ifdef DEBUG
+					logstream(LOG_DEBUG) << "Swap out_edges of the vertex #" << vertex.id() << std::endl;
+#endif
+				}
 			}
-			/* Update the "curr" and "time" of the out_going edges of the vertex. */
 		}
 		
 		/**
