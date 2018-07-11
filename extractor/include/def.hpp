@@ -17,7 +17,9 @@ struct edge_label {
 	unsigned long prev;
 	unsigned long curr;
 	unsigned long edge;
-	int time;
+	int orig_time;
+	int prev_time;
+	int curr_time;
 };
 
 typedef unsigned long VertexDataType; /* VertexDataType stores only the original label of the vertex. */
@@ -30,14 +32,16 @@ typedef unsigned long VertexDataType; /* VertexDataType stores only the original
  * 		- Initalizes destination vertex label at the beginning.
  * 		- Stores the label for the current iteration of source vertex (so we can swap "prev" and "curr" in the next iteration)
  * 3. "edge" stores the original edge label of an edge. This value does not changes with iterations.
- * 4. "time" stores the timestamp of the edge.
+ * 4. "orig_time" stores the original timestamp of the edge.
+ * 5. "prev_time" and "curr_time" are similar to "prev" and "curr" but concern timestamps.
+ * 		- At very beginning, "prev_time" and "curr_time" are set to be the same as "orig_time".
  * "prev" and "curr" are needed because we simulate synchronous execution on asynchronous GraphChi graph processing system.
  */
 typedef edge_label EdgeDataType;
 
 struct {
 	bool operator()(struct edge_label a, struct edge_label b) {
-		return a.time < b.time;
+		return a.prev_time < b.prev_time;
 	}
 } compareEdges;
 

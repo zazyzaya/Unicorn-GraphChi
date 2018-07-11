@@ -78,7 +78,7 @@ namespace graphchi {
 #endif
 			} else if (gcontext.iteration == 1) {
 				/* During this iteration, we include edge labels when relabeling. */
-				std::vector<struct edge_label> neighborhood; /* We reuse edge_label struct to store neighbor vertex's label ("prev"), edge label ("edge"), and use "time" for sorting. */
+				std::vector<struct edge_label> neighborhood; /* We reuse edge_label struct to store neighbor vertex's label ("prev"), edge label ("edge"), and use "prev_time" for sorting. */
 				/* We only consider immediate ancestors. */
 				for (int i = 0; i < vertex.num_inedges(); i++) {
 					graphchi_edge<EdgeDataType> * in_edge = vertex.inedge(i);
@@ -116,14 +116,18 @@ namespace graphchi {
 				histogram_map_lock.lock();
 				hist->insert_label(new_label);
 				histogram_map_lock.unlock();
-				/* Update timestamp of the vertex to be the smallest among the neighbor timestamps for later iterations, if neighborhood exists. */
-				/* Since neighborhood is sorted. The first element is the smallest, if exists. */
-				if (neighborhood.size() > 0) {
+				/* Update timestamp of the vertex to be the smallest among the neighbor timestamps for later iterations, if neighborhood exists.
+				 * Since neighborhood is sorted. The first element is the smallest, if exists.
+				 * Also update the label of the vertex to its outgoing edges to be used in the next iteration.
+				 */
+				for (int i = 0; i < vertex.num_outedges(); i++) {
+					graphchi_edge<EdgeDataType> * out_edge = vertex.outedge(i);
+					struct edge_label el = out_edge->get_data();
+					if (neighborhood.size() > 0)
+						el.curr_time = neighborhood[0].prev_time;
+					el.curr = new_label;
+					out_edge->set_data(el);
 				}
-#ifdef DEBUG
-				else {
-				}
-#endif
 			} else {
 
 			}
