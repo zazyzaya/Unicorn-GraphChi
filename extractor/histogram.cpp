@@ -42,3 +42,15 @@ void Histogram::insert_label(unsigned long label) {
 
 	return;
 }
+
+/*!
+ * @brief Print the histogram map for debugging.
+ *
+ */
+void Histogram::print_histogram() {
+	std::map<unsigned long, int>::iterator it;
+	logstream(LOG_DEBUG) << "Printing histogram map to the console..." << std::endl;
+	for (it = this->histogram_map.begin(); it != this->histogram_map.end(); it++)
+		logstream(LOG_DEBUG) << "[" << it->first << "]->" << it->second << "  ";
+	return;
+}

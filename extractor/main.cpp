@@ -21,12 +21,26 @@
 using namespace graphchi;
 
 int main(int argc, const char ** argv) {
-	/* GraphChi initialization will read the command line
-     arguments and the configuration file. */
-    graphchi_init(argc, argv);
+	/* GraphChi initialization will read the command line arguments and the configuration file. */
+	graphchi_init(argc, argv);
 
-    /* Metrics object for keeping track of performance counters
-     and other information. Currently required. */
-    metrics m("Extractor");
-    return 0;
+	/* Metrics object for keeping track of performance counters and other information. 
+	 * Currently required. */
+	metrics m("Extractor");
+	global_logger().set_log_level(LOG_DEBUG);
+
+	/* Parameters from command line. */
+	std::string filename = get_option_string("file");
+	int niters = get_option_int("niters", 4);
+	bool scheduler = false;
+
+	/* Process input file - if not already preprocessed */
+	int nshards = convert_if_notexists<EdgeDataType>(filename, get_option_string("nshards", "auto"));
+
+	WeisfeilerLehman program;
+	
+	graphchi_engine<VertexDataType, EdgeDataType> engine(filename, nshards, scheduler, m);
+	engine.run(program, niters);
+
+	return 0;
 }

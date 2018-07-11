@@ -130,6 +130,12 @@ namespace graphchi {
 					el.curr = new_label;
 					out_edge->set_data(el);
 				}
+#ifdef DEBUG
+				if (neighborhood.size() > 0)
+					logstream(LOG_DEBUG) << "Update time of the vertex #" << vertex.id() << " to: " << neighborhood[0].prev_time << std::endl;
+				else
+					logstream(LOG_DEBUG) << "Time of the vertex #" << vertex.id() << " unchanged." << std::endl;
+#endif
 			} else { /* Even-numbered iterations swap time and label values. */
 				for (int i = 0; i < vertex.num_outedges(); i++) {
 					graphchi_edge<EdgeDataType> * out_edge = vertex.outedge(i);
@@ -154,6 +160,10 @@ namespace graphchi {
 		 * Called after an iteration has finished.
 		 */
 		void after_iteration(int iteration, graphchi_context &gcontext) {
+#ifdef DEBUG
+			logstream(LOG_DEBUG) << "Current Iteration: " << iteration << std::endl;
+			hist->print_histogram();
+#endif
 		}
 		
 		/**
