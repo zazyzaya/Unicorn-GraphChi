@@ -35,8 +35,15 @@ extractor/% : extractor/%.cpp $(HEADERS)
 	@mkdir -p bin/$(@D)
 	$(CPP) $(CPPFLAGS) -Iextractor/ $@.cpp -o bin/$@ $(LINKERFLAGS)
 
-debug: CPPFLAGS += -DDEBUG -g
-debug: extractor/main
+edebug: CPPFLAGS += -DDEBUG -g
+edebug: extractor/main
+
+streaming/% : streaming/%.cpp $(HEADERS)
+	@mkdir -p bin/$(@D)
+	$(CPP) $(CPPFLAGS) -Istreaming/ $@.cpp -o bin/$@ $(LINKERFLAGS)
+
+sdebug: CPPFLAGS += -DDEBUG -g
+sdebug: streaming/main
 
 
 myapps/% : myapps/%.cpp $(HEADERS)

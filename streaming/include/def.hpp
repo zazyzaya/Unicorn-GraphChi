@@ -9,9 +9,11 @@
  * published by the Free Software Foundation; either version 2 of the License,
  * or (at your option) any later version.
  *
- */ 
+ */
 #ifndef def_hpp
 #define def_hpp
+
+#include "api/dynamicdata/chivector.hpp"
 
 struct edge_label {
 	unsigned long prev;
@@ -21,8 +23,6 @@ struct edge_label {
 	int prev_time;
 	int curr_time;
 };
-
-typedef unsigned long VertexDataType; /* VertexDataType stores only the original label of the vertex. */
 
 /* edge_label sttuct serves multiple purposes.
  * 1. "prev":
@@ -44,5 +44,15 @@ struct {
 		return a.prev_time < b.prev_time;
 	}
 } compareEdges;
+
+/* For streaming WL settings: */
+struct node_label {
+	unsigned long node;
+	int time;
+};
+
+/* A vector of node_labels, each containing the label and time value of the vertex in one iteration. */
+typedef graphchi::chivector<struct node_label> VertexDataType; 
+
 
 #endif

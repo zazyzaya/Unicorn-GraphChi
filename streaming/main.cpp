@@ -10,12 +10,15 @@
  * or (at your option) any later version.
  *
  */
-#include "include/def.hpp"
+
+#define DYNAMICVERTEXDATA 1
+
 #include "include/helper.hpp"
-#include "include/histogram.hpp"
 #include "graphchi_basic_includes.hpp"
+#include "include/def.hpp"
+#include "include/histogram.hpp"
 #include "logger/logger.hpp"
-#include "wl.hpp"
+#include "streamingWL.hpp"
 
 using namespace graphchi;
 
@@ -25,7 +28,7 @@ int main(int argc, const char ** argv) {
 
 	/* Metrics object for keeping track of performance counters and other information. 
 	 * Currently required. */
-	metrics m("Extractor");
+	metrics m("Streaming Extractor");
 	global_logger().set_log_level(LOG_DEBUG);
 
 	/* Parameters from command line. */
@@ -36,7 +39,7 @@ int main(int argc, const char ** argv) {
 	/* Process input file - if not already preprocessed */
 	int nshards = convert_if_notexists<EdgeDataType>(filename, get_option_string("nshards", "auto"));
 
-	WeisfeilerLehman program;
+	StreamingWeisfeilerLehman program;
 
 	graphchi_engine<VertexDataType, EdgeDataType> engine(filename, nshards, scheduler, m);
 	engine.run(program, niters);
