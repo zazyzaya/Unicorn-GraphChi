@@ -57,24 +57,25 @@ namespace graphchi {
 				/* On first iteration, initialize vertex label.
 				 * This vertex label is its original label and should not be overwritten by later iterations.
 				 */
-				/* The "orig" can be obtained from any outedge (from "prev") or inedge (from "curr") */
-				unsigned long orig;
+				/* The "orig" of the node_label can be obtained from any outedge (from "prev") or inedge (from "curr") */
+				struct node_label nl;
 
 				graphchi_edge<EdgeDataType> * edge = vertex.random_outedge();
 				if (edge == NULL) {
 					/* If a vertex does not have any outedge, it can get its original label from any of its inedge, which it must have at least one inedge. */
 					edge = vertex.inedge(0); /* Use the first inedge to get its original label. */
-					orig = edge->get_data().curr;
+					nl.orig = edge->get_data().curr;
 				} else
-					orig = edge->get_data().prev;
-				vertex.set_data(orig);
+					nl.orig = edge->get_data().prev;
+				nl.curr = nl.orig; /* For this iteration, the original and the current label are the same. */
+				vertex.set_data(nl);
 
 				/* Populate histogram map. */
 				histogram_map_lock.lock();
-				hist->insert_label(orig);
+				hist->insert_label(nl.orig);
 				histogram_map_lock.unlock();
 #ifdef DEBUG
-				logstream(LOG_DEBUG) << "The original label of vertex #" << vertex.id() << " is: " << orig << std::endl;
+				logstream(LOG_DEBUG) << "The original label of vertex #" << vertex.id() << " is: " << nl.orig << std::endl;
 #endif
 			} else if (gcontext.iteration % 2 == 1) { /* Odd-numbered iteration updates time and label values to "prev_time" and "prev". */
 				/* During the 1st iteration, we include edge labels when relabeling. */
@@ -94,9 +95,9 @@ namespace graphchi {
 				std::string new_label_str = "";
 				std::string first_str;
 				std::stringstream first_out;
-				first_out << vertex.get_data();
+				first_out << vertex.get_data().curr;
 				first_str = first_out.str();
-				new_label_str += first_str + " "; /* Use space to separate number strings. */
+				new_label_str += first_str; /* Use space to separate number strings. */
 				/* Then append neighborhood labels. */
 				for (std::vector<struct edge_label>::iterator it = neighborhood.begin(); it != neighborhood.end(); ++it) {
 					if (gcontext.iteration == 1) { /* The first iteration includes edge labels. */
@@ -104,20 +105,28 @@ namespace graphchi {
 						std::stringstream edge_out;
 						edge_out << it->edge;
 						edge_str = edge_out.str();
-						new_label_str += edge_str + " ";
+						new_label_str += " " + edge_str;
 					}
 					std::string node_str;
 					std::stringstream node_out;
 					node_out << it->prev;
 					node_str = node_out.str();
-					new_label_str += node_str + " ";
+					new_label_str += " " + node_str;
 				}
+#ifdef DEBUG
+				logstream(LOG_DEBUG) << "New label string of the vertex #" << vertex.id() << " is: " << new_label_str << std::endl;
+#endif
 				/* Relabel by hashing. */
 				unsigned long new_label = hash((unsigned char *)new_label_str.c_str());
 				/* Populate histogram map. */
 				histogram_map_lock.lock();
 				hist->insert_label(new_label);
 				histogram_map_lock.unlock();
+				/* Update the vertex's label*/
+				struct node_label nl = vertex.get_data();
+				nl.curr = new_label;
+				vertex.set_data(nl);
+
 				/* Update timestamp of the vertex to be the smallest among the neighbor timestamps for later iterations, if neighborhood exists.
 				 * Since neighborhood is sorted. The first element is the smallest, if exists.
 				 * Also update the label of the vertex to its outgoing edges to be used in the next iteration.

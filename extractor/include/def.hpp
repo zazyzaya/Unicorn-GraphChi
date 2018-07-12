@@ -22,7 +22,12 @@ struct edge_label {
 	int curr_time;
 };
 
-typedef unsigned long VertexDataType; /* VertexDataType stores only the original label of the vertex. */
+struct node_label {
+	unsigned long orig;
+	unsigned long curr;
+};
+
+typedef node_label VertexDataType; /* VertexDataType stores the original label of the vertex and a current label for each iteration. */
 
 /* edge_label sttuct serves multiple purposes.
  * 1. "prev":

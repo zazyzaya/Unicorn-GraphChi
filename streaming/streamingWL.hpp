@@ -104,7 +104,7 @@ namespace graphchi {
 				std::stringstream first_out;
 				first_out << nlvector->get(prev_pos).node;
 				first_str = first_out.str();
-				new_label_str += first_str + " "; /* Use space to separate number strings. */
+				new_label_str += first_str; /* Use space to separate number strings. */
 				/* Then append neighborhood labels. */
 				for (std::vector<struct edge_label>::iterator it = neighborhood.begin(); it != neighborhood.end(); ++it) {
 					if (gcontext.iteration == 1) { /* The first iteration includes edge labels. */
@@ -112,14 +112,17 @@ namespace graphchi {
 						std::stringstream edge_out;
 						edge_out << it->edge;
 						edge_str = edge_out.str();
-						new_label_str += edge_str + " ";
+						new_label_str += " " + edge_str;
 					}
 					std::string node_str;
 					std::stringstream node_out;
 					node_out << it->prev;
 					node_str = node_out.str();
-					new_label_str += node_str + " ";
+					new_label_str += " " + node_str;
 				}
+#ifdef DEBUG
+				logstream(LOG_DEBUG) << "New label string of the vertex #" << vertex.id() << " is: " << new_label_str << std::endl;
+#endif
 				/* Relabel by hashing. */
 				unsigned long new_label = hash((unsigned char *)new_label_str.c_str());
 				/* Populate histogram map. */
