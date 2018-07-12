@@ -31,7 +31,7 @@ int main(int argc, const char ** argv) {
 	/* Parameters from command line. */
 	std::string filename = get_option_string("file");
 	int niters = get_option_int("niters", 4);
-	bool scheduler = false;
+	bool scheduler = true;
 
 	/* Process input file - if not already preprocessed */
 	int nshards = convert_if_notexists<EdgeDataType>(filename, get_option_string("nshards", "auto"));

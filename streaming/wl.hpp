@@ -66,10 +66,23 @@ namespace graphchi {
 					/* If a vertex does not have any outedge, it can get its original label from any of its inedge, which it must have at least one inedge. */
 					edge = vertex.inedge(0); /* Use the first inedge to get its original label. */
 					nl.orig = edge->get_data().curr;
-				} else
+				} else {
 					nl.orig = edge->get_data().prev;
+					/* schedule all the out-going neighbors. */
+					for(int i = 0; i < vertex.num_outedges(); i++) {
+						graphchi_edge<EdgeDataType> * out_edge = vertex.outedge(i);
+						if (gcontext.scheduler != NULL) {
+							gcontext.scheduler->add_task(out_edge->vertex_id());
+						}
+					}
+				}
 				nl.curr = nl.orig; /* For this iteration, the original and the current label are the same. */
 				vertex.set_data(nl);
+
+				/* Also schedule the vertex itself for the next iteration. */
+				if (gcontext.scheduler != NULL) {
+					gcontext.scheduler->add_task(vertex.id());
+				}
 
 				/* Populate histogram map. */
 				histogram_map_lock.lock();
@@ -146,6 +159,15 @@ namespace graphchi {
 				else
 					logstream(LOG_DEBUG) << "Time of the vertex #" << vertex.id() << " unchanged." << std::endl;
 #endif
+				/* Again schedule the vertex itself and its out-going neighbors. */
+				if (gcontext.scheduler != NULL) {
+					gcontext.scheduler->add_task(vertex.id());
+					for(int i = 0; i < vertex.num_outedges(); i++) {
+						graphchi_edge<EdgeDataType> * out_edge = vertex.outedge(i);
+						gcontext.scheduler->add_task(out_edge->vertex_id());
+					}
+				}
+
 			} else { /* Even-numbered iterations swap time and label values. */
 				for (int i = 0; i < vertex.num_outedges(); i++) {
 					graphchi_edge<EdgeDataType> * out_edge = vertex.outedge(i);
@@ -156,6 +178,10 @@ namespace graphchi {
 #ifdef DEBUG
 					logstream(LOG_DEBUG) << "Swap out_edges of the vertex #" << vertex.id() << std::endl;
 #endif
+				}
+				/* Also schedule the vertex itself for the next iteration. */
+				if (gcontext.scheduler != NULL) {
+					gcontext.scheduler->add_task(vertex.id());
 				}
 			}
 		}
