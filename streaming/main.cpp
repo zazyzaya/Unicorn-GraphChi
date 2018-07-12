@@ -30,7 +30,7 @@ std::string stream_file;
  */
 void * dynamic_graph_reader(void * info) {
 	logstream(LOG_DEBUG) << "Waiting to start streaming the graph..." << std::endl;
-	usleep(50000);
+	usleep(100000);
 	logstream(LOG_DEBUG) << "Streaming begins from file: " << stream_file << std::endl;
 
 	/* Open the file for streaming. */
@@ -102,7 +102,6 @@ void * dynamic_graph_reader(void * info) {
 #endif
 			continue;
 		}
-
 		/* Add the new edge to the graph. */
 		bool success = false;
 		while (!success) {
@@ -111,9 +110,14 @@ void * dynamic_graph_reader(void * info) {
 		/* Schedule the new nodes to be computed. */
 		dyngraph_engine->add_task(from);
 		dyngraph_engine->add_task(to);
+#ifdef DEBUG
+		logstream(LOG_DEBUG) << "Schedule new nodes: " << from << " and " << to << std::endl;
+		logstream(LOG_DEBUG) << "Total number of nodes: " << dyngraph_engine->num_vertices() << std::endl;
+#endif
 	}
 
 	fclose(f);
+	/* After the file is closed, the engine will stop 4 iterations after the current iteration in which the addition is finished. */
 	dyngraph_engine->finish_after_iters(4);
 
 	return NULL;
@@ -130,7 +134,7 @@ int main(int argc, const char ** argv) {
 
 	/* Parameters from command line. */
 	std::string filename = get_option_string("file");
-	int niters = get_option_int("niters", 4);
+	int niters = get_option_int("niters", 20);
 	bool scheduler = true;
 	stream_file = get_option_string("stream_file");
 
@@ -149,6 +153,6 @@ int main(int argc, const char ** argv) {
 	WeisfeilerLehman program;
 	dyngraph_engine->run(program, niters);
 
-	metrics_report(m);
+	// metrics_report(m);
 	return 0;
 }
