@@ -17,12 +17,12 @@
 #include <cmath>
 #include <cstdlib>
 #include <string>
+#include <unistd.h>
 
 #include "logger/logger.hpp"
 #include "def.hpp"
 
 namespace graphchi {
-	
 	/*!
 	 * @brief Deterministically hash character strings to a unique unsigned long integer.
 	 *
