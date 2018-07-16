@@ -40,84 +40,102 @@ void * dynamic_graph_reader(void * info) {
 	}
 	assert(f != NULL);
 
-// 	/* Reading the file. */
-// 	vid_t from;
-// 	vid_t to;
-// 	EdgeDataType el;
-// 	char s[1024];
+	/* Reading the file. */
+	vid_t from;
+	vid_t to;
+	EdgeDataType el;
+	char s[1024];
 
-// 	while(fgets(s, 1024, f) != NULL) {
-// 		FIXLINE(s);
-// 		/* Read next line. */
-// 		char delims[] = ":\t ";
-// 		unsigned char *t;
-// 		char *k;
+	while(fgets(s, 1024, f) != NULL) {
+		FIXLINE(s);
+		/* Read next line. */
+		char delims[] = ":\t ";
+		unsigned char *t;
+		char *k;
 
-// 		k = strtok(s, delims);
-// 		if (k == NULL)
-// 			logstream(LOG_ERROR) << "Source ID does not exist." << std::endl;
-// 		assert(k != NULL);
-// 		from = atoi(k);
+		k = strtok(s, delims);
+		if (k == NULL)
+			logstream(LOG_ERROR) << "Source ID does not exist." << std::endl;
+		assert(k != NULL);
+		from = atoi(k);
 
-// 		k = strtok(NULL, delims);
-// 		if (k == NULL)
-// 			logstream(LOG_ERROR) << "Detination ID does not exist." << std::endl;
-// 		assert(k != NULL);
-// 		to = atoi(k);
+		k = strtok(NULL, delims);
+		if (k == NULL)
+			logstream(LOG_ERROR) << "Detination ID does not exist." << std::endl;
+		assert(k != NULL);
+		to = atoi(k);
 
-// 		t = (unsigned char *)strtok(NULL, delims);
-// 		if (t == NULL)
-// 			logstream(LOG_ERROR) << "Source label does not exist." << std::endl;
-// 		assert(t != NULL);
-// 		el.prev = hash(t);
+		t = (unsigned char *)strtok(NULL, delims);
+		if (t == NULL)
+			logstream(LOG_ERROR) << "Source label does not exist." << std::endl;
+		assert(t != NULL);
+		el.src[0] = hash(t);
 	    
-// 		t = (unsigned char *)strtok(NULL, delims);
-// 		if (t == NULL)
-// 			logstream(LOG_ERROR) << "Destination label does not exist." << std::endl;
-// 		assert (t != NULL);
-// 		el.curr = hash(t);
+		t = (unsigned char *)strtok(NULL, delims);
+		if (t == NULL)
+			logstream(LOG_ERROR) << "Destination label does not exist." << std::endl;
+		assert (t != NULL);
+		el.dst = hash(t);
 
-// 		t = (unsigned char *)strtok(NULL, delims);
-// 		if (t == NULL)
-// 			logstream(LOG_ERROR) << "Edge label does not exist." << std::endl;
-// 		assert (t != NULL);
-// 		el.edge = hash(t);
+		t = (unsigned char *)strtok(NULL, delims);
+		if (t == NULL)
+			logstream(LOG_ERROR) << "Edge label does not exist." << std::endl;
+		assert (t != NULL);
+		el.edg = hash(t);
 
-// 		k = strtok(NULL, delims);
-// 		if (k == NULL)
-// 			logstream(LOG_ERROR) << "Time label does not exist." << std::endl;
-// 		assert (k != NULL);
-// 		el.orig_time = atoi(k);
-// 		el.prev_time = el.orig_time;
-// 		el.curr_time = el.orig_time;
+		k = strtok(NULL, delims);
+		if (k == NULL)
+			logstream(LOG_ERROR) << "New_src info does not exist." << std::endl;
+		assert(k != NULL);
+		int new_src = atoi(k);
+		if (new_src == 1)
+			el.new_src = true;
+		else
+			el.new_src = false;
 
-// #ifdef DEBUG
-// 		k = strtok(NULL, delims);
-// 		if (k != NULL)
-// 			logstream(LOG_DEBUG) << "Extra info will be ignored." << std::endl;
-// #endif
-// 		if (from == to) {
-// #ifdef DEBUG
-// 			logstream(LOG_DEBUG) << "Ignoring edge because a self-loop is detected during streaming: " << from << "<->" << to <<std::endl;
-// #endif
-// 			continue;
-// 		}
-// 		/* Add the new edge to the graph. */
-// 		bool success = false;
-// 		while (!success) {
-// 			success = dyngraph_engine->add_edge(from, to, el);
-// 		}
-// 		/* Schedule the new nodes to be computed. */
-// 		dyngraph_engine->add_task(from);
-// 		dyngraph_engine->add_task(to);
-// #ifdef DEBUG
-// 		logstream(LOG_DEBUG) << "Schedule a new edge with possibly new nodes: " << from << " -> " << to << std::endl;
-// #endif
-// 	}
+		k = strtok(NULL, delims);
+		if (k == NULL)
+			logstream(LOG_ERROR) << "New_dst info does not exist." << std::endl;
+		assert(k != NULL);
+		int new_dst = atoi(k);
+		if (new_dst == 1)
+			el.new_dst = true;
+		else
+			el.new_dst = false;
+
+		k = strtok(NULL, delims);
+		if (k == NULL)
+			logstream(LOG_ERROR) << "Time label does not exist." << std::endl;
+		assert (k != NULL);
+		el.tme[0] = atoi(k);
+
+#ifdef DEBUG
+		k = strtok(NULL, delims);
+		if (k != NULL)
+			logstream(LOG_DEBUG) << "Extra info will be ignored." << std::endl;
+#endif
+		if (from == to) {
+#ifdef DEBUG
+			logstream(LOG_DEBUG) << "Ignoring edge because a self-loop is detected during streaming: " << from << "<->" << to <<std::endl;
+#endif
+			continue;
+		}
+		/* Add the new edge to the graph. */
+		bool success = false;
+		while (!success) {
+			success = dyngraph_engine->add_edge(from, to, el);
+		}
+		/* Schedule the new nodes to be computed. */
+		dyngraph_engine->add_task(from);
+		dyngraph_engine->add_task(to);
+#ifdef DEBUG
+		logstream(LOG_DEBUG) << "Schedule a new edge with possibly new nodes: " << from << " -> " << to << std::endl;
+#endif
+	}
 
 	fclose(f);
 	/* After the file is closed, the engine will stop 4 iterations after the current iteration in which the addition is finished. */
-	dyngraph_engine->finish_after_iters(4);
+	// dyngraph_engine->finish_after_iters(1000);
 
 	return NULL;
 }
