@@ -29,6 +29,7 @@ public:
 	static Histogram* get_instance();
 	~Histogram();
 	void insert_label(unsigned long label);
+	void remove_label(unsigned long label);
 	void print_histogram();
 
 private:

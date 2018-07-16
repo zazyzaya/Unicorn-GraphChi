@@ -41,43 +41,64 @@ namespace graphchi {
 	 *
 	 */
 	void parse(edge_label &x, const char *s) {
-	    char *ss = (char *) s;
-	    char delims[] = ":";
-	    unsigned char *t;
-	    char *k;
-	    
-	    t = (unsigned char *)strtok(ss, delims);
-	    if (t == NULL)
-	        logstream(LOG_FATAL) << "Source label does not exist." << std::endl;
-	    assert(t != NULL);
-	    x.prev = hash(t);
-	    
-	    t = (unsigned char *)strtok(NULL, delims);
-	    if (t == NULL)
-	        logstream(LOG_FATAL) << "Destination label does not exist." << std::endl;
-	    assert (t != NULL);
-	    x.curr = hash(t);
+		char *ss = (char *) s;
+		char delims[] = ":";
+		unsigned char *t;
+		char *k;
 
-	    t = (unsigned char *)strtok(NULL, delims);
-	    if (t == NULL)
-	        logstream(LOG_FATAL) << "Edge label does not exist." << std::endl;
-	    assert (t != NULL);
-	    x.edge = hash(t);
+		x.itr = 0; /* At the beginning, itr count is always 0. */
+		/* For base nodes, we will deal with them separately first, so we do not need to mark them new. */
+		x.new_src = false;
+		x.new_dst = false;
+	
+		t = (unsigned char *)strtok(ss, delims);
+		if (t == NULL)
+			logstream(LOG_FATAL) << "Source label does not exist." << std::endl;
+		assert(t != NULL);
+		x.src[0] = hash(t);
+	
+		t = (unsigned char *)strtok(NULL, delims);
+		if (t == NULL)
+			logstream(LOG_FATAL) << "Destination label does not exist." << std::endl;
+		assert (t != NULL);
+		x.dst = hash(t);
 
-	    k = strtok(NULL, delims);
-	    if (k == NULL)
-	        logstream(LOG_FATAL) << "Time label does not exist." << std::endl;
-	    assert (k != NULL);
-	    x.orig_time = std::stoi(k);
-	    x.prev_time = x.orig_time;
-	    x.curr_time = x.orig_time;
+		t = (unsigned char *)strtok(NULL, delims);
+		if (t == NULL)
+			logstream(LOG_FATAL) << "Edge label does not exist." << std::endl;
+		assert (t != NULL);
+		x.edg = hash(t);
 
-	    k = strtok(NULL, delims);
-	    if (k != NULL)
-	        logstream(LOG_FATAL) << "Extra info will be ignored." << std::endl;
+		k = strtok(NULL, delims);
+		if (k == NULL)
+			logstream(LOG_FATAL) << "Time label does not exist." << std::endl;
+		assert (k != NULL);
+		x.tme[0] = std::stoi(k);
 
-	    return;
+		k = strtok(NULL, delims);
+		if (k != NULL)
+			logstream(LOG_FATAL) << "Extra info, if any, will be ignored." << std::endl;
+
+		return;
 	}
+
+	bool compareEdges(struct edge_label a, struct edge_label b, int pos) {
+		return a.tme[pos] < b.tme[pos];
+	}
+	/*!
+	 * @brief This class is used to sort edge_label structs based on its "tme" value at position n.
+	 */
+	class EdgeSorter{
+		int pos;
+		
+		public:
+			EdgeSorter(int pos) {
+				this->pos = pos;
+			}
+		bool operator()(struct edge_label a, struct edge_label b) const {
+			return compareEdges(a, b, pos);
+		}
+	};
 
 }
 

@@ -297,7 +297,8 @@ namespace graphchi {
          * keep running from memory.
          */
         virtual bool is_inmemory_mode() {
-            return (nshards == 1 && num_vertices() < 2 * maxwindow); // Do not switch to in-memory mode if num of vertices too high. Ugly heuristic.
+            // return (nshards == 1 && num_vertices() < 2 * maxwindow); // Do not switch to in-memory mode if num of vertices too high. Ugly heuristic.
+            return false;
         }
         
         
@@ -778,6 +779,7 @@ namespace graphchi {
             /* Main loop */
             for(iter=0; iter < niters; iter++) {
                 logstream(LOG_INFO) << "Start iteration: " << iter << std::endl;
+                logstream(LOG_INFO) << "Total number of iterations: " << niters << std::endl;
                 
                 initialize_iter();
                 
@@ -822,6 +824,7 @@ namespace graphchi {
                 }
                 
                 /* Interval loop */
+                logstream(LOG_INFO) << "Interval Loops -- nshards: " << nshards << std::endl;
                 for(int interval_idx=0; interval_idx < nshards; ++interval_idx) {
                     exec_interval = interval_idx;
                     
@@ -840,6 +843,7 @@ namespace graphchi {
                     vid_t interval_st = get_interval_start(exec_interval);
                     vid_t interval_en = get_interval_end(exec_interval);
                     
+                    logstream(LOG_INFO) << "interval_st: " << interval_st << std::endl;
                     if (interval_st > interval_en) continue; // Can happen on very very small graphs.
 
                     if (!is_inmemory_mode())

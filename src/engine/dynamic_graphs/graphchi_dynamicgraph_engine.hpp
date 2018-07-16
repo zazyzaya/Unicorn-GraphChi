@@ -309,6 +309,9 @@ namespace graphchi {
             vid_t prev_max_id = max_vertex_id;
             max_vertex_id = std::max(max_vertex_id, dst);
             max_vertex_id = std::max(max_vertex_id, src);
+#ifdef DEBUG
+            logstream(LOG_INFO) << "Current Max Vertex ID is: " << max_vertex_id << std::endl;
+#endif
             
             // Extend degree and vertex data files
             if (max_vertex_id>prev_max_id) {
@@ -483,6 +486,9 @@ namespace graphchi {
         virtual void initialize_iter() {
             this->intervals[this->nshards - 1].second = max_vertex_id;
             this->vertex_data_handler->check_size(max_vertex_id + 1);
+#ifdef DEBUG
+            logstream(LOG_INFO) << "This iteration with max vertex ID: " << max_vertex_id << std::endl;
+#endif
             initialize_sliding_shards();
             
             /* Deleted edge tracking */
@@ -502,6 +508,9 @@ namespace graphchi {
                 this->iomgr->wait_for_writes();
                 
                 commit_graph_changes();
+#ifdef DEBUG
+                logstream(LOG_INFO) << "This iteration: " << this->iter << " is finished. " << std::endl;
+#endif
             }
         }
         

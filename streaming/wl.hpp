@@ -17,6 +17,7 @@
 #include <string>
 #include <iostream>
 #include <cstdlib>
+#include <cassert>
 
 #include "graphchi_basic_includes.hpp"
 #include "engine/dynamic_graphs/graphchi_dynamicgraph_engine.hpp"
@@ -50,138 +51,409 @@ namespace graphchi {
 				return;
 			}
 #endif
-			/* Since we require synchronous updates, we define:
-			 * 1. Even-numbered iterations: swap values between "curr" and "prev" on edges.
-			 * 2. Odd-numbered iterations: update "curr" from "prev". 
-			 */
 			if (gcontext.iteration == 0) {
-				/* On first iteration, initialize vertex label.
-				 * This vertex label is its original label and should not be overwritten by later iterations.
-				 */
-				/* The "orig" of the node_label can be obtained from any outedge (from "prev") or inedge (from "curr") */
+				/* On first iteration, initialize vertex label on the base graph (before new edges start streaming in). */
 				struct node_label nl;
 
-				graphchi_edge<EdgeDataType> * edge = vertex.random_outedge();
-				if (edge == NULL) {
-					/* If a vertex does not have any outedge, it can get its original label from any of its inedge, which it must have at least one inedge. */
-					edge = vertex.inedge(0); /* Use the first inedge to get its original label. */
-					nl.orig = edge->get_data().curr;
-				} else {
-					nl.orig = edge->get_data().prev;
-					/* schedule all the out-going neighbors. */
-					for(int i = 0; i < vertex.num_outedges(); i++) {
-						graphchi_edge<EdgeDataType> * out_edge = vertex.outedge(i);
-						if (gcontext.scheduler != NULL) {
-							gcontext.scheduler->add_task(out_edge->vertex_id());
-						}
-					}
-				}
-				nl.curr = nl.orig; /* For this iteration, the original and the current label are the same. */
-				vertex.set_data(nl);
+				if (vertex.num_inedges() > 0) {
+					graphchi_edge<EdgeDataType> * edge = vertex.inedge(0); /* Use the first inedge to get its original label. */
+					nl.lb[0] = edge->get_data().dst;
+					nl.is_leaf = false;
 
-				/* Also schedule the vertex itself for the next iteration. */
-				if (gcontext.scheduler != NULL) {
-					gcontext.scheduler->add_task(vertex.id());
+					for (int i = 0; i < vertex.num_inedges(); i++) {
+						graphchi_edge<EdgeDataType> * in_edge = vertex.inedge(i);
+						struct edge_label el = in_edge->get_data();
+						el.itr++; /* After this initialization, every edge in the base graph has "itr" value 1. */
+						in_edge->set_data(el);
+					}
+				} else {
+					/* If it does not have any incoming neighbors. Then it must have at least one out-going neighbor. */
+					graphchi_edge<EdgeDataType> * edge = vertex.random_outedge();
+					nl.lb[0] = edge->get_data().src[0];
+					nl.is_leaf = true;
 				}
+				nl.tm[0] = 0; /* The first element of times associated with a vertex is always zero. */
+				vertex.set_data(nl);
 
 				/* Populate histogram map. */
 				histogram_map_lock.lock();
-				hist->insert_label(nl.orig);
+				hist->insert_label(nl.lb[0]);
 				histogram_map_lock.unlock();
+
+				/* Always schedule itself for the next iteration. */
+				if (gcontext.scheduler != NULL) {
+					gcontext.scheduler->add_task(vertex.id());
+				}
 #ifdef DEBUG
-				logstream(LOG_DEBUG) << "The original label of vertex #" << vertex.id() << " is: " << nl.orig << std::endl;
+				logstream(LOG_DEBUG) << "The original label of vertex #" << vertex.id() << " is: " << nl.lb[0] << std::endl;
 #endif
-			} else if (gcontext.iteration % 2 == 1) { /* Odd-numbered iteration updates time and label values to "prev_time" and "prev". */
-				/* During the 1st iteration, we include edge labels when relabeling. */
-				std::vector<struct edge_label> neighborhood; /* We reuse edge_label struct to store neighbor vertex's label ("prev"), edge label ("edge"), and use "prev_time" for sorting. */
-				/* We only consider immediate ancestors. */
+			} else if (gcontext.iteration < 4){	//TODO: 4 is hard-coded because we know after 3 iterations, we will be done with the base graph.
+				/* After the first iteration, all nodes in the base graph are initialized. 
+				 * All edges in the base graph should have "itr" value 1.
+				 *
+				 * Now we finish iterating the base graph before we handle new edges.
+				 * Note that while we are iterating the base graph, new edges and nodes may be added to the graph.
+				 * We must make sure that those edges and nodes are not counted.
+				 */
+				std::vector<struct edge_label> neighborhood; /* We reuse edge_label struct vector to store the neighborhood values. */
+				
 				for (int i = 0; i < vertex.num_inedges(); i++) {
 					graphchi_edge<EdgeDataType> * in_edge = vertex.inedge(i);
-					
-					struct edge_label neighbor;
-					neighbor = in_edge->get_data();
-					neighborhood.push_back(neighbor);
-				}
-				/* Labels are sorted based on the timestamps of the in_edges. */
-				std::sort(neighborhood.begin(), neighborhood.end(), compareEdges);
-				/* Appending neighborhood labels with the label of the current vertex itself.*/
-				/* First construct the string of the vertex itself. */
-				std::string new_label_str = "";
-				std::string first_str;
-				std::stringstream first_out;
-				first_out << vertex.get_data().curr;
-				first_str = first_out.str();
-				new_label_str += first_str; /* Use space to separate number strings. */
-				/* Then append neighborhood labels. */
-				for (std::vector<struct edge_label>::iterator it = neighborhood.begin(); it != neighborhood.end(); ++it) {
-					if (gcontext.iteration == 1) { /* The first iteration includes edge labels. */
-						std::string edge_str;
-						std::stringstream edge_out;
-						edge_out << it->edge;
-						edge_str = edge_out.str();
-						new_label_str += " " + edge_str;
+					struct edge_label el = in_edge->get_data();
+					if (el.itr > 0) { /* We only include edges from the base graph. */
+						neighborhood.push_back(el);
+						/* We will use those edges so increment the itr count by 1 and update the edge. */
+						el.itr++;
+						in_edge->set_data(el);
 					}
-					std::string node_str;
-					std::stringstream node_out;
-					node_out << it->prev;
-					node_str = node_out.str();
-					new_label_str += " " + node_str;
 				}
-#ifdef DEBUG
-				logstream(LOG_DEBUG) << "New label string of the vertex #" << vertex.id() << " is: " << new_label_str << std::endl;
-#endif
-				/* Relabel by hashing. */
-				unsigned long new_label = hash((unsigned char *)new_label_str.c_str());
-				/* Populate histogram map. */
-				histogram_map_lock.lock();
-				hist->insert_label(new_label);
-				histogram_map_lock.unlock();
-				/* Update the vertex's label*/
-				struct node_label nl = vertex.get_data();
-				nl.curr = new_label;
-				vertex.set_data(nl);
-
-				/* Update timestamp of the vertex to be the smallest among the neighbor timestamps for later iterations, if neighborhood exists.
-				 * Since neighborhood is sorted. The first element is the smallest, if exists.
-				 * Also update the label of the vertex to its outgoing edges to be used in the next iteration.
-				 */
-				for (int i = 0; i < vertex.num_outedges(); i++) {
-					graphchi_edge<EdgeDataType> * out_edge = vertex.outedge(i);
-					struct edge_label el = out_edge->get_data();
-					if (neighborhood.size() > 0)
-						el.curr_time = neighborhood[0].prev_time;
-					el.curr = new_label;
-					out_edge->set_data(el);
-				}
-#ifdef DEBUG
-				if (neighborhood.size() > 0)
-					logstream(LOG_DEBUG) << "Update time of the vertex #" << vertex.id() << " to: " << neighborhood[0].prev_time << std::endl;
-				else
-					logstream(LOG_DEBUG) << "Time of the vertex #" << vertex.id() << " unchanged." << std::endl;
-#endif
-				/* Again schedule the vertex itself and its out-going neighbors. */
-				if (gcontext.scheduler != NULL) {
-					gcontext.scheduler->add_task(vertex.id());
-					for(int i = 0; i < vertex.num_outedges(); i++) {
+				if (neighborhood.size() == 0) {
+					/* The vertex could be a new node that is not part of the base graph.
+					 * It could also be a node in the base graph that simply does not have any in-coming edges. 
+					 * We count only the the node in the base graph here. 
+					 */
+					bool is_base = false;
+					for (int i = 0; i < vertex.num_outedges(); i++) {
 						graphchi_edge<EdgeDataType> * out_edge = vertex.outedge(i);
-						gcontext.scheduler->add_task(out_edge->vertex_id());
+						struct edge_label el = out_edge->get_data();
+						if (el.itr > 0)
+							is_base = true; /* A base graph vertex has at least one of the out-edge with itr value greater than 0. */
+					}
+					if (is_base) {
+						/* This vertex is part of the base graph. We will update this node. */
+						/* Simply use the last label of the vertex itself since it has no incoming neighbors. */
+						struct node_label nl = vertex.get_data();
+						unsigned long last_itr_label = nl.lb[gcontext.iteration - 1];
+#ifdef DEBUG
+						logstream(LOG_DEBUG) << "The label string of the base vertex (with no neighbors) #" << vertex.id() << " is: " << last_itr_label << std::endl;
+#endif
+						/* Populate histogram map. */
+						histogram_map_lock.lock();
+						hist->insert_label(last_itr_label);
+						histogram_map_lock.unlock();
+						/* Update the vertex's label vector. */
+						nl.lb[gcontext.iteration] = last_itr_label;
+						nl.tm[gcontext.iteration] = 0; /* All timestamps of the leaf vertex is set to be 0. */
+						vertex.set_data(nl);
+
+						/* Now update all of its out-going edges.*/
+						/* Note that it is possible that some value of the new edges that do not belong to the base graphs are updated.*/
+						for (int i = 0; i < vertex.num_outedges(); i++) {
+							graphchi_edge<EdgeDataType> * out_edge = vertex.outedge(i);
+							struct edge_label el = out_edge->get_data();
+							el.src[gcontext.iteration] = last_itr_label;
+							/* Time stamp does not change for nodes with no in-coming neighbors. */
+							el.tme[gcontext.iteration] = el.tme[gcontext.iteration - 1]; 
+							out_edge->set_data(el);
+						}
+					}
+					/* We don't do anything (except always schedule it) if the node is not part of the base graph in this iteration. */
+				} else { /* We will update this node since it is part of the base graph. */
+					/* We first sort the labels are sorted based on the timestamps of the in_edges. */
+					/* Note that the neighborhood only contains edges of the base graph. */
+					std::sort(neighborhood.begin(), neighborhood.end(), EdgeSorter(gcontext.iteration - 1));
+					/* First construct the string of the vertex itself. */
+					std::string new_label_str = "";
+					std::string first_str;
+					std::stringstream first_out;
+					first_out << vertex.get_data().lb[gcontext.iteration - 1];
+					first_str = first_out.str();
+					new_label_str += first_str; /* Use space to separate number strings. */
+					/* Then append neighborhood labels. */
+					for (std::vector<struct edge_label>::iterator it = neighborhood.begin(); it != neighborhood.end(); ++it) {
+						if (gcontext.iteration == 1) { /* The first iteration includes edge labels. */
+							std::string edge_str;
+							std::stringstream edge_out;
+							edge_out << it->edg;
+							edge_str = edge_out.str();
+							new_label_str += " " + edge_str;
+						}
+						std::string node_str;
+						std::stringstream node_out;
+						node_out << it->src[gcontext.iteration - 1];
+						node_str = node_out.str();
+						new_label_str += " " + node_str;
+					}
+#ifdef DEBUG
+					logstream(LOG_DEBUG) << "New label string of the vertex #" << vertex.id() << " is: " << new_label_str << std::endl;
+#endif
+					/* Relabel by hashing. */
+					unsigned long new_label = hash((unsigned char *)new_label_str.c_str());
+					/* Populate histogram map. */
+					histogram_map_lock.lock();
+					hist->insert_label(new_label);
+					histogram_map_lock.unlock();
+					/* Update the vertex's label*/
+					struct node_label nl = vertex.get_data();
+					nl.lb[gcontext.iteration] = new_label;
+					nl.tm[gcontext.iteration] = neighborhood[0].tme[gcontext.iteration - 1];
+					vertex.set_data(nl);
+
+					/* Now update all of its out-going edges.*/
+					/* Note that it is possible that some value of the new edges that do not belong to the base graphs are updated.*/
+					for (int i = 0; i < vertex.num_outedges(); i++) {
+						graphchi_edge<EdgeDataType> * out_edge = vertex.outedge(i);
+						struct edge_label el = out_edge->get_data();
+						el.src[gcontext.iteration] = new_label;
+						/* Time stamp is the smallest one among all of its in-coming neighbors. */
+						el.tme[gcontext.iteration] = neighborhood[0].tme[gcontext.iteration - 1]; 
+						out_edge->set_data(el);
 					}
 				}
-
-			} else { /* Even-numbered iterations swap time and label values. */
+				/* Always schedule itself for the next iteration. */
+				if (gcontext.scheduler != NULL) {
+					gcontext.scheduler->add_task(vertex.id());
+				}
+			} else { /* Now we are dealing with the case of streaming nodes/edges. */
+				/* We first check if the node is a new node or not so that we can do some initialization. */
+				/* The node is a new node if any of its edges marks the node new. */
+				bool is_new = false;
 				for (int i = 0; i < vertex.num_outedges(); i++) {
 					graphchi_edge<EdgeDataType> * out_edge = vertex.outedge(i);
 					struct edge_label el = out_edge->get_data();
-					el.prev = el.curr;
-					el.prev_time = el.curr_time;
-					out_edge->set_data(el);
-#ifdef DEBUG
-					logstream(LOG_DEBUG) << "Swap out_edges of the vertex #" << vertex.id() << std::endl;
-#endif
+					if (el.new_src)
+						is_new = true;
 				}
-				/* Also schedule the vertex itself for the next iteration. */
-				if (gcontext.scheduler != NULL) {
-					gcontext.scheduler->add_task(vertex.id());
+				if (!is_new) {
+					for (int i = 0; i < vertex.num_inedges(); i++) {
+						graphchi_edge<EdgeDataType> * in_edge = vertex.inedge(i);
+						struct edge_label el = in_edge->get_data();
+						if (el.new_dst)
+							is_new = true;
+					}
+				}
+				/* Now we know if the node is a new node or not. */
+				if (is_new) {
+					/* We initialize the new node. */
+					if (vertex.num_inedges() == 0) {
+						/* If this new node is a new leaf node:
+						 * - We popular all of its label and the label of its outedges.
+						 * - We will not schedule this node for next iteration, unless new edges are associated with it later.
+						 * - Mark the node as a leaf node.
+						 */
+						graphchi_edge<EdgeDataType> * out_edge = vertex.random_outedge(); /* The node must have at least one outedge. */
+						assert(out_edge != NULL);
+						struct edge_label el = out_edge->get_data();
+						struct node_label nl;
+						nl.lb[0] = el.src[0];
+						/* Since the node has no incoming edges, all of its labels are the same as the initial label. 
+						 * All of its timestamps are set to 0. */
+						//TODO: this is hard-coded for 3-hop case.
+						nl.lb[1] = nl.lb[2] = nl.lb[3] = nl.lb[0];
+						nl.tm[0] = nl.tm[1] = nl.tm[2] = nl.tm[3] = 0;
+						nl.is_leaf = true;
+						/* Update node label. */
+						vertex.set_data(nl);
+						/* Populate histogram map of all its labels. */
+						histogram_map_lock.lock();
+						//TODO: this is hard-coded for 3-hop case.
+						hist->insert_label(nl.lb[0]);
+						hist->insert_label(nl.lb[1]);
+						hist->insert_label(nl.lb[2]);
+						hist->insert_label(nl.lb[3]);
+						histogram_map_lock.unlock();
+						/* Populate the labels to all of its out-going edges. */
+						for (int i = 0; i < vertex.num_outedges(); i++) {
+							graphchi_edge<EdgeDataType> * out_edge = vertex.outedge(i);
+							struct edge_label el = out_edge->get_data();
+							//TODO: this is hard-coded for 3-hop case.
+							el.src[1] = nl.lb[1];
+							el.src[2] = nl.lb[2];
+							el.src[3] = nl.lb[3];
+							el.new_src = false; /* Make sure every edge is marked as seen. */
+							/* Update the timestamps. */
+							//TODO: this is hard-coded for 3-hop case.
+							el.tme[1] = el.tme[0];
+							el.tme[2] = el.tme[1];
+							el.tme[3] = el.tme[2];
+							out_edge->set_data(el);
+						}						
+						/* We do not automatically schedule this node. */
+					} else {
+						/* This new node is not a leaf node. */
+						/* Use the first inedge to get its original label. */
+						graphchi_edge<EdgeDataType> * edge = vertex.inedge(0);
+						struct node_label nl = vertex.get_data();
+						nl.lb[0] = edge->get_data().dst;
+						nl.tm[0] = 0;
+						vertex.set_data(nl); 
+
+						for (int i = 0; i < vertex.num_inedges(); i++) {
+							graphchi_edge<EdgeDataType> * in_edge = vertex.inedge(i);
+							struct edge_label el = in_edge->get_data();
+							if (el.itr == 0) {
+								el.itr++; /* After this initialization, every new edge has "itr" value 1. */
+							}
+							el.new_dst = false; /* We make sure next iteration, we won't count the node as a new node. */
+							in_edge->set_data(el);
+						}
+
+						for (int i = 0; i < vertex.num_outedges(); i++) {
+							graphchi_edge<EdgeDataType> * out_edge = vertex.outedge(i);
+							struct edge_label el = out_edge->get_data();
+							el.new_src = false; /* We make sure next iteration, we won't count the node as a new node. */
+							out_edge->set_data(el);
+						}
+
+						/* Populate histogram map. */
+						histogram_map_lock.lock();
+						hist->insert_label(nl.lb[0]);
+						histogram_map_lock.unlock();
+
+						/* We schedule this node for the next iteration. */
+						if (gcontext.scheduler != NULL) {
+							gcontext.scheduler->add_task(vertex.id());
+						}
+
+					}
+				} else {
+					/* Now we deal with existing nodes. */
+					if (vertex.num_inedges() == 0) {
+						/* We first deal with leaf nodes that are scheduled.
+						 * This leaf node must have been initialized before.
+						 * Note that leaf nodes cannot become non-leaf nodes. 
+						 * If an existing leaf node is scheduled, there must exist at least one out-edge of the node whose labels need to be populated. 
+						 * Therefore, we simply copy the leaf node info to all of its edges.
+						 */
+						struct node_label nl = vertex.get_data();
+						assert(nl.is_leaf); /* Just a check to make sure the node is a leaf node. */
+						/* Note: some repetitive work may have occurred in the following for loop. We have to do it because we don't know which edge has not been assigned yet. */
+						for (int i = 0; i < vertex.num_outedges(); i++) {
+							graphchi_edge<EdgeDataType> * out_edge = vertex.outedge(i);
+							struct edge_label el = out_edge->get_data();
+							//TODO: this is hard-coded for 3-hop case.
+							el.src[1] = nl.lb[1];
+							el.src[2] = nl.lb[2];
+							el.src[3] = nl.lb[3];
+							el.tme[1] = el.tme[0];
+							el.tme[2] = el.tme[1];
+							el.tme[3] = el.tme[2];
+							out_edge->set_data(el);
+						}
+					} else {
+						/* Now we deal with nodes with incoming edges. */
+						struct node_label nl = vertex.get_data();
+						
+						if (nl.is_leaf) {
+							/* If this node used to be a leaf node. */
+							nl.is_leaf = false;
+						}
+						/* In the case where a new edge occurs between two existing nodes, the edge needs to be sync'ed with the node. */
+						/* Note: some repetitive work may have occurred in the following for loop. We have to do it because we don't know which edge has not been assigned yet. */
+						for (int i = 0; i < vertex.num_outedges(); i++) {
+							graphchi_edge<EdgeDataType> * out_edge = vertex.outedge(i);
+							struct edge_label el = out_edge->get_data();
+							//TODO: this is hard-coded for 3-hop case.
+							el.src[1] = nl.lb[1];
+							el.src[2] = nl.lb[2];
+							el.src[3] = nl.lb[3];
+							el.tme[1] = nl.tm[1];
+							el.tme[2] = nl.tm[2];
+							el.tme[3] = nl.tm[3];
+							out_edge->set_data(el);
+						}
+						/* Change all incoming edges whose itr count is 0 to 1. 
+						 * At the same time, find the minimum itr among all of its inedges.*/
+						int min_itr = 5; //TODO: this is hard-coded since no itr value in our 3-hop case can be larger than 5.
+						for (int i = 0; i < vertex.num_inedges(); i++) {
+							graphchi_edge<EdgeDataType> * in_edge = vertex.inedge(i);
+							struct edge_label el = in_edge->get_data();
+							if (el.itr == 0) {
+								el.itr++;
+							}
+							if (el.itr < min_itr) {
+								min_itr = el.itr;
+							}
+							in_edge->set_data(el);
+						}
+						/* We do a check here since the minimum iteration value should be at least 1, but less than 5. */
+						assert(min_itr > 0 && min_itr < 5);
+						if (min_itr == 4) {
+							/* This node should not be scheduled again and do not run the rest of the logic. 
+							 * This could be the node from the base graph that is automatically scheduled after the 4th iteration. 
+							 * Or it could be the source node of a new edge added.
+							 */
+							return;
+						}
+
+						/* Now we update to a new label. */
+						std::vector<struct edge_label> neighborhood; 
+
+						for (int i = 0; i < vertex.num_inedges(); i++) {
+							graphchi_edge<EdgeDataType> * in_edge = vertex.inedge(i);
+							struct edge_label el = in_edge->get_data();
+							neighborhood.push_back(el);
+							if (el.itr < 4) {
+								el.itr++; /* We increment edges whose itr value is less than 4. */
+							}
+							in_edge->set_data(el);
+						}
+
+						std::sort(neighborhood.begin(), neighborhood.end(), EdgeSorter(min_itr - 1));
+						/* First construct the string of the vertex itself. */
+						std::string new_label_str = "";
+						std::string first_str;
+						std::stringstream first_out;
+						first_out << vertex.get_data().lb[min_itr - 1];
+						first_str = first_out.str();
+						new_label_str += first_str; /* Use space to separate number strings. */
+						/* Then append neighborhood labels. */
+						for (std::vector<struct edge_label>::iterator it = neighborhood.begin(); it != neighborhood.end(); ++it) {
+							if (min_itr == 1) { /* If the vertex is incorporating a new edge. */
+								std::string edge_str;
+								std::stringstream edge_out;
+								edge_out << it->edg;
+								edge_str = edge_out.str();
+								new_label_str += " " + edge_str;
+							}
+							std::string node_str;
+							std::stringstream node_out;
+							node_out << it->src[min_itr - 1];
+							node_str = node_out.str();
+							new_label_str += " " + node_str;
+						}
+#ifdef DEBUG
+						logstream(LOG_DEBUG) << "New label string of the vertex #" << vertex.id() << " is: " << new_label_str << std::endl;
+#endif
+						/* Relabel by hashing. */
+						unsigned long new_label = hash((unsigned char *)new_label_str.c_str());
+						/* Populate histogram map. */
+						histogram_map_lock.lock();
+						hist->insert_label(new_label);
+						hist->remove_label(nl.lb[min_itr]);
+						histogram_map_lock.unlock();
+						/* Update the vertex's label*/
+						nl.lb[min_itr] = new_label;
+						vertex.set_data(nl);
+
+						/* Now update all of its out-going edges.
+						 * We also decide if we want to schedule them next.
+						 */
+						for (int i = 0; i < vertex.num_outedges(); i++) {
+							graphchi_edge<EdgeDataType> * out_edge = vertex.outedge(i);
+							struct edge_label el = out_edge->get_data();
+							el.src[min_itr] = new_label;
+							/* Time stamp is the smallest one among all of its in-coming neighbors. */
+							el.tme[min_itr] = neighborhood[0].tme[min_itr - 1];
+							/* Update their itr value. */
+							el.itr = min_itr + 1;
+							out_edge->set_data(el);
+
+							if (min_itr < 3) {
+								/* Schedule the outgoing neighbor because it needs to update its label too. */
+								if (gcontext.scheduler != NULL) {
+									gcontext.scheduler->add_task(out_edge->vertex_id());
+								}
+							}
+						}
+						/* Now we decide if we want to schedule the node itself. */
+						if (min_itr < 4) {
+							/* Schedule itself because we haven't explore all hops yet. */
+							if (gcontext.scheduler != NULL) {
+								gcontext.scheduler->add_task(vertex.id());
+							}
+						}
+					}
 				}
 			}
 		}

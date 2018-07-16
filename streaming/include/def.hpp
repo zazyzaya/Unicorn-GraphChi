@@ -13,41 +13,45 @@
 #ifndef def_hpp
 #define def_hpp
 
-struct edge_label {
-	unsigned long prev;
-	unsigned long curr;
-	unsigned long edge;
-	int orig_time;
-	int prev_time;
-	int curr_time;
-};
-
-struct node_label {
-	unsigned long orig;
-	unsigned long curr;
-};
-
-typedef node_label VertexDataType; /* VertexDataType stores the original label of the vertex and a current label for each iteration. */
-
-/* edge_label sttuct serves multiple purposes.
- * 1. "prev":
- * 		- Initalizes source vertex label at the beginning.
- * 		- Stores the label of the previous iteration of source vertex (so destination vertex can use the label to compute its new label) 
- * 2. "curr":
- * 		- Initalizes destination vertex label at the beginning.
- * 		- Stores the label for the current iteration of source vertex (so we can swap "prev" and "curr" in the next iteration)
- * 3. "edge" stores the original edge label of an edge. This value does not changes with iterations.
- * 4. "orig_time" stores the original timestamp of the edge.
- * 5. "prev_time" and "curr_time" are similar to "prev" and "curr" but concern timestamps.
- * 		- At very beginning, "prev_time" and "curr_time" are set to be the same as "orig_time".
- * "prev" and "curr" are needed because we simulate synchronous execution on asynchronous GraphChi graph processing system.
+/* In a truly streaming setting, GraphChi does not allow dynamic vertex/edge type.
+ * We therefore must fixed the neighborhood we are exploring.
+ * Currently we implement 3-hop neighborhood.
+ * Therefore, The array "src" holds 4 elemenst:
+ * 		- The label of the source node, which we can initialize from the file.
+ * 		- The relabel of the first-hop neighborhood.
+ *		- The relabel of the second-hop neighborhood.
+ * 		- The relabel of the third-hop neighborhood.
+ * The array "tme" is corresponding timestamps. The first element is the timestamep of the edge.
+ * The following elements are the corresponding timestamps of the relabeled node at each hop.
+ * "dst" is the label of the destination node.
+ * "itr" is the number of times the destination node has access the edge for computation.
+ * "edg" is the edge label.
+ * For streaming new edges:
+ * 		- "new_src": whether the source node is a new node, never-before-seen.
+ * 		- "new_dst": whether the destination node is a new node, never-before-seen.
  */
+struct edge_label {
+	//TODO: We hard-coded the value 4 because dymanic edge type is not allowed in the streaming setting.
+	unsigned long src[4];
+	unsigned long dst;
+	unsigned long edg;
+	int tme[4];
+	int itr;
+	bool new_src;
+	bool new_dst;
+};
+
 typedef edge_label EdgeDataType;
 
-struct {
-	bool operator()(struct edge_label a, struct edge_label b) {
-		return a.prev_time < b.prev_time;
-	}
-} compareEdges;
+/* Node itself remembers all its most-updated labels "lb" and times "tm".
+ * "is_leaf": whether the node is a leaf node. (no incoming edges)
+ */
+struct node_label {
+	unsigned long lb[4];
+	int tm[4];
+	bool is_leaf;
+};
+
+typedef node_label VertexDataType;
 
 #endif

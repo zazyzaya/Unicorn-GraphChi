@@ -44,6 +44,25 @@ void Histogram::insert_label(unsigned long label) {
 }
 
 /*!
+ * @brief Remove @label from the histogram_map.
+ *
+ */
+void Histogram::remove_label(unsigned long label) {
+	std::map<unsigned long, int>::iterator it;
+	it = this->histogram_map.find(label);
+	if (it != this->histogram_map.end()) {
+		it->second--;
+	}
+#ifdef DEBUG
+	else {
+		logstream(LOG_ERROR) << "Decrement histogram element count failed! The label " << label << " should have been in the histogram, but it is not." << std::endl;		
+	}
+#endif
+
+	return;
+}
+
+/*!
  * @brief Print the histogram map for debugging.
  *
  */
