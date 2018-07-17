@@ -30,8 +30,19 @@ std::string stream_file;
  */
 void * dynamic_graph_reader(void * info) {
 	logstream(LOG_DEBUG) << "Waiting to start streaming the graph..." << std::endl;
-	usleep(100000);
+	// usleep(100000); /* We do not need to sleep to wait. We have a while loop to do so. */
 	logstream(LOG_DEBUG) << "Streaming begins from file: " << stream_file << std::endl;
+
+	graphchi_context & ginfo = dyngraph_engine->get_context();
+	while(ginfo.iteration < 4) {
+		; /* A busy loop to wait until the base graph histogram is constructed. */
+	}
+	/* Once breaking out of the loop, we know the base graph histogram is ready. */
+	/* Get the singleton of histogram map. */
+	Histogram* hist = Histogram::get_instance();
+
+	//TODO: SKETCH CREATION CODE GOES HERE.
+
 
 	/* Open the file for streaming. */
 	FILE * f = fopen(stream_file.c_str(), "r");
@@ -45,6 +56,9 @@ void * dynamic_graph_reader(void * info) {
 	vid_t to;
 	EdgeDataType el;
 	char s[1024];
+	//TODO: we can easily make interval a variable, but now we simply hard-code a value.
+	int interval = 100; /* "interval" determines how many new edges we see before we record the streaming histogram. */
+	int cnt = 0;
 
 	while(fgets(s, 1024, f) != NULL) {
 		FIXLINE(s);
@@ -125,12 +139,18 @@ void * dynamic_graph_reader(void * info) {
 		while (!success) {
 			success = dyngraph_engine->add_edge(from, to, el);
 		}
+		++cnt;
 		/* Schedule the new nodes to be computed. */
 		dyngraph_engine->add_task(from);
 		dyngraph_engine->add_task(to);
 #ifdef DEBUG
 		logstream(LOG_DEBUG) << "Schedule a new edge with possibly new nodes: " << from << " -> " << to << std::endl;
 #endif
+		if (cnt == interval) {
+			/* Once we reach the interval to record the histogram, we apply locality sensitive hashing updates. */
+			cnt = 0;
+			//TODO: LOCALITY SENSITIVE HASHING UPDATE CODE GOES HERE.
+		}
 	}
 
 	fclose(f);
@@ -140,6 +160,12 @@ void * dynamic_graph_reader(void * info) {
 	return NULL;
 }
 
+/* Run the program in command line on the graphchi-cpp directory:
+ * bin/streaming/main file streaming/test.data niters 1000 stream_file streaming/stream.data
+ * Compile the program:
+ * With debugging information: make sdebug
+ * Without debugging info: make streaming/main
+ */
 int main(int argc, const char ** argv) {
 	/* GraphChi initialization will read the command line arguments and the configuration file. */
 	graphchi_init(argc, argv);
