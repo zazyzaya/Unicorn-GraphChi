@@ -209,6 +209,24 @@ int main(int argc, const char ** argv) {
 	WeisfeilerLehman program;
 	dyngraph_engine->run(program, niters);
 
+	/* Once the streaming graph is all done, we will record the last sketch that sketches the complete graph. */
+	/* We append the last sketch to the SKETCH_FILE. */
+	FILE *fp = fopen(SKETCH_FILE, "a");
+	if (fp == NULL) {
+		logstream(LOG_ERROR) << "Cannot open the sketch file to append: " << SKETCH_FILE << std::endl;
+		return -1;
+	}
+	Histogram* hist = Histogram::get_instance();
+
+	hist->get_lock();
+	hist->record_sketch(fp);
+	hist->release_lock();
+
+	if (ferror(fp) != 0 || fclose(fp) != 0) {
+		logstream(LOG_ERROR) << "Unable to close the sketch file: " << SKETCH_FILE << std::endl;
+		return -1;
+	}
+	
 	// metrics_report(m);
 	return 0;
 }
