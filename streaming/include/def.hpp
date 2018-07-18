@@ -29,6 +29,9 @@
 /* Determines how many new edges we see before we record the hashed streaming histogram. */
 #define INTERVAL 100
 
+/* File name that saves histogram sketches. */
+#define SKETCH_FILE "sketch.txt"
+
 
 /* In a truly streaming setting, GraphChi does not allow dynamic vertex/edge type.
  * We therefore must fixed the neighborhood we are exploring.

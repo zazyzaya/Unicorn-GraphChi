@@ -162,6 +162,14 @@ void Histogram::release_lock(){
 // 	return;
 // }
 
+void Histogram::record_sketch(FILE* fp) {
+	for (int i = 0; i < SKETCH_SIZE; i++) {
+		fprintf(fp,"%lu ", this->sketch[i]);
+	}
+	fprintf(fp, "\n");
+	return;
+}
+
 /*!
  * @brief Print the histogram map for debugging.
  *

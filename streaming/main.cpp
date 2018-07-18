@@ -33,6 +33,13 @@ void * dynamic_graph_reader(void * info) {
 	// usleep(100000); /* We do not need to sleep to wait. We have a while loop to do so. */
 	logstream(LOG_DEBUG) << "Streaming begins from file: " << stream_file << std::endl;
 
+	/* Open the MODEL_FILE to write our sketches. */
+	FILE *fp = fopen(SKETCH_FILE, "w");
+	if (fp == NULL) {
+		logstream(LOG_ERROR) << "Cannot open the sketch file to write: " << SKETCH_FILE << std::endl;
+		return NULL;
+	}
+
 	graphchi_context & ginfo = dyngraph_engine->get_context();
 	while(ginfo.iteration < 4) {
 		; /* A busy loop to wait until the base graph histogram is constructed. */
@@ -149,11 +156,17 @@ void * dynamic_graph_reader(void * info) {
 		if (cnt == INTERVAL) {
 			/* Once we reach the interval, we record the hash histogram */
 			cnt = 0;
-			//TODO: HASH HISTOGRAM RECORD CODE GOES HERE.
+			hist->get_lock();
+			hist->record_sketch(fp);
+			hist->release_lock();
 		}
 	}
 
 	fclose(f);
+	if (ferror(fp) != 0 || fclose(fp) != 0) {
+		logstream(LOG_ERROR) << "Unable to close the sketch file: " << SKETCH_FILE << std::endl;
+		return NULL;
+	}
 	/* After the file is closed, the engine will stop 4 iterations after the current iteration in which the addition is finished. */
 	// dyngraph_engine->finish_after_iters(1000);
 

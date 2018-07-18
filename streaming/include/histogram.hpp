@@ -37,6 +37,7 @@ public:
 	void get_lock();
 	void release_lock();
 	// void remove_label(unsigned long label);
+	void record_sketch(FILE* fp);
 	void print_histogram();
 
 private:
