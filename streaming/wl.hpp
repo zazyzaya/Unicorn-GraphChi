@@ -24,6 +24,7 @@
 #include "logger/logger.hpp"
 #include "include/def.hpp"
 #include "include/helper.hpp"
+#include "include/histogram.hpp"
 
 namespace graphchi {
 
@@ -34,9 +35,6 @@ namespace graphchi {
 	struct WeisfeilerLehman : public GraphChiProgram<VertexDataType, EdgeDataType> {
 		/* Get the singleton of histogram map. */
 		Histogram* hist = Histogram::get_instance();
-
-		/* Locks needed for updating histogram map. */
-		std::mutex histogram_map_lock;
 
 		/**
 		 *  Vertex update function.
@@ -76,9 +74,9 @@ namespace graphchi {
 				vertex.set_data(nl);
 
 				/* Populate histogram map. */
-				histogram_map_lock.lock();
+				hist->get_lock();
 				hist->insert_label(nl.lb[0]);
-				histogram_map_lock.unlock();
+				hist->release_lock();
 
 				/* Always schedule itself for the next iteration. */
 				if (gcontext.scheduler != NULL) {
@@ -128,9 +126,9 @@ namespace graphchi {
 						logstream(LOG_DEBUG) << "The label string of the base vertex (with no neighbors) #" << vertex.id() << " is: " << last_itr_label << std::endl;
 #endif
 						/* Populate histogram map. */
-						histogram_map_lock.lock();
+						hist->get_lock();
 						hist->insert_label(last_itr_label);
-						histogram_map_lock.unlock();
+						hist->release_lock();
 						/* Update the vertex's label vector. */
 						nl.lb[gcontext.iteration] = last_itr_label;
 						nl.tm[gcontext.iteration] = 0; /* All timestamps of the leaf vertex is set to be 0. */
@@ -180,9 +178,9 @@ namespace graphchi {
 					/* Relabel by hashing. */
 					unsigned long new_label = hash((unsigned char *)new_label_str.c_str());
 					/* Populate histogram map. */
-					histogram_map_lock.lock();
+					hist->get_lock();
 					hist->insert_label(new_label);
-					histogram_map_lock.unlock();
+					hist->release_lock();
 					/* Update the vertex's label*/
 					struct node_label nl = vertex.get_data();
 					nl.lb[gcontext.iteration] = new_label;
@@ -245,13 +243,13 @@ namespace graphchi {
 						/* Update node label. */
 						vertex.set_data(nl);
 						/* Populate histogram map of all its labels. */
-						histogram_map_lock.lock();
+						hist->get_lock();
 						//TODO: this is hard-coded for 3-hop case.
-						hist->insert_label(nl.lb[0]);
-						hist->insert_label(nl.lb[1]);
-						hist->insert_label(nl.lb[2]);
-						hist->insert_label(nl.lb[3]);
-						histogram_map_lock.unlock();
+						hist->update(nl.lb[0]);
+						hist->update(nl.lb[1]);
+						hist->update(nl.lb[2]);
+						hist->update(nl.lb[3]);
+						hist->release_lock();
 						/* Populate the labels to all of its out-going edges. */
 						for (int i = 0; i < vertex.num_outedges(); i++) {
 							graphchi_edge<EdgeDataType> * out_edge = vertex.outedge(i);
@@ -296,9 +294,9 @@ namespace graphchi {
 						}
 
 						/* Populate histogram map. */
-						histogram_map_lock.lock();
-						hist->insert_label(nl.lb[0]);
-						histogram_map_lock.unlock();
+						hist->get_lock();
+						hist->update(nl.lb[0]);
+						hist->release_lock();
 
 						/* We schedule this node for the next iteration. */
 						if (gcontext.scheduler != NULL) {
@@ -418,10 +416,10 @@ namespace graphchi {
 						/* Relabel by hashing. */
 						unsigned long new_label = hash((unsigned char *)new_label_str.c_str());
 						/* Populate histogram map. */
-						histogram_map_lock.lock();
-						hist->insert_label(new_label);
+						hist->get_lock();
+						hist->update(new_label);
 						// hist->remove_label(nl.lb[min_itr]);
-						histogram_map_lock.unlock();
+						hist->release_lock();
 						/* Update the vertex's label*/
 						nl.lb[min_itr] = new_label;
 						vertex.set_data(nl);

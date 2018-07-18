@@ -13,10 +13,22 @@
 #ifndef def_hpp
 #define def_hpp
 
-#include <random>
+#define _USE_MATH_DEFINES
 
+#include <random>
+#include <cmath>
 /* This is the size of the sketch. */
 #define SKETCH_SIZE 100
+
+/* The value of "cnt" element in the histogram will decay every DECAY updates. */
+#define DECAY 10
+
+/* The rate of the decay. */
+#define LAMBDA 0.02
+
+/* Determines how many new edges we see before we record the hashed streaming histogram. */
+#define INTERVAL 100
+
 
 /* In a truly streaming setting, GraphChi does not allow dynamic vertex/edge type.
  * We therefore must fixed the neighborhood we are exploring.

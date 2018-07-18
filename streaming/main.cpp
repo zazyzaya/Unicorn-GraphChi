@@ -41,8 +41,10 @@ void * dynamic_graph_reader(void * info) {
 	/* Get the singleton of histogram map. */
 	Histogram* hist = Histogram::get_instance();
 
-	//TODO: SKETCH CREATION CODE RUNS HERE.
-
+	/* We create and initailize the sketch of the histogram. */
+	hist->get_lock();
+	hist->create_sketch();
+	hist->release_lock();
 
 	/* Open the file for streaming. */
 	FILE * f = fopen(stream_file.c_str(), "r");
@@ -56,8 +58,6 @@ void * dynamic_graph_reader(void * info) {
 	vid_t to;
 	EdgeDataType el;
 	char s[1024];
-	//TODO: we can easily make interval a variable, but now we simply hard-code a value.
-	int interval = 100; /* "interval" determines how many new edges we see before we record the hashed streaming histogram. */
 	int cnt = 0;
 
 	while(fgets(s, 1024, f) != NULL) {
@@ -146,8 +146,8 @@ void * dynamic_graph_reader(void * info) {
 #ifdef DEBUG
 		logstream(LOG_DEBUG) << "Schedule a new edge with possibly new nodes: " << from << " -> " << to << std::endl;
 #endif
-		if (cnt == interval) {
-			/* Once we reach the interval to record the hash histogram */
+		if (cnt == INTERVAL) {
+			/* Once we reach the interval, we record the hash histogram */
 			cnt = 0;
 			//TODO: HASH HISTOGRAM RECORD CODE GOES HERE.
 		}

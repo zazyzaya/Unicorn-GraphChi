@@ -16,6 +16,8 @@
 #include <iostream>
 #include <map>
 #include <vector>
+#include <thread>
+#include <mutex>
 #include "logger/logger.hpp"
 #include "def.hpp"
 
@@ -30,6 +32,10 @@ public:
 	static Histogram* get_instance();
 	~Histogram();
 	void insert_label(unsigned long label);
+	void update(unsigned long label);
+	void create_sketch();
+	void get_lock();
+	void release_lock();
 	// void remove_label(unsigned long label);
 	void print_histogram();
 
@@ -38,11 +44,18 @@ private:
 
 	Histogram(int size = 0) {
 		this->size = size;
+		this->t = 0;
 	}
 
 	std::map<unsigned long, struct hist_elem> histogram_map;
+	unsigned long sketch[SKETCH_SIZE];
+	double hash[SKETCH_SIZE];
 
 	int size; /* Number of elements in the histogram_map. */
+	int t; /* If t reaches decay, we decay the cnt and hash value by e^(-lambda).*/
+
+	/* The lock needed for updating histogram map. */
+	std::mutex histogram_map_lock;
 
 };
 #include "histogram.cpp"
