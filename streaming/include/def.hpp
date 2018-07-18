@@ -13,6 +13,11 @@
 #ifndef def_hpp
 #define def_hpp
 
+#include <random>
+
+/* This is the size of the sketch. */
+#define SKETCH_SIZE 100
+
 /* In a truly streaming setting, GraphChi does not allow dynamic vertex/edge type.
  * We therefore must fixed the neighborhood we are exploring.
  * Currently we implement 3-hop neighborhood.
@@ -53,5 +58,22 @@ struct node_label {
 };
 
 typedef node_label VertexDataType;
+
+/* Each histogram element is now associated with the following information. 
+ * 1. cnt: the count of that element in the streaming graph.
+ * 2. r, beta, c: parameters to create hash values. r ~ Gamma(2, 1), c ~ Gamma(2, 1), beta ~ Uniform(0, 1)
+ */
+struct hist_elem {
+	int cnt;
+	double r[SKETCH_SIZE];
+	double beta[SKETCH_SIZE];
+	double c[SKETCH_SIZE]; 
+};
+
+std::default_random_engine r_generator;
+std::default_random_engine c_generator;
+std::default_random_engine beta_generator;
+std::gamma_distribution<double> gamma_dist(2.0, 1.0);
+std::uniform_real_distribution<double> uniform_dist(0.0, 1.0);
 
 #endif

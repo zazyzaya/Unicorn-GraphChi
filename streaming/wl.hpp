@@ -420,7 +420,7 @@ namespace graphchi {
 						/* Populate histogram map. */
 						histogram_map_lock.lock();
 						hist->insert_label(new_label);
-						hist->remove_label(nl.lb[min_itr]);
+						// hist->remove_label(nl.lb[min_itr]);
 						histogram_map_lock.unlock();
 						/* Update the vertex's label*/
 						nl.lb[min_itr] = new_label;

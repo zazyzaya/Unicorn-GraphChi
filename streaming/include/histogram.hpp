@@ -17,6 +17,7 @@
 #include <map>
 #include <vector>
 #include "logger/logger.hpp"
+#include "def.hpp"
 
 /* We use singleton design to create a single instance of a histogram.
  * This is not thread-safe. A proper locking mechanism is needed.
@@ -29,7 +30,7 @@ public:
 	static Histogram* get_instance();
 	~Histogram();
 	void insert_label(unsigned long label);
-	void remove_label(unsigned long label);
+	// void remove_label(unsigned long label);
 	void print_histogram();
 
 private:
@@ -39,7 +40,7 @@ private:
 		this->size = size;
 	}
 
-	std::map<unsigned long, int> histogram_map;
+	std::map<unsigned long, struct hist_elem> histogram_map;
 
 	int size; /* Number of elements in the histogram_map. */
 
