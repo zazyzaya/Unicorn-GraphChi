@@ -34,7 +34,7 @@ void * dynamic_graph_reader(void * info) {
 	logstream(LOG_DEBUG) << "Streaming begins from file: " << stream_file << std::endl;
 
 	/* Open the MODEL_FILE to write our sketches. */
-	FILE *fp = fopen(SKETCH_FILE, "w");
+	FILE *fp = fopen(SKETCH_FILE, "a");
 	if (fp == NULL) {
 		logstream(LOG_ERROR) << "Cannot open the sketch file to write: " << SKETCH_FILE << std::endl;
 		return NULL;
@@ -42,6 +42,7 @@ void * dynamic_graph_reader(void * info) {
 
 	graphchi_context & ginfo = dyngraph_engine->get_context();
 	while(ginfo.iteration < 4) {
+		logstream(LOG_DEBUG) << "Waiting to proceed... Current iteration: " << ginfo.iteration << std::endl;
 		; /* A busy loop to wait until the base graph histogram is constructed. */
 	}
 	/* Once breaking out of the loop, we know the base graph histogram is ready. */
@@ -51,6 +52,8 @@ void * dynamic_graph_reader(void * info) {
 	/* We create and initailize the sketch of the histogram. */
 	hist->get_lock();
 	hist->create_sketch();
+	logstream(LOG_DEBUG) << "Recording the base graph sketch... " << std::endl;
+	hist->record_sketch(fp);
 	hist->release_lock();
 
 	/* Open the file for streaming. */
@@ -219,6 +222,7 @@ int main(int argc, const char ** argv) {
 	Histogram* hist = Histogram::get_instance();
 
 	hist->get_lock();
+	logstream(LOG_DEBUG) << "Recording the final complete graph sketch... " << std::endl;
 	hist->record_sketch(fp);
 	hist->release_lock();
 
@@ -226,7 +230,7 @@ int main(int argc, const char ** argv) {
 		logstream(LOG_ERROR) << "Unable to close the sketch file: " << SKETCH_FILE << std::endl;
 		return -1;
 	}
-	
+
 	// metrics_report(m);
 	return 0;
 }

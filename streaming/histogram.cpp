@@ -115,13 +115,14 @@ void Histogram::update(unsigned long label) {
  */
 void Histogram::create_sketch() {
 	for (int i = 0; i < SKETCH_SIZE; i++) {
-		double a_i = -1;
-		unsigned long s_i = 0;
 		/* Compute the hash value a. */
-		std::map<unsigned long, struct hist_elem>::iterator it;
+		std::map<unsigned long, struct hist_elem>::iterator it = this->histogram_map.begin();
+		double y = pow(M_E, log((it->second).cnt) - (it->second).r[i] * (it->second).beta[i]);
+		double a_i = (it->second).c[i] / (y * pow(M_E, (it->second).r[i]));
+		unsigned long s_i = it->first;
 		for (it = this->histogram_map.begin(); it != this->histogram_map.end(); it++) {
-			double y = pow(M_E, log((it->second).cnt) - (it->second).r[i] * (it->second).beta[i]);
-			double a = (it->second).c[i] / (y * pow(M_E, (it->second).r[i]));
+			y = pow(M_E, log((it->second).cnt) - (it->second).r[i] * (it->second).beta[i]);
+			double a = (it->second).c[i] / (y * pow(M_E, (it->second).r[i])); 
 			if (a < a_i) {
 				a_i = a;
 				s_i = it->first;
