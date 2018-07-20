@@ -42,7 +42,7 @@ void * dynamic_graph_reader(void * info) {
 
 	graphchi_context & ginfo = dyngraph_engine->get_context();
 	/* A busy loop to wait until the base graph histogram is constructed. */
-	while(ginfo.iteration < 4) {
+	while(ginfo.iteration < K_HOPS + 1) {
 		// logstream(LOG_DEBUG) << "Waiting to proceed... Current iteration: " << ginfo.iteration << std::endl;
 		sleep(0);
 	}
@@ -171,7 +171,7 @@ void * dynamic_graph_reader(void * info) {
 		logstream(LOG_ERROR) << "Unable to close the sketch file: " << SKETCH_FILE << std::endl;
 		return NULL;
 	}
-	/* After the file is closed, the engine will stop 4 iterations after the current iteration in which the addition is finished. */
+	/* After the file is closed, the engine will stop 1000 iterations after the current iteration in which the addition is finished. */
 	// dyngraph_engine->finish_after_iters(1000);
 
 	return NULL;
@@ -194,7 +194,7 @@ int main(int argc, const char ** argv) {
 
 	/* Parameters from command line. */
 	std::string filename = get_option_string("file");
-	int niters = get_option_int("niters", 20);
+	int niters = get_option_int("niters", 1000);
 	bool scheduler = true;
 	stream_file = get_option_string("stream_file");
 

@@ -32,6 +32,8 @@
 /* File name that saves histogram sketches. */
 #define SKETCH_FILE "sketch.txt"
 
+/* The WL algorithm will explore K_HOPS-hop neighbors. */
+#define K_HOPS 3
 
 /* In a truly streaming setting, GraphChi does not allow dynamic vertex/edge type.
  * We therefore must fixed the neighborhood we are exploring.
@@ -51,11 +53,11 @@
  * 		- "new_dst": whether the destination node is a new node, never-before-seen.
  */
 struct edge_label {
-	//TODO: We hard-coded the value 4 because dymanic edge type is not allowed in the streaming setting.
-	unsigned long src[4];
+	/* We use K_HOPS+1 because the first element is itself and the next K_HOPS are exploration of K_HOPS-hop neighbors. */
+	unsigned long src[K_HOPS+1];
 	unsigned long dst;
 	unsigned long edg;
-	int tme[4];
+	int tme[K_HOPS+1];
 	int itr;
 	bool new_src;
 	bool new_dst;
@@ -67,8 +69,8 @@ typedef edge_label EdgeDataType;
  * "is_leaf": whether the node is a leaf node. (no incoming edges)
  */
 struct node_label {
-	unsigned long lb[4];
-	int tm[4];
+	unsigned long lb[K_HOPS+1];
+	int tm[K_HOPS+1];
 	bool is_leaf;
 };
 

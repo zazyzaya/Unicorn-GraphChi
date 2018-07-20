@@ -85,7 +85,7 @@ namespace graphchi {
 #ifdef DEBUG
 				logstream(LOG_DEBUG) << "The original label of vertex #" << vertex.id() << " is: " << nl.lb[0] << std::endl;
 #endif
-			} else if (gcontext.iteration < 4){	//TODO: 4 is hard-coded because we know after 3 iterations, we will be done with the base graph.
+			} else if (gcontext.iteration < K_HOPS + 1){	/* we know after K_HOPS iterations, we will be done with the base graph. */
 				/* After the first iteration, all nodes in the base graph are initialized. 
 				 * All edges in the base graph should have "itr" value 1.
 				 *
@@ -234,36 +234,32 @@ namespace graphchi {
 						struct edge_label el = out_edge->get_data();
 						struct node_label nl;
 						nl.lb[0] = el.src[0];
+						nl.tm[0] = 0;
 						/* Since the node has no incoming edges, all of its labels are the same as the initial label. 
 						 * All of its timestamps are set to 0. */
-						//TODO: this is hard-coded for 3-hop case.
-						nl.lb[1] = nl.lb[2] = nl.lb[3] = nl.lb[0];
-						nl.tm[0] = nl.tm[1] = nl.tm[2] = nl.tm[3] = 0;
+						for (int i = 1; i < K_HOPS + 1; i++) {
+							nl.lb[i] = nl.lb[0];
+							nl.tm[i] = 0;
+						}
 						nl.is_leaf = true;
 						/* Update node label. */
 						vertex.set_data(nl);
 						/* Populate histogram map of all its labels. */
 						hist->get_lock();
-						//TODO: this is hard-coded for 3-hop case.
-						hist->update(nl.lb[0]);
-						hist->update(nl.lb[1]);
-						hist->update(nl.lb[2]);
-						hist->update(nl.lb[3]);
+						for (int i = 0; i < K_HOPS + 1; i++) {
+							hist->update(nl.lb[i]);	
+						}
 						hist->release_lock();
 						/* Populate the labels to all of its out-going edges. */
 						for (int i = 0; i < vertex.num_outedges(); i++) {
 							graphchi_edge<EdgeDataType> * out_edge = vertex.outedge(i);
 							struct edge_label el = out_edge->get_data();
-							//TODO: this is hard-coded for 3-hop case.
-							el.src[1] = nl.lb[1];
-							el.src[2] = nl.lb[2];
-							el.src[3] = nl.lb[3];
+							for (int j = 1; j < K_HOPS + 1; j++) {
+								el.src[j] = nl.lb[j];
+								/* Update the timestamps. */
+								el.tme[j] = el.tme[j - 1];
+							}
 							el.new_src = false; /* Make sure every edge is marked as seen. */
-							/* Update the timestamps. */
-							//TODO: this is hard-coded for 3-hop case.
-							el.tme[1] = el.tme[0];
-							el.tme[2] = el.tme[1];
-							el.tme[3] = el.tme[2];
 							out_edge->set_data(el);
 						}						
 						/* We do not automatically schedule this node. */
@@ -319,13 +315,10 @@ namespace graphchi {
 						for (int i = 0; i < vertex.num_outedges(); i++) {
 							graphchi_edge<EdgeDataType> * out_edge = vertex.outedge(i);
 							struct edge_label el = out_edge->get_data();
-							//TODO: this is hard-coded for 3-hop case.
-							el.src[1] = nl.lb[1];
-							el.src[2] = nl.lb[2];
-							el.src[3] = nl.lb[3];
-							el.tme[1] = el.tme[0];
-							el.tme[2] = el.tme[1];
-							el.tme[3] = el.tme[2];
+							for (int j = 1; j < K_HOPS + 1; j++) {
+								el.src[j] = nl.lb[j];
+								el.tme[j] = el.tme[j - 1];
+							}
 							out_edge->set_data(el);
 						}
 #ifdef DEBUG
@@ -344,18 +337,15 @@ namespace graphchi {
 						for (int i = 0; i < vertex.num_outedges(); i++) {
 							graphchi_edge<EdgeDataType> * out_edge = vertex.outedge(i);
 							struct edge_label el = out_edge->get_data();
-							//TODO: this is hard-coded for 3-hop case.
-							el.src[1] = nl.lb[1];
-							el.src[2] = nl.lb[2];
-							el.src[3] = nl.lb[3];
-							el.tme[1] = nl.tm[1];
-							el.tme[2] = nl.tm[2];
-							el.tme[3] = nl.tm[3];
+							for (int j = 1; j < K_HOPS + 1; j++) {
+								el.src[j] = nl.lb[j];
+								el.tme[j] = nl.tm[j];
+							}
 							out_edge->set_data(el);
 						}
 						/* Change all incoming edges whose itr count is 0 to 1. 
 						 * At the same time, find the minimum itr among all of its inedges.*/
-						int min_itr = 5; //TODO: this is hard-coded since no itr value in our 3-hop case can be larger than 5.
+						int min_itr = K_HOPS + 2; /* no itr value in our K_HOPS-hop case can be larger than K_HOPS + 2. */
 						for (int i = 0; i < vertex.num_inedges(); i++) {
 							graphchi_edge<EdgeDataType> * in_edge = vertex.inedge(i);
 							struct edge_label el = in_edge->get_data();
@@ -367,14 +357,14 @@ namespace graphchi {
 							}
 							in_edge->set_data(el);
 						}
-						/* We do a check here since the minimum iteration value should be at least 1, but less than 5. */
-						assert(min_itr > 0 && min_itr < 5);
+						/* We do a check here since the minimum iteration value should be at least 1, but less than K_HOPS + 2. */
+						assert(min_itr > 0 && min_itr < K_HOPS + 2);
 #ifdef DEBUG
 						logstream(LOG_DEBUG) << "The min_itr of the vertex #" << vertex.id() << " is: " << min_itr << std::endl;
 #endif
-						if (min_itr == 4) {
+						if (min_itr == K_HOPS + 1) {
 							/* This node should not be scheduled again and do not run the rest of the logic. 
-							 * This could be the node from the base graph that is automatically scheduled after the 4th iteration. 
+							 * This could be the node from the base graph that is automatically scheduled after the (K_HOPS + 1)th iteration. 
 							 * Or it could be the source node of a new edge added.
 							 */
 							return;
@@ -387,8 +377,8 @@ namespace graphchi {
 							graphchi_edge<EdgeDataType> * in_edge = vertex.inedge(i);
 							struct edge_label el = in_edge->get_data();
 							neighborhood.push_back(el);
-							if (el.itr < 4) {
-								el.itr++; /* We increment edges whose itr value is less than 4. */
+							if (el.itr < K_HOPS + 1) {
+								el.itr++; /* We increment edges whose itr value is less than K_HOPS + 1. */
 							}
 							in_edge->set_data(el);
 						}
@@ -451,7 +441,7 @@ namespace graphchi {
 							}
 							out_edge->set_data(el);
 
-							if (min_itr < 3) {
+							if (min_itr < K_HOPS) {
 								/* Schedule the outgoing neighbor because it needs to update its label too. */
 								if (gcontext.scheduler != NULL) {
 									gcontext.scheduler->add_task(out_edge->vertex_id());
@@ -459,7 +449,7 @@ namespace graphchi {
 							}
 						}
 						/* Now we decide if we want to schedule the node itself. */
-						if (min_itr < 4) {
+						if (min_itr < K_HOPS + 1) {
 							/* Schedule itself because we haven't explore all hops yet. */
 							if (gcontext.scheduler != NULL) {
 								gcontext.scheduler->add_task(vertex.id());
