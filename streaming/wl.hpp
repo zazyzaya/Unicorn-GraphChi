@@ -328,6 +328,9 @@ namespace graphchi {
 							el.tme[3] = el.tme[2];
 							out_edge->set_data(el);
 						}
+#ifdef DEBUG
+						logstream(LOG_DEBUG) << "Streaming edge refreshes an existing leaf node #" << vertex.id() << std::endl;
+#endif
 					} else {
 						/* Now we deal with nodes with incoming edges. */
 						struct node_label nl = vertex.get_data();
@@ -366,6 +369,9 @@ namespace graphchi {
 						}
 						/* We do a check here since the minimum iteration value should be at least 1, but less than 5. */
 						assert(min_itr > 0 && min_itr < 5);
+#ifdef DEBUG
+						logstream(LOG_DEBUG) << "The min_itr of the vertex #" << vertex.id() << " is: " << min_itr << std::endl;
+#endif
 						if (min_itr == 4) {
 							/* This node should not be scheduled again and do not run the rest of the logic. 
 							 * This could be the node from the base graph that is automatically scheduled after the 4th iteration. 
@@ -433,8 +439,16 @@ namespace graphchi {
 							el.src[min_itr] = new_label;
 							/* Time stamp is the smallest one among all of its in-coming neighbors. */
 							el.tme[min_itr] = neighborhood[0].tme[min_itr - 1];
-							/* Update their itr value. */
-							el.itr = min_itr + 1;
+							/* Update their itr value. 
+							 * Because of the schedule will always schedule smaller ID between two nodes of an edge,
+							 * we make sure the downstream node's itr doesn't get updated twice between it runs.
+							 * This trick is used because of the asynchronous nature of GraphChi.
+							 */
+							if (vertex.id() < out_edge->vertex_id()) {
+								el.itr = min_itr;
+							} else {
+								el.itr = min_itr + 1;
+							}
 							out_edge->set_data(el);
 
 							if (min_itr < 3) {
