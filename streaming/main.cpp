@@ -43,7 +43,8 @@ void * dynamic_graph_reader(void * info) {
 	graphchi_context & ginfo = dyngraph_engine->get_context();
 	/* A busy loop to wait until the base graph histogram is constructed. */
 	while(ginfo.iteration < 4) {
-		logstream(LOG_DEBUG) << "Waiting to proceed... Current iteration: " << ginfo.iteration << std::endl;
+		// logstream(LOG_DEBUG) << "Waiting to proceed... Current iteration: " << ginfo.iteration << std::endl;
+		sleep(0);
 	}
 	/* Once breaking out of the loop, we know the base graph histogram is ready. */
 	/* Get the singleton of histogram map. */
