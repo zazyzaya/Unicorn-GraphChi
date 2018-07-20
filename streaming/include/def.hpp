@@ -77,11 +77,11 @@ struct node_label {
 typedef node_label VertexDataType;
 
 /* Each histogram element is now associated with the following information. 
- * 1. cnt: the count of that element in the streaming graph.
+ * 1. cnt: the count of that element in the streaming graph. (use double due to time decay)
  * 2. r, beta, c: parameters to create hash values. r ~ Gamma(2, 1), c ~ Gamma(2, 1), beta ~ Uniform(0, 1)
  */
 struct hist_elem {
-	int cnt;
+	double cnt;
 	double r[SKETCH_SIZE];
 	double beta[SKETCH_SIZE];
 	double c[SKETCH_SIZE]; 
