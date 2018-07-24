@@ -17,6 +17,7 @@
 
 #include <random>
 #include <cmath>
+#include <pthread.h> 
 /* This is the size of the sketch. */
 #define SKETCH_SIZE 100
 
@@ -92,5 +93,7 @@ std::default_random_engine c_generator;
 std::default_random_engine beta_generator;
 std::gamma_distribution<double> gamma_dist(2.0, 1.0);
 std::uniform_real_distribution<double> uniform_dist(0.0, 1.0);
+
+extern pthread_barrier_t graph_barrier;
 
 #endif
