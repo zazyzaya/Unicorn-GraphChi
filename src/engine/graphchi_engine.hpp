@@ -806,8 +806,8 @@ namespace graphchi {
                     if (scheduler != NULL) {
                         if (!scheduler->has_new_tasks) {
                             logstream(LOG_INFO) << "No new tasks to run!" << std::endl;
-                            pthread_barrier_wait(&graph_barrier);
-                            if (stop) {
+                            pthread_barrier_wait(&std::graph_barrier);
+                            if (std::stop) {
                                 break;
                             }
                         }
