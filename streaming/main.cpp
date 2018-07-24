@@ -29,7 +29,7 @@ using namespace graphchi;
 graphchi_dynamicgraph_engine<VertexDataType, EdgeDataType> * dyngraph_engine;
 std::string stream_file;
 pthread_barrier_t std::graph_barrier;
-
+int std::stop = 0;
 /*!
  * @brief A separate thread execute this function to stream graph from a file.
  */
@@ -75,7 +75,6 @@ void * dynamic_graph_reader(void * info) {
 	EdgeDataType el;
 	char s[1024];
 	int cnt = 0;
-	int std::stop = 0;
 
 	while(fgets(s, 1024, f) != NULL) {
 		FIXLINE(s);
@@ -166,14 +165,14 @@ void * dynamic_graph_reader(void * info) {
 		if (cnt == INTERVAL) {
 			/* Once we reach the interval, we record the hash histogram */
 			cnt = 0;
-			pthread_barrier_wait(&graph_barrier);
+			pthread_barrier_wait(&std::graph_barrier);
 			hist->get_lock();
 			hist->record_sketch(fp);
 			hist->release_lock();
 		}
 	}
 	std::stop = 1;
-	pthread_barrier_wait(&graph_barrier);
+	pthread_barrier_wait(&std::graph_barrier);
 	fclose(f);
 	if (ferror(fp) != 0 || fclose(fp) != 0) {
 		logstream(LOG_ERROR) << "Unable to close the sketch file: " << SKETCH_FILE << std::endl;
@@ -213,7 +212,7 @@ int main(int argc, const char ** argv) {
 	dyngraph_engine = new graphchi_dynamicgraph_engine<VertexDataType, EdgeDataType>(filename, nshards, scheduler, m); 
 
 	/* Initialize barrier. */
-	pthread_barrier_init(&graph_barrier, NULL, 2);
+	pthread_barrier_init(&std::graph_barrier, NULL, 2);
 
 	/* Start streaming thread. */
 	pthread_t strthread;
