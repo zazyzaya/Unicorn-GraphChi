@@ -3,7 +3,7 @@
 
 #include <pthread.h>
 
-namespace graphchi {
+namespace std {
 	extern pthread_barrier_t graph_barrier;
     extern int stop;
 }
