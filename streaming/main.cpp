@@ -75,6 +75,7 @@ void * dynamic_graph_reader(void * info) {
 	EdgeDataType el;
 	char s[1024];
 	int cnt = 0;
+	int stop = 0;
 
 	while(fgets(s, 1024, f) != NULL) {
 		FIXLINE(s);
@@ -171,7 +172,8 @@ void * dynamic_graph_reader(void * info) {
 			hist->release_lock();
 		}
 	}
-
+	stop = 1;
+	pthread_barrier_wait(&graph_barrier);
 	fclose(f);
 	if (ferror(fp) != 0 || fclose(fp) != 0) {
 		logstream(LOG_ERROR) << "Unable to close the sketch file: " << SKETCH_FILE << std::endl;
@@ -210,13 +212,14 @@ int main(int argc, const char ** argv) {
 	/* Create the engine object. */
 	dyngraph_engine = new graphchi_dynamicgraph_engine<VertexDataType, EdgeDataType>(filename, nshards, scheduler, m); 
 
+	/* Initialize barrier. */
+	pthread_barrier_init(&graph_barrier, NULL, 2);
+
 	/* Start streaming thread. */
 	pthread_t strthread;
 	int ret = pthread_create(&strthread, NULL, dynamic_graph_reader, NULL);
 	assert(ret >= 0);
 
-	/* Initialize barrier. */
-	pthread_barrier_init(&graph_barrier, NULL, 2);
 
 	/* Run the engine */
 	WeisfeilerLehman program;

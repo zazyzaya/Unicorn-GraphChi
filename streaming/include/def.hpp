@@ -94,6 +94,4 @@ std::default_random_engine beta_generator;
 std::gamma_distribution<double> gamma_dist(2.0, 1.0);
 std::uniform_real_distribution<double> uniform_dist(0.0, 1.0);
 
-extern pthread_barrier_t graph_barrier;
-
 #endif

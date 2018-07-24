@@ -40,6 +40,7 @@
 #include <omp.h>
 #include <vector>
 #include <sys/time.h>
+#include <pthread.h>
 
 #include "api/chifilenames.hpp"
 #include "api/graph_objects.hpp"
@@ -58,7 +59,9 @@
 
 namespace graphchi {
     
-    
+    extern pthread_barrier_t graph_barrier;
+    extern int stop;
+
     template <typename VertexDataType, typename EdgeDataType,
     typename svertex_t = graphchi_vertex<VertexDataType, EdgeDataType> >
     
@@ -805,7 +808,10 @@ namespace graphchi {
                     if (scheduler != NULL) {
                         if (!scheduler->has_new_tasks) {
                             logstream(LOG_INFO) << "No new tasks to run!" << std::endl;
-                            break;
+                            pthread_barrier_wait(&graph_barrier);
+                            if (stop) {
+                                break;
+                            }
                         }
                         scheduler->has_new_tasks = false; // Kind of misleading since scheduler may still have tasks - but no new tasks.
                     }

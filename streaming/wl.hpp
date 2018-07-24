@@ -483,9 +483,6 @@ namespace graphchi {
 			logstream(LOG_DEBUG) << "Current Iteration: " << iteration << std::endl;
 			hist->print_histogram();
 #endif
-			if (iteration > K_HOPS) {
-				pthread_barrier_wait(&graph_barrier);
-			}
 		}
 		
 		/**
