@@ -13,14 +13,14 @@ def read_single_graph(file_name, graph_id):
 			edge = line.strip().split("\t")
 			if edge[5] == graph_id:
 				if edge[0] in node_id_seen:	# Check if source ID has been seen before.
-					edge.append("1")
-				else:
 					edge.append("0")
+				else:
+					edge.append("1")
 					node_id_seen.append(edge[0])
 				if edge[2] in node_id_seen:	# Check if destination ID has been seen before.
-					edge.append("1")
-				else:
 					edge.append("0")
+				else:
+					edge.append("1")
 					node_id_seen.append(edge[2])
 				edge.append(cnt)
 				cnt = cnt + 1

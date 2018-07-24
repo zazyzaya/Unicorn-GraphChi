@@ -19,6 +19,8 @@
 #include <cstdlib>
 #include <cassert>
 
+#include <pthread.h>
+
 #include "graphchi_basic_includes.hpp"
 #include "engine/dynamic_graphs/graphchi_dynamicgraph_engine.hpp"
 #include "logger/logger.hpp"
@@ -404,6 +406,9 @@ namespace graphchi {
 							std::stringstream node_out;
 							node_out << it->src[min_itr - 1];
 							node_str = node_out.str();
+							if (node_str == "0") {
+								logstream(LOG_DEBUG) << "%%%%%%%%%%%%%%%% Edge has itr: " << it->itr << std::endl;
+							}
 							new_label_str += " " + node_str;
 						}
 #ifdef DEBUG
@@ -435,9 +440,13 @@ namespace graphchi {
 							 * This trick is used because of the asynchronous nature of GraphChi.
 							 */
 							if (vertex.id() < out_edge->vertex_id()) {
-								el.itr = min_itr;
+								if (!(el.itr <= min_itr - 1)) {
+									el.itr = min_itr;
+								}
 							} else {
-								el.itr = min_itr + 1;
+								if (!(el.itr <= min_itr - 1)) {
+									el.itr = min_itr + 1;
+								}
 							}
 							out_edge->set_data(el);
 
@@ -474,6 +483,9 @@ namespace graphchi {
 			logstream(LOG_DEBUG) << "Current Iteration: " << iteration << std::endl;
 			hist->print_histogram();
 #endif
+			if (iteration > K_HOPS) {
+				pthread_barrier_wait(&graph_barrier);
+			}
 		}
 		
 		/**

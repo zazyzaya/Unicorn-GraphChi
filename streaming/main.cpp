@@ -20,10 +20,15 @@
 #include "logger/logger.hpp"
 #include "wl.hpp"
 
+#include <pthread.h> 
+#include <sys/types.h>
+
 using namespace graphchi;
 
 graphchi_dynamicgraph_engine<VertexDataType, EdgeDataType> * dyngraph_engine;
 std::string stream_file;
+
+pthread_barrier_t graph_barrier;
 
 /*!
  * @brief A separate thread execute this function to stream graph from a file.
@@ -160,6 +165,7 @@ void * dynamic_graph_reader(void * info) {
 		if (cnt == INTERVAL) {
 			/* Once we reach the interval, we record the hash histogram */
 			cnt = 0;
+			pthread_barrier_wait(&graph_barrier);
 			hist->get_lock();
 			hist->record_sketch(fp);
 			hist->release_lock();
@@ -204,10 +210,13 @@ int main(int argc, const char ** argv) {
 	/* Create the engine object. */
 	dyngraph_engine = new graphchi_dynamicgraph_engine<VertexDataType, EdgeDataType>(filename, nshards, scheduler, m); 
 
-	/* Start streaming thread */
+	/* Start streaming thread. */
 	pthread_t strthread;
 	int ret = pthread_create(&strthread, NULL, dynamic_graph_reader, NULL);
 	assert(ret >= 0);
+
+	/* Initialize barrier. */
+	pthread_barrier_init(&graph_barrier, NULL, 2);
 
 	/* Run the engine */
 	WeisfeilerLehman program;
