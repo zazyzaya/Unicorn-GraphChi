@@ -56,11 +56,9 @@
 #include "shards/slidingshard.hpp"
 #include "util/pthread_tools.hpp"
 #include "output/output.hpp"
+#include "../extern/extern.hpp"
 
 namespace graphchi {
-    
-    extern pthread_barrier_t graph_barrier;
-    extern int stop;
 
     template <typename VertexDataType, typename EdgeDataType,
     typename svertex_t = graphchi_vertex<VertexDataType, EdgeDataType> >

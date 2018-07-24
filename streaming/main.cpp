@@ -19,6 +19,7 @@
 #include "graphchi_basic_includes.hpp"
 #include "logger/logger.hpp"
 #include "wl.hpp"
+#include "../extern/extern.hpp"
 
 #include <pthread.h> 
 #include <sys/types.h>
