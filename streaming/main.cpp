@@ -28,7 +28,7 @@ using namespace graphchi;
 
 graphchi_dynamicgraph_engine<VertexDataType, EdgeDataType> * dyngraph_engine;
 std::string stream_file;
-
+pthread_barrier_t graph_barrier;
 
 /*!
  * @brief A separate thread execute this function to stream graph from a file.
@@ -213,7 +213,6 @@ int main(int argc, const char ** argv) {
 	dyngraph_engine = new graphchi_dynamicgraph_engine<VertexDataType, EdgeDataType>(filename, nshards, scheduler, m); 
 
 	/* Initialize barrier. */
-	pthread_barrier_t graph_barrier;
 	pthread_barrier_init(&graph_barrier, NULL, 2);
 
 	/* Start streaming thread. */
