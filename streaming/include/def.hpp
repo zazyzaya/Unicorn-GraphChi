@@ -28,7 +28,7 @@
 #define LAMBDA 0.02
 
 /* Determines how many new edges we see before we record the hashed streaming histogram. */
-#define INTERVAL 100
+#define INTERVAL 1000
 
 /* File name that saves histogram sketches. */
 #define SKETCH_FILE "sketch.txt"
