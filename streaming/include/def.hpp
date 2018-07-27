@@ -19,7 +19,7 @@
 #include <cmath>
 #include <pthread.h> 
 /* This is the size of the sketch. */
-#define SKETCH_SIZE 100
+#define SKETCH_SIZE 2000
 
 /* The value of "cnt" element in the histogram will decay every DECAY updates. */
 #define DECAY 10
