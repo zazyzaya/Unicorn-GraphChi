@@ -310,7 +310,7 @@ namespace graphchi {
 					if (vertex.num_inedges() == 0) {
 						/* We first deal with leaf nodes that are scheduled.
 						 * This leaf node must have been initialized before.
-						 * Note that leaf nodes cannot become non-leaf nodes. 
+						 * Note that non-leaf nodes cannot become leaf nodes. 
 						 * If an existing leaf node is scheduled, there must exist at least one out-edge of the node whose labels need to be populated. 
 						 * Therefore, we simply copy the leaf node info to all of its edges.
 						 */
@@ -369,8 +369,7 @@ namespace graphchi {
 #endif
 						if (min_itr == K_HOPS + 1) {
 							/* This node should not be scheduled again and do not run the rest of the logic. 
-							 * This could be the node from the base graph that is automatically scheduled after the (K_HOPS + 1)th iteration. 
-							 * Or it could be the source node of a new edge added.
+							 * This node could be, for example, the source node of a new edge added.
 							 */
 							return;
 						}
@@ -442,14 +441,14 @@ namespace graphchi {
 							 * we make sure the downstream node's itr doesn't get updated twice between it runs.
 							 * This trick is used because of the asynchronous nature of GraphChi.
 							 */
-							if (vertex.id() < out_edge->vertex_id()) {
-								if (!(el.itr <= min_itr - 1)) {
+							if (el.itr == K_HOPS) {
+								// We only need to update those nodes whose that would not be scheduled otherwise.
+								if (vertex.id() < out_edge->vertex_id()) {
 									el.itr = min_itr;
-								}
-							} else {
-								if (!(el.itr <= min_itr - 1)) {
+								} else {
 									el.itr = min_itr + 1;
 								}
+
 							}
 							out_edge->set_data(el);
 
