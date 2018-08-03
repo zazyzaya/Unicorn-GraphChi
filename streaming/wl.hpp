@@ -200,9 +200,12 @@ namespace graphchi {
 						out_edge->set_data(el);
 					}
 				}
-				/* Always schedule itself for the next iteration. */
+				/* Always schedule itself for the next iteration, until the base graph is constructed. */
 				if (gcontext.scheduler != NULL) {
-					gcontext.scheduler->add_task(vertex.id());
+					if (gcontext.iteration < K_HOPS) {
+						// Do not schedule for the next iteration during the K_HOPSth iteration because all nodes in the base graph should have been processed.
+						gcontext.scheduler->add_task(vertex.id());
+					}
 				}
 			} else { /* Now we are dealing with the case of streaming nodes/edges. */
 				/* We first check if the node is a new node or not so that we can do some initialization. */

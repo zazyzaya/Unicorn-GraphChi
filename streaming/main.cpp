@@ -28,13 +28,19 @@ using namespace graphchi;
 
 graphchi_dynamicgraph_engine<VertexDataType, EdgeDataType> * dyngraph_engine;
 std::string stream_file;
+/*
+ * @graph_barrier, @stream_barrier, and @stop are declared in extern.hpp as externs.
+ * They are defined here and will be used in graphchi_engine.hpp as well.
+ *
+ */
 pthread_barrier_t std::graph_barrier;
+pthread_barrier_t std::stream_barrier;
 int std::stop = 0;
 /*!
  * @brief A separate thread execute this function to stream graph from a file.
  */
 void * dynamic_graph_reader(void * info) {
-	logstream(LOG_DEBUG) << "Waiting to start streaming the graph..." << std::endl;
+	// logstream(LOG_DEBUG) << "Waiting to start streaming the graph..." << std::endl;
 	// usleep(100000); /* We do not need to sleep to wait. We have a while loop to do so. */
 	logstream(LOG_DEBUG) << "Streaming begins from file: " << stream_file << std::endl;
 
@@ -58,8 +64,6 @@ void * dynamic_graph_reader(void * info) {
 	/* We create and initailize the sketch of the histogram. */
 	hist->get_lock();
 	hist->create_sketch();
-	logstream(LOG_DEBUG) << "Recording the base graph sketch... " << std::endl;
-	hist->record_sketch(fp);
 	hist->release_lock();
 
 	/* Open the file for streaming. */
@@ -77,6 +81,15 @@ void * dynamic_graph_reader(void * info) {
 	int cnt = 0;
 
 	while(fgets(s, 1024, f) != NULL) {
+		/*
+		 * We add more edges and nodes for the graphChi algorithm to compute A CHUNK AT A TIME.
+		 * That is, we will wait until all previous added nodes and edges are done computing,
+		 * before we add new nodes and edges for computation.
+		 */
+		if (cnt == 0) {
+			// We wait until GraphChi finishes its computation, then we will start streaming in new edges.
+			pthread_barrier_wait(&std::stream_barrier);
+		}
 		FIXLINE(s);
 		/* Read next line. */
 		char delims[] = ":\t ";
@@ -163,12 +176,14 @@ void * dynamic_graph_reader(void * info) {
 		logstream(LOG_DEBUG) << "Schedule a new edge with possibly new nodes: " << from << " -> " << to << std::endl;
 #endif
 		if (cnt == INTERVAL) {
-			/* Once we reach the interval, we record the hash histogram */
+			/* We continue to add new edges until INTERVAL edges are added. Then we let GraphChi starts its computation. */
 			cnt = 0;
-			pthread_barrier_wait(&std::graph_barrier);
+			/* We first record the sketch from the updated graph. */
 			hist->get_lock();
+			logstream(LOG_DEBUG) << "Recording the base graph sketch... " << std::endl;
 			hist->record_sketch(fp);
 			hist->release_lock();
+			pthread_barrier_wait(&std::graph_barrier);
 		}
 	}
 	std::stop = 1;
@@ -212,6 +227,7 @@ int main(int argc, const char ** argv) {
 	dyngraph_engine = new graphchi_dynamicgraph_engine<VertexDataType, EdgeDataType>(filename, nshards, scheduler, m); 
 
 	/* Initialize barrier. */
+	pthread_barrier_init(&std::stream_barrier, NULL, 2);
 	pthread_barrier_init(&std::graph_barrier, NULL, 2);
 
 	/* Start streaming thread. */
@@ -243,6 +259,15 @@ int main(int argc, const char ** argv) {
 		return -1;
 	}
 
+	/* Release the barrier resources. */
+	int ret_stream = pthread_barrier_destroy(&std::stream_barrier);
+	int ret_graph = pthread_barrier_destroy(&std::graph_barrier);
+	if (ret_stream == EBUSY) {
+		logstream(LOG_ERROR) << "stream_barrier cannot be destroyed." << std::endl;
+	}
+	if (ret_graph == EBUSY) {
+		logstream(LOG_ERROR) << "graph_barrier cannot be destroyed." << std::endl;
+	}
 	// metrics_report(m);
 	return 0;
 }

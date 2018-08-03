@@ -805,11 +805,14 @@ namespace graphchi {
                 if (use_selective_scheduling) {
                     if (scheduler != NULL) {
                         if (!scheduler->has_new_tasks) {
-                            logstream(LOG_INFO) << "No new tasks to run!" << std::endl;
-                            pthread_barrier_wait(&std::graph_barrier);
+                            // GraphChi will know all nodes are processed from the streaming function.
+                            // So it will stop any further iterations.
                             if (std::stop) {
                                 break;
                             }
+                            pthread_barrier_wait(&std::stream_barrier);
+                            logstream(LOG_INFO) << "No new tasks to run!" << std::endl;
+                            pthread_barrier_wait(&std::graph_barrier);
                         }
                         scheduler->has_new_tasks = false; // Kind of misleading since scheduler may still have tasks - but no new tasks.
                     }

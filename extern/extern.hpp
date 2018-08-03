@@ -3,8 +3,20 @@
 
 #include <pthread.h>
 
+/* *
+ * @section DESCRIPTION
+ *
+ * We declare two variables that will be defined and used in different files.
+ * @graph_barrier is a POSIX thread barrier used to synchronize the main thread that runs the GraphChi algorithm
+ * and the streaming thread that streams in new edges.
+ * @stream_barrier is another thread barrier. Both @graph_barrier and @stream_barrier are used to perform chunk-based graph processing.
+ * @stop is used to signal whether all vertices (including the streamed ones) have been proceeded and the algorithm can stop.
+ *
+ */
+
 namespace std {
 	extern pthread_barrier_t graph_barrier;
+	extern pthread_barrier_t stream_barrier;
     extern int stop;
 }
 
