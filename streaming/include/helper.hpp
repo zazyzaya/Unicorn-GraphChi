@@ -94,7 +94,7 @@ namespace graphchi {
 		char *t;
 		int counter = 0;
 		std::string to_hash = "";
-		std::vector rtn;
+		std::vector<unsigned long> rtn;
 		bool first = true;
 
 		assert(chunk_size > 1);
