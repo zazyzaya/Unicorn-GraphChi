@@ -130,7 +130,7 @@ namespace graphchi {
 			}
 			t = strtok(NULL, delims);
 		}
-		if (strlen(to_hash) > 0) {
+		if (to_hash.length() > 0) {
 			rtn.push_back(hash(to_hash.c_str()));
 		}
 		return rtn;
