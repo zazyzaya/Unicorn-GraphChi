@@ -58,11 +58,12 @@ void Histogram::insert_label(unsigned long label) {
  * @brief Insert @label to the histogram_map if it does not exist; otherwise, update the mapped "cnt" value and the sketch.
  *
  * This function is used in the streaming graph for sketch updates.
- * We decay every element in the histogram every DECAY edges.
+ * We decay every element in the histogram every DECAY updates.
  *
  */
-void Histogram::update(unsigned long label) {
-	this->t++;
+void Histogram::update(unsigned long label, bool increment_t) {
+	if (increment_t) /* We use this variable to make sure, when we do CHUNKIFY, we only update once*/
+		this->t++;
 	/* Decay first if needed. */
 	if (this->t >= DECAY) {
 		std::map<unsigned long, struct hist_elem>::iterator it;

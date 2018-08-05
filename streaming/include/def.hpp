@@ -36,14 +36,20 @@
 /* The WL algorithm will explore K_HOPS-hop neighbors. */
 #define K_HOPS 3
 
+/* Determine if we want to chunk the string, and how big each chunk is. CHUNK_SIZE > 1 */
+#define CHUNKIFY true
+#define CHUNK_SIZE 5
+
 /* In a truly streaming setting, GraphChi does not allow dynamic vertex/edge type.
  * We therefore must fixed the neighborhood we are exploring.
- * Currently we implement 3-hop neighborhood.
- * Therefore, The array "src" holds 4 elemenst:
+ * Currently we implement K_HOPS neighborhood.
+ * Therefore, The array "src" holds K_HOPS + 1 elemenst:
  * 		- The label of the source node, which we can initialize from the file.
  * 		- The relabel of the first-hop neighborhood.
  *		- The relabel of the second-hop neighborhood.
  * 		- The relabel of the third-hop neighborhood.
+ *		- ...
+ *		- The relabel of the K_HOPS neighborhood.
  * The array "tme" is corresponding timestamps. The first element is the timestamep of the edge.
  * The following elements are the corresponding timestamps of the relabeled node at each hop.
  * "dst" is the label of the destination node.

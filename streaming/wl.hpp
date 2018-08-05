@@ -92,34 +92,53 @@ namespace graphchi {
 				 * All edges in the base graph should have "itr" value 1.
 				 *
 				 * Now we finish iterating the base graph before we handle new edges.
-				 * Note that while we are iterating the base graph, new edges and nodes may be added to the graph.
-				 * We must make sure that those edges and nodes are not counted.
+				 * Note that while we are iterating the base graph, new edges or nodes will not be added to the graph.
+				 * If CHUNKIFY is set, we will also segment the concatenated string.
+				 * That is, we may add multiple entries to the map for one string.
+				 *
 				 */
 				std::vector<struct edge_label> neighborhood; /* We reuse edge_label struct vector to store the neighborhood values. */
 				
 				for (int i = 0; i < vertex.num_inedges(); i++) {
 					graphchi_edge<EdgeDataType> * in_edge = vertex.inedge(i);
 					struct edge_label el = in_edge->get_data();
+#ifdef DEBUG
 					if (el.itr > 0) { /* We only include edges from the base graph. */
+#endif
 						neighborhood.push_back(el);
 						/* We will use those edges so increment the itr count by 1 and update the edge. */
 						el.itr++;
 						in_edge->set_data(el);
+#ifdef DEBUG
 					}
+					else {
+						/* 
+						 * This is a check. 
+						 * This "else" branch should never be taken because no new edges should be streamed at this point. 
+						 */
+						logstream(LOG_ERROR) << "ERROR: at least one incoming edge of the vertex #" << vertex.id() << " has iterator value 0." << std::endl;
+					}
+#endif
 				}
 				if (neighborhood.size() == 0) {
-					/* The vertex could be a new node that is not part of the base graph.
-					 * It could also be a node in the base graph that simply does not have any in-coming edges. 
-					 * We count only the the node in the base graph here. 
+					/* 
+					 * The vertex could also be a node in the base graph that simply does not have any in-coming edges.
 					 */
-					bool is_base = false;
+#ifdef DEBUG
+					/*
+					 * This is simply a check to make sure that every vertex in the graph at this point belongs to the base graph.
+					 * That is, @is_base should never be false. (No new edges/leaf nodes should be added to the base graph at this point.)
+					 */
+					bool is_base = true;
 					for (int i = 0; i < vertex.num_outedges(); i++) {
 						graphchi_edge<EdgeDataType> * out_edge = vertex.outedge(i);
 						struct edge_label el = out_edge->get_data();
-						if (el.itr > 0)
-							is_base = true; /* A base graph vertex has at least one of the out-edge with itr value greater than 0. */
+						if (el.itr == 0)
+							is_base = false;
 					}
+					assert(is_base);
 					if (is_base) {
+#endif
 						/* This vertex is part of the base graph. We will update this node. */
 						/* Simply use the last label of the vertex itself since it has no incoming neighbors. */
 						struct node_label nl = vertex.get_data();
@@ -137,7 +156,6 @@ namespace graphchi {
 						vertex.set_data(nl);
 
 						/* Now update all of its out-going edges.*/
-						/* Note that it is possible that some value of the new edges that do not belong to the base graphs are updated.*/
 						for (int i = 0; i < vertex.num_outedges(); i++) {
 							graphchi_edge<EdgeDataType> * out_edge = vertex.outedge(i);
 							struct edge_label el = out_edge->get_data();
@@ -146,10 +164,11 @@ namespace graphchi {
 							el.tme[gcontext.iteration] = el.tme[gcontext.iteration - 1]; 
 							out_edge->set_data(el);
 						}
+#ifdef DEBUG
 					}
-					/* We don't do anything (except always schedule it) if the node is not part of the base graph in this iteration. */
+#endif
 				} else { /* We will update this node since it is part of the base graph. */
-					/* We first sort the labels are sorted based on the timestamps of the in_edges. */
+					/* We first sort the labels based on the timestamps of the in_edges. */
 					/* Note that the neighborhood only contains edges of the base graph. */
 					std::sort(neighborhood.begin(), neighborhood.end(), EdgeSorter(gcontext.iteration - 1));
 					/* First construct the string of the vertex itself. */
@@ -179,9 +198,16 @@ namespace graphchi {
 #endif
 					/* Relabel by hashing. */
 					unsigned long new_label = hash((unsigned char *)new_label_str.c_str());
-					/* Populate histogram map. */
+					/* Populate histogram map, depending if we CHUNKIFY or not. */
 					hist->get_lock();
-					hist->insert_label(new_label);
+					if (!CHUNKIFY) {
+						hist->insert_label(new_label);
+					} else {
+						std::vector<unsigned long> to_insert = chunkify((unsigned char *)new_label_str.c_str(), CHUNK_SIZE);
+						for (std::vector<unsigned long>::iterator ti = to_insert.begin(); ti != to_insert.end(); ++ti) {
+							hist->insert_label(*ti);
+						}
+					}
 					hist->release_lock();
 					/* Update the vertex's label*/
 					struct node_label nl = vertex.get_data();
@@ -190,7 +216,6 @@ namespace graphchi {
 					vertex.set_data(nl);
 
 					/* Now update all of its out-going edges.*/
-					/* Note that it is possible that some value of the new edges that do not belong to the base graphs are updated.*/
 					for (int i = 0; i < vertex.num_outedges(); i++) {
 						graphchi_edge<EdgeDataType> * out_edge = vertex.outedge(i);
 						struct edge_label el = out_edge->get_data();
@@ -252,7 +277,7 @@ namespace graphchi {
 						/* Populate histogram map of all its labels. */
 						hist->get_lock();
 						for (int i = 0; i < K_HOPS + 1; i++) {
-							hist->update(nl.lb[i]);	
+							hist->update(nl.lb[i], true);	
 						}
 						hist->release_lock();
 						/* Populate the labels to all of its out-going edges. */
@@ -296,7 +321,7 @@ namespace graphchi {
 
 						/* Populate histogram map. */
 						hist->get_lock();
-						hist->update(nl.lb[0]);
+						hist->update(nl.lb[0], true);
 						hist->release_lock();
 
 						/* We schedule this node for the next iteration. */
@@ -408,9 +433,11 @@ namespace graphchi {
 							std::stringstream node_out;
 							node_out << it->src[min_itr - 1];
 							node_str = node_out.str();
+#ifdef DEBUG
 							if (node_str == "0") {
-								logstream(LOG_DEBUG) << "%%%%%%%%%%%%%%%% Edge has itr: " << it->itr << std::endl;
+								logstream(LOG_ERROR) << "Edge has itr: " << it->itr << std::endl;
 							}
+#endif
 							new_label_str += " " + node_str;
 						}
 #ifdef DEBUG
@@ -420,7 +447,16 @@ namespace graphchi {
 						unsigned long new_label = hash((unsigned char *)new_label_str.c_str());
 						/* Populate histogram map. */
 						hist->get_lock();
-						hist->update(new_label);
+						if (!CHUNKIFY) {
+							hist->update(new_label, true);
+						} else {
+							std::vector<unsigned long> to_insert = chunkify((unsigned char *)new_label_str.c_str(), CHUNK_SIZE);
+							bool first = true;
+							for (std::vector<unsigned long>::iterator ti = to_insert.begin(); ti != to_insert.end(); ++ti) {
+								hist->update(*ti, first); /* Only increment decay value once. */
+								first = false;
+							}
+						}
 						// hist->remove_label(nl.lb[min_itr]);
 						hist->release_lock();
 						/* Update the vertex's label*/

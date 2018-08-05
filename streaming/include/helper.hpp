@@ -18,6 +18,8 @@
 #include <cstdlib>
 #include <string>
 #include <unistd.h>
+#include <vector>
+
 
 #include "logger/logger.hpp"
 #include "def.hpp"
@@ -80,6 +82,59 @@ namespace graphchi {
 			logstream(LOG_FATAL) << "Extra info, if any, will be ignored." << std::endl;
 
 		return;
+	}
+
+	/*!
+	 * @brief Chunk a string into a vector of hashed sub-strings ready to be inserted into the map.
+	 *
+	 */
+	std::vector<unsigned long> chunkify(unsigned char *s, int chunk_size) {
+		char *ss = (char *) s;
+		char delims[] = " ";
+		char *t;
+		int counter = 0;
+		std::string to_hash = "";
+		std::vector rtn;
+		bool first = true;
+
+		assert(chunk_size > 1);
+
+		t = strtok(ss, delims);
+		if (t == NULL)
+			logstream(LOG_FATAL) << "The string to be chunked must be a non-empty string." << std::endl;
+		assert(t != NULL);
+
+		/* We explain the following logic using an example.
+		 * If we have a string: 12334 456 76634 4546 2345, and chunk_size is set to 2.
+		 * We produce the following substrings:
+		 * 1. 12334 456
+		 * 2.  76634 4546
+		 * 3.  2345
+		 * Note there is a space in the front of substring 2 and substring 3.
+		 * @chunk_size is the maximum size of the chunk. Note that substring 3 has only 1 string.
+		 * We hash each substring and push it into the vector to return.
+		 */
+		while (t != NULL) {
+			std::string str(t);
+			if (first) {
+				to_hash += str;
+				first = false;
+			} else {
+				to_hash += " " + str;
+			}
+			counter++;
+			if (counter == chunk_size) {
+				rtn.push(hash(to_hash.c_str()));
+				counter = 0;
+				to_hash = "";
+			}
+			t = strtok(NULL, delims);
+		}
+		if (strlen(to_hash) > 0) {
+			rtn.push(hash(to_hash.c_str()));
+		}
+		return rtn;
+
 	}
 
 	bool compareEdges(struct edge_label a, struct edge_label b, int pos) {
