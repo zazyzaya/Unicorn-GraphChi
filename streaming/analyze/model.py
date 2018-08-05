@@ -42,10 +42,10 @@ np.random.seed(SEED)
 # Parse arguments from the user who must provide the following information:
 # '--dir <directory_path>': the path to the directory that contains data files of all training graphs.
 parser = argparse.ArgumentParser()
-parser.add_argument('--dir', help='Path to the directory that contains all training graphs', required=True)
+parser.add_argument('--dir', help='Absolute path to the directory that contains all training graphs', required=True)
 args = vars(parser.parse_args())
 
-dir_name = args['dir']	# The directory path name from the user input.
+dir_name = args['dir']	# The directory absolute path name from the user input.
 files = os.listdir(dir_name)	# The file names within that directory.
 # Note that we will read every file within the directory @dir_name.
 # We do not do error checking here. Therefore, make sure every file in @dir_name is valid.
@@ -56,7 +56,7 @@ files = os.listdir(dir_name)	# The file names within that directory.
 models = []
 
 for input_file in files:
-	with open(input_file, 'r') as f:
+	with open(os.path.join(dir_name, input_file), 'r') as f:
 		sketches = []	# The sketch on row i is the ith stage of the changing graph.
 
 		# We read all the sketches in the file and save it in memory in @sketches
@@ -67,7 +67,7 @@ for input_file in files:
 		sketches = np.array(sketches)
 		# @dists now contains pairwise Hamming distance (using @pdist) between any two sketches in @sketches.
 		# @squareform function makes it a matrix for easy indexing and accessing.
-		dists = squareform(pdist(X, metric='hamming'))
+		dists = squareform(pdist(sketches, metric='hamming'))
 		# We define a @distance function to use in @_k_medoids_spawn_once.
 		def distance(x, y):
 			return dists[x][y]
@@ -89,19 +89,27 @@ for input_file in files:
 				_, medoids = _k_medoids_spawn_once(points=range(sketches.shape[0]), k=num_clusters, distance=distance, max_iterations=1000, verbose=False)
 				# Now we assign each sketch its cluster number based on the result of the previous computation.
 				cluster_labels = [-1] * sketches.shape[0]
+				real_cluster_num = len(medoids)	# @num_cluster represents the maximum possible cluster. The actually number of cluster may be smaller.
 				for medoid_idx, medoid in enumerate(medoids):
 					elements = medoid.elements	# @elements contains all sketch indices (in @sketches based on its row position i) that beling to this medoid's cluster.
 					for element in elements:
 						cluster_labels[element] = medoid_idx
 				cluster_labels = np.array(cluster_labels)
 
+				# TODO: The following should not happen.
+				#######################################
+				set_labels = set(cluster_labels)
+				if (len(set_labels) == 1):
+					continue
+				#######################################
+
 				# Once we know each sketch belongs to which cluster, we can calculate the Silhouette Coefficient
 				silhouette_coef = silhouette_score(sketches, cluster_labels, metric='hamming')
 
 				# Now we decide if this run is the best value seen so far.
-				if silhouette_coef > best_silhouette_coef or (silhouette_coef == best_silhouette_coef and num_clusters > best_num_clusters):	# We favor larger cluster number.
+				if silhouette_coef > best_silhouette_coef or (silhouette_coef == best_silhouette_coef and real_cluster_num > best_num_clusters):	# We favor larger cluster number.
 					best_silhouette_coef = silhouette_coef
-					best_num_clusters = num_clusters
+					best_num_clusters = real_cluster_num
 					best_cluster_labels = cluster_labels
 					best_medoids = medoids
 
@@ -115,14 +123,16 @@ for input_file in files:
 		cluster_medoids = [[]] * best_num_clusters
 		# @cluster_members contains the index of each member that belongs to the corresponding medoid.
 		cluster_members = [[]] * best_num_clusters
+		# @cluster_center contains the index of the medoid of each cluster.
+		cluster_center = [-1] * best_num_clusters
 		for cluster_idx in range(best_num_clusters):
-			cluster_center = best_medoids[cluster_idx].kernel	# @kernel is the index of the sketch that is considered the centroid.
-			cluster_medoids[cluster_idx] = sketches[cluster_center]
+			cluster_center[cluster_idx] = best_medoids[cluster_idx].kernel	# @kernel is the index of the sketch that is considered the centroid.
+			cluster_medoids[cluster_idx] = sketches[cluster_center[cluster_idx]]
 			cluster_sketches = best_medoids[cluster_idx].elements	# @elements is a list that contains the indices of all the member sketches in the cluster.
 			# @cluster_dists contains all distances between the kernel and each element in @elements
 			cluster_members[cluster_idx] = cluster_sketches
 			
-			cluster_dists = [dists[cluster_center][skt] for skt in cluster_sketches if skt != cluster_center]
+			cluster_dists = [dists[cluster_center[cluster_idx]][skt] for skt in cluster_sketches if skt != cluster_center[cluster_idx]]
 			# Now we can calculate the threshold based on @mean_dist and @std_dist.
 			if len(cluster_dists) == 0: # This cluster has only one member.
 				meam_dist = 0.0
@@ -135,7 +145,25 @@ for input_file in files:
 
 		# The last step of generating a model from the training graph is to compute the evolution of the graph based on its members and the cluster index to which they belong.
 		evolution = []
-		largest_elem_idx = max(list(itertools.chain.from_iterable(cluster_members)))
+		prev = -1 	# Check what cluster index a previous sketch is in.
+		for elem_idx in range(sketches.shape[0]):	# We go through every sketch to summarize the evolution.
+			for cluster_idx in range(best_num_clusters):
+				if elem_idx in cluster_members[cluster_idx] or elem_idx == cluster_center[cluster_idx]:
+					# We find what cluster index the @elem_idx sketch belongs to.
+					current = cluster_idx
+					# If @current is equal to @prev, then we will not record it in evolution, since the evolving graph stays in the same cluster.
+					if current == prev:
+						break	# We simply move on to the next @elem_idx.
+					else:
+						# Otherwise, we record @current in the @evolution.
+						evolution.append(current)
+
+		# Now that we have @evolution, we have all the information we need for our model. We create the model and save it in @models.
+		new_model = Model(cluster_medoids, cluster_means, cluster_thresholds, cluster_members, evolution)
+		models.append(new_model)
+	# We are done with this training file. Close the file and proceed to the next file.
+	f.close()
+
 
 
 
