@@ -124,14 +124,14 @@ namespace graphchi {
 			}
 			counter++;
 			if (counter == chunk_size) {
-				rtn.push_back(hash(to_hash.c_str()));
+				rtn.push_back(hash((unsigned char *)to_hash.c_str()));
 				counter = 0;
 				to_hash = "";
 			}
 			t = strtok(NULL, delims);
 		}
 		if (to_hash.length() > 0) {
-			rtn.push_back(hash(to_hash.c_str()));
+			rtn.push_back(hash((unsigned char *)to_hash.c_str()));
 		}
 		return rtn;
 
