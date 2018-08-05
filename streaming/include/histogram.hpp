@@ -32,7 +32,7 @@ public:
 	static Histogram* get_instance();
 	~Histogram();
 	void insert_label(unsigned long label);
-	void update(unsigned long label);
+	void update(unsigned long label, bool increment_t);
 	void create_sketch();
 	void get_lock();
 	void release_lock();
