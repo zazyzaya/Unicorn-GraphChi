@@ -20,8 +20,7 @@
 #include <pthread.h> 
 #include <string>
 /* This is the size of the sketch. */
-// #define SKETCH_SIZE 2000
-extern int SKETCH_SIZE;
+#define SKETCH_SIZE 2000
 
 /* The value of "cnt" element in the histogram will decay every DECAY updates. */
 // #define DECAY 10
@@ -36,9 +35,9 @@ extern int INTERVAL;
 /* File name that saves histogram sketches. */
 // #define SKETCH_FILE "sketch.txt"
 extern std::string SKETCH_FILE;
+
 /* The WL algorithm will explore K_HOPS-hop neighbors. */
-// #define K_HOPS 3
-extern int K_HOPS;
+#define K_HOPS 3
 /* Determine if we want to chunk the string, and how big each chunk is. CHUNK_SIZE > 1 */
 // #define CHUNKIFY true
 // #define CHUNK_SIZE 5
