@@ -220,6 +220,21 @@ int main(int argc, const char ** argv) {
 	bool scheduler = true;
 	stream_file = get_option_string("stream_file");
 
+	/* More parameters from command line to configure hyperparameters of feature vector generation. 
+	 * All the variables below are declared in def.hpp as extern.
+	 */
+	int SKETCH_SIZE = get_option_int("sketch_size", 2000);
+	int DECAY = get_option_int("decay", 10);
+	float LAMBDA = get_option_float("lambda", 0.02);
+	int INTERVAL = get_option_int("interval", 1000);
+	std::string SKETCH_FILE = get_option_string("sketch_file");
+	int K_HOPS = get_option_int("k", 3);
+	int to_chunk = get_option_int("chunkify", 1);
+	bool CHUNKIFY = true;
+	if (!to_chunk)
+		CHUNKIFY = false;
+	int CHUNK_SIZE = get_option_int("chunk_size", 5);
+	
 	/* Process input file - if not already preprocessed */
 	int nshards = convert_if_notexists<EdgeDataType>(filename, get_option_string("nshards", "auto"));
 
