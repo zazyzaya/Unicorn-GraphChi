@@ -28,6 +28,7 @@ using namespace graphchi;
 
 graphchi_dynamicgraph_engine<VertexDataType, EdgeDataType> * dyngraph_engine;
 std::string stream_file;
+
 /*
  * @graph_barrier, @stream_barrier, and @stop are declared in extern.hpp as externs.
  * They are defined here and will be used in graphchi_engine.hpp as well.
@@ -36,6 +37,15 @@ std::string stream_file;
 pthread_barrier_t std::graph_barrier;
 pthread_barrier_t std::stream_barrier;
 int std::stop = 0;
+/* The following variables are declared in def.hpp.
+ * They are defined here and will be assigned values in main function. */
+int DECAY;
+float LAMBDA;
+int INTERVAL;
+const char* SKETCH_FILE;
+bool CHUNKIFY = true;
+int CHUNK_SIZE;
+
 /*!
  * @brief A separate thread execute this function to stream graph from a file.
  */
@@ -223,15 +233,14 @@ int main(int argc, const char ** argv) {
 	/* More parameters from command line to configure hyperparameters of feature vector generation. 
 	 * All the variables below are declared in def.hpp as extern.
 	 */
-	int DECAY = get_option_int("decay", 10);
-	float LAMBDA = get_option_float("lambda", 0.02);
-	int INTERVAL = get_option_int("interval", 1000);
-	const char* SKETCH_FILE = (const char*)get_option_string("sketch_file").c_str();
+	DECAY = get_option_int("decay", 10);
+	LAMBDA = get_option_float("lambda", 0.02);
+	INTERVAL = get_option_int("interval", 1000);
+	SKETCH_FILE = (const char*)get_option_string("sketch_file").c_str();
 	int to_chunk = get_option_int("chunkify", 1);
-	bool CHUNKIFY = true;
 	if (!to_chunk)
 		CHUNKIFY = false;
-	int CHUNK_SIZE = get_option_int("chunk_size", 5);
+	CHUNK_SIZE = get_option_int("chunk_size", 5);
 	
 	/* Process input file - if not already preprocessed */
 	int nshards = convert_if_notexists<EdgeDataType>(filename, get_option_string("nshards", "auto"));
