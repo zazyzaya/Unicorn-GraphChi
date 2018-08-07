@@ -18,31 +18,32 @@
 #include <random>
 #include <cmath>
 #include <pthread.h> 
+#include <string>
 /* This is the size of the sketch. */
 // #define SKETCH_SIZE 2000
-extern SKETCH_SIZE;
+extern int SKETCH_SIZE;
 
 /* The value of "cnt" element in the histogram will decay every DECAY updates. */
 // #define DECAY 10
-extern DECAY;
+extern int DECAY;
 
 /* The rate of the decay. */
 // #define LAMBDA 0.02
-extern LAMBDA;
+extern float LAMBDA;
 /* Determines how many new edges we see before we record the hashed streaming histogram. */
 // #define INTERVAL 1000
-extern INTERVAL;
+extern int INTERVAL;
 /* File name that saves histogram sketches. */
 // #define SKETCH_FILE "sketch.txt"
-extern SKETCH_FILE;
+extern std::string SKETCH_FILE;
 /* The WL algorithm will explore K_HOPS-hop neighbors. */
 // #define K_HOPS 3
-extern K_HOPS;
+extern int K_HOPS;
 /* Determine if we want to chunk the string, and how big each chunk is. CHUNK_SIZE > 1 */
 // #define CHUNKIFY true
 // #define CHUNK_SIZE 5
-extern CHUNKIFY;
-extern CHUNK_SIZE;
+extern bool CHUNKIFY;
+extern int CHUNK_SIZE;
 /* In a truly streaming setting, GraphChi does not allow dynamic vertex/edge type.
  * We therefore must fixed the neighborhood we are exploring.
  * Currently we implement K_HOPS neighborhood.
