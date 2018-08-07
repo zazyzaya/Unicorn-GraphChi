@@ -34,7 +34,7 @@ extern float LAMBDA;
 extern int INTERVAL;
 /* File name that saves histogram sketches. */
 // #define SKETCH_FILE "sketch.txt"
-extern std::string SKETCH_FILE;
+extern const char * SKETCH_FILE;
 
 /* The WL algorithm will explore K_HOPS-hop neighbors. */
 #define K_HOPS 3
