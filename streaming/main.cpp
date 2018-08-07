@@ -226,7 +226,7 @@ int main(int argc, const char ** argv) {
 	int DECAY = get_option_int("decay", 10);
 	float LAMBDA = get_option_float("lambda", 0.02);
 	int INTERVAL = get_option_int("interval", 1000);
-	std::string SKETCH_FILE = get_option_string("sketch_file");
+	const char* SKETCH_FILE = (const char*)get_option_string("sketch_file").c_str();
 	int to_chunk = get_option_int("chunkify", 1);
 	bool CHUNKIFY = true;
 	if (!to_chunk)
