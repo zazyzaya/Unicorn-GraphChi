@@ -259,6 +259,9 @@ namespace graphchi {
 						 * - We will not schedule this node for next iteration, unless new edges are associated with it later.
 						 * - Mark the node as a leaf node.
 						 */
+#ifdef DEBUG
+						logstream(LOG_DEBUG) << "Processing new leaf vertex #" << vertex.id() << std::endl;
+#endif
 						graphchi_edge<EdgeDataType> * out_edge = vertex.random_outedge(); /* The node must have at least one outedge. */
 						assert(out_edge != NULL);
 						struct edge_label el = out_edge->get_data();
@@ -296,6 +299,9 @@ namespace graphchi {
 					} else {
 						/* This new node is not a leaf node. */
 						/* Use the first inedge to get its original label. */
+#ifdef DEBUG
+						logstream(LOG_DEBUG) << "Processing new non-leaf vertex #" << vertex.id() << std::endl;
+#endif
 						graphchi_edge<EdgeDataType> * edge = vertex.inedge(0);
 						struct node_label nl = vertex.get_data();
 						nl.lb[0] = edge->get_data().dst;
@@ -471,7 +477,7 @@ namespace graphchi {
 						 * This trick is used because of the asynchronous nature of GraphChi.
 						 */
 #ifdef DEBUG
-						logstream(LOG_DEBUG) << "Outgoing vertex #" << out_edge->vertex_id() << " curret itr is " << el.itr << std::endl;
+						logstream(LOG_DEBUG) << "Outgoing vertex #" << out_edge->vertex_id() << " current itr is " << el.itr << std::endl;
 #endif
 						if (el.itr == K_HOPS) {
 							// We only need to update those nodes whose that would not be scheduled otherwise.
