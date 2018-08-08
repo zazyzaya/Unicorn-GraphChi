@@ -21,19 +21,17 @@
 #include <string>
 /* This is the size of the sketch. */
 #define SKETCH_SIZE 2000
+/* The WL algorithm will explore K_HOPS-hop neighbors. */
+#define K_HOPS 3
 
 /* The value of "cnt" element in the histogram will decay every DECAY updates. */
 extern int DECAY;
-
 /* The rate of the decay. */
 extern float LAMBDA;
 /* Determines how many new edges we see before we record the hashed streaming histogram. */
 extern int INTERVAL;
 /* File name that saves histogram sketches. */
 extern const char * SKETCH_FILE;
-
-/* The WL algorithm will explore K_HOPS-hop neighbors. */
-#define K_HOPS 3
 /* Determine if we want to chunk the string, and how big each chunk is. CHUNK_SIZE > 1 */
 extern bool CHUNKIFY;
 extern int CHUNK_SIZE;
