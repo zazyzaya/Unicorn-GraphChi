@@ -545,7 +545,11 @@ namespace graphchi {
 			logstream(LOG_DEBUG) << "Current Iteration: " << iteration << std::endl;
 			hist->print_histogram();
 #endif
+			if (iteration == KHOPS) {
+				base_graph_constructed = true;
+			}
 			if (!next_itr) {
+				logstream(LOG_INFO) << "next_itr is false...Let's see if we need to stop or wait." << std::endl;
 				if (std::stop) {
 					logstream(LOG_INFO) << "Everything is done!" << std::endl;
 					gcontext.set_last_iteration(iteration);/* Set this iteration as the last one. */

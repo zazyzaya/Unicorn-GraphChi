@@ -11,6 +11,7 @@
  * and the streaming thread that streams in new edges.
  * @stream_barrier is another thread barrier. Both @graph_barrier and @stream_barrier are used to perform chunk-based graph processing.
  * @stop is used to signal whether all vertices (including the streamed ones) have been proceeded and the algorithm can stop.
+ * @base_graph_constructed is used to signal whether the base graph has been constructed.
  *
  */
 
@@ -18,6 +19,7 @@ namespace std {
 	extern pthread_barrier_t graph_barrier;
 	extern pthread_barrier_t stream_barrier;
     extern int stop;
+    extern bool base_graph_constructed;
 }
 
 #endif

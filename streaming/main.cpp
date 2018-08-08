@@ -32,6 +32,7 @@ std::string stream_file;
 pthread_barrier_t std::graph_barrier;
 pthread_barrier_t std::stream_barrier;
 int std::stop = 0;
+bool base_graph_constructed = false;
 /* The following variables are declared in def.hpp.
  * They are defined here and will be assigned values in main function. */
 int DECAY;
@@ -61,7 +62,7 @@ void * dynamic_graph_reader(void * info) {
 
 	graphchi_context & ginfo = dyngraph_engine->get_context();
 	/* A busy loop to wait until the base graph histogram is constructed. */
-	while(ginfo.iteration < K_HOPS + 1) {
+	while(!base_graph_constructed) {
 		// logstream(LOG_DEBUG) << "Waiting to proceed... Current iteration: " << ginfo.iteration << std::endl;
 		sleep(0);
 	}
