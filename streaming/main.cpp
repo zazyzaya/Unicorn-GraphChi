@@ -29,11 +29,6 @@ using namespace graphchi;
 graphchi_dynamicgraph_engine<VertexDataType, EdgeDataType> * dyngraph_engine;
 std::string stream_file;
 
-/*
- * @graph_barrier, @stream_barrier, and @stop are declared in extern.hpp as externs.
- * They are defined here and will be used in graphchi_engine.hpp as well.
- *
- */
 pthread_barrier_t std::graph_barrier;
 pthread_barrier_t std::stream_barrier;
 int std::stop = 0;
@@ -45,6 +40,9 @@ int INTERVAL;
 const char* SKETCH_FILE;
 bool CHUNKIFY = true;
 int CHUNK_SIZE;
+
+/* The following varible is global. */
+bool next_itr = false;
 
 /*!
  * @brief A separate thread execute this function to stream graph from a file.
@@ -179,7 +177,9 @@ void * dynamic_graph_reader(void * info) {
 			success = dyngraph_engine->add_edge(from, to, el);
 		}
 		++cnt;
-		/* Schedule the new nodes to be computed. */
+		/* Schedule the new nodes to be computed. 
+		 * Probably not needed since we are not doing selective scheduling any more.
+		 */
 		dyngraph_engine->add_task(from);
 		dyngraph_engine->add_task(to);
 #ifdef DEBUG
@@ -227,7 +227,7 @@ int main(int argc, const char ** argv) {
 	/* Parameters from command line. */
 	std::string filename = get_option_string("file");
 	int niters = get_option_int("niters", 1000);
-	bool scheduler = true;
+	bool scheduler = false; /* We cannot use selective scheduling. */
 	stream_file = get_option_string("stream_file");
 
 	/* More parameters from command line to configure hyperparameters of feature vector generation. 
