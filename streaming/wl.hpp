@@ -545,8 +545,8 @@ namespace graphchi {
 			logstream(LOG_DEBUG) << "Current Iteration: " << iteration << std::endl;
 			hist->print_histogram();
 #endif
-			if (iteration == KHOPS) {
-				base_graph_constructed = true;
+			if (iteration == K_HOPS) {
+				std::base_graph_constructed = true;
 			}
 			if (!next_itr) {
 				logstream(LOG_INFO) << "next_itr is false...Let's see if we need to stop or wait." << std::endl;
