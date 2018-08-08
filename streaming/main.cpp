@@ -60,7 +60,6 @@ void * dynamic_graph_reader(void * info) {
 		return NULL;
 	}
 
-	graphchi_context & ginfo = dyngraph_engine->get_context();
 	/* A busy loop to wait until the base graph histogram is constructed. */
 	while(!std::base_graph_constructed) {
 		// logstream(LOG_DEBUG) << "Waiting to proceed... Current iteration: " << ginfo.iteration << std::endl;
