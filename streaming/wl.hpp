@@ -542,6 +542,7 @@ namespace graphchi {
 				if (std::stop) {
 					logstream(LOG_INFO) << "Everything is done!" << std::endl;
 					gcontext.set_last_iteration(iteration);/* Set this iteration as the last one. */
+					return;
 				}
 				pthread_barrier_wait(&std::stream_barrier);
 				logstream(LOG_INFO) << "No new tasks to run! But have new streamed edges!" << std::endl;
