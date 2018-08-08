@@ -485,27 +485,16 @@ namespace graphchi {
 						/* Time stamp is the smallest one among all of its in-coming neighbors. */
 						el.tme[min_itr] = neighborhood[0].tme[min_itr - 1];
 						/* Update their itr value. 
-						 * Because of the schedule will always schedule smaller ID between two nodes of an edge,
-						 * we make sure the downstream node's itr doesn't get updated twice between it runs.
-						 * This trick is used because of the asynchronous nature of GraphChi.
 						 */
 #ifdef DEBUG
 						logstream(LOG_DEBUG) << "Outgoing vertex #" << out_edge->vertex_id() << " current itr is " << el.itr << std::endl;
 #endif
 						if (el.itr == K_HOPS + 1) {
 							// We only need to update those nodes whose that would not be scheduled otherwise.
-							if (vertex.id() < out_edge->vertex_id()) {
-								el.itr = min_itr;
+							el.itr = min_itr + 1;
 #ifdef DEBUG
-								logstream(LOG_DEBUG) << "Update outgoing vertex #" << out_edge->vertex_id() << "'s itr to' " << el.itr << std::endl;
+							logstream(LOG_DEBUG) << "Update outgoing vertex #" << out_edge->vertex_id() << "'s itr to' " << el.itr << std::endl;
 #endif
-							} else {
-								el.itr = min_itr + 1;
-#ifdef DEBUG
-								logstream(LOG_DEBUG) << "Update outgoing vertex #" << out_edge->vertex_id() << "'s itr to' " << el.itr << std::endl;
-#endif
-							}
-
 						}
 						out_edge->set_data(el);
 
