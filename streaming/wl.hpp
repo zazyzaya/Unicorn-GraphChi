@@ -324,6 +324,7 @@ namespace graphchi {
 						hist->update(nl.lb[0], true);
 						hist->release_lock();
 					}
+				}
 				if (vertex.num_inedges() == 0) {
 					/* We first deal with leaf nodes that are scheduled.
 					 * This leaf node must have been initialized before.
