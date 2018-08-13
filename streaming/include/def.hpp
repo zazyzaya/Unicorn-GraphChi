@@ -41,7 +41,7 @@ extern bool next_itr; /* We do not need any more iterations if next_itr is false
 /* In a truly streaming setting, GraphChi does not allow dynamic vertex/edge type.
  * We therefore must fixed the neighborhood we are exploring.
  * Currently we implement K_HOPS neighborhood.
- * Therefore, The array "src" holds K_HOPS + 1 elemenst:
+ * Therefore, The array "src" holds K_HOPS + 1 elements:
  * 		- The label of the source node, which we can initialize from the file.
  * 		- The relabel of the first-hop neighborhood.
  *		- The relabel of the second-hop neighborhood.

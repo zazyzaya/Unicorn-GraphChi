@@ -12,7 +12,7 @@ import numpy as np
 import random
 import os, sys
 from medoids import _k_medoids_spawn_once
-from scipy.spatial.distance import pdist, squareform
+from scipy.spatial.distance import pdist, squareform, hamming
 from sklearn.metrics import silhouette_score
 
 
@@ -40,23 +40,29 @@ random.seed(SEED)
 np.random.seed(SEED)
 
 # Parse arguments from the user who must provide the following information:
-# '--dir <directory_path>': the path to the directory that contains data files of all training graphs.
+# '--train_dir <directory_path>': the path to the directory that contains data files of all training graphs.
 parser = argparse.ArgumentParser()
-parser.add_argument('--dir', help='Absolute path to the directory that contains all training graphs', required=True)
+parser.add_argument('--train_dir', help='Absolute path to the directory that contains all training vectors', required=True)
+# '--test_dir <directory_path>': the path to the directory that contains data files of all testing graphs.
+parser.add_argument('--test_dir', help='Absolute path to the directory that contains all testing vectors', required=True)
 args = vars(parser.parse_args())
 
-dir_name = args['dir']	# The directory absolute path name from the user input.
-files = os.listdir(dir_name)	# The file names within that directory.
-# Note that we will read every file within the directory @dir_name.
-# We do not do error checking here. Therefore, make sure every file in @dir_name is valid.
+train_dir_name = args['train_dir']	# The directory absolute path name from the user input of training vectors.
+train_files = os.listdir(train_dir_name)	# The training file names within that directory.
+# Note that we will read every file within the directory @train_dir_name.
+# We do not do error checking here. Therefore, make sure every file in @train_dir_name is valid.
+
+# We do the same for testing files.
+test_dir_name = args['test_dir']	# The directory absolute path name from the user input of testing vectors.
+test_files = os.listdir(test_dir_name)	# The testing file names within that directory.
 
 # Now we will open every file and read the sketch vectors in the file for modeling.
 # We will create a model for each file and then merge the models if necessary.
 # @models contains a list of models from each file.
 models = []
 
-for input_file in files:
-	with open(os.path.join(dir_name, input_file), 'r') as f:
+for input_train_file in train_files:
+	with open(os.path.join(train_dir_name, input_train_file), 'r') as f:
 		sketches = []	# The sketch on row i is the ith stage of the changing graph.
 
 		# We read all the sketches in the file and save it in memory in @sketches
@@ -163,6 +169,56 @@ for input_file in files:
 		models.append(new_model)
 	# We are done with this training file. Close the file and proceed to the next file.
 	f.close()
+
+# TODO: We can merge similar models in @models here.
+
+# Testing code starts here.
+for input_test_file in test_files:
+	with open(os.path.join(test_dir_name, input_test_file), 'r') as f:
+		sketches = []	# The sketch on row i is the ith stage of the changing graph.
+
+		# We read all the sketches in the file and save it in memory in @sketches
+		for line in f:
+			sketch_vector = map(long, line.strip().split(" "))
+			sketches.append(sketch_vector)
+
+		sketches = np.array(sketches)
+
+		abnormal = True # Flag signalling whether the test graph is abnormal.
+		check_next_model = False	# Flag signalling whether we should proceed to check with the next model because the current one does not fit.
+		# We now fit the sketch vectors in @sketches to each model in @models. 
+		# As long as the test graph could fit into one of the models, we will set the @abnormal flag to False.
+		# If it could not fit into any of the models, the @abnormal flag remains True and we will signal the user.
+		for model in models:
+			current_evolution_idx = 0 
+			current_cluster_idx = model.evolution[current_evolution_idx]
+			current_medoid = model.medoids[current_cluster_idx]	# Get the medoid of the current cluster.
+			current_threshold = model.thresholds[current_cluster_idx]	# Get the threshold of the current cluster.
+			for sketch in sketches:
+				distance_from_medoid = hamming(sketch, current_medoid)	# Compute the hamming distance between the current medoid and the current test vector.
+				if distance_from_medoid > current_threshold:
+					# We check maybe the evolution has evolved to the next cluster if it exsits.
+					if current_evolution_idx < len(model.evolution):	# If there is actually a next cluster in evolution.
+						current_evolution_idx = current_evolution_idx + 1 # Let's move on to the next cluster and see if it fits.
+						current_cluster_idx = model.evolution[current_evolution_idx]
+						current_medoid = model.medoids[current_cluster_idx]
+						current_threshold = model.thresholds[current_cluster_idx]
+						distance_from_medoid = hamming(sketch, current_medoid)
+						if distance_from_medoid > current_threshold:	# if it still does not fit, we consider it abnormal
+							check_next_model = True	# So we know this graph does not fit into this model, but it can probably fit into a different model.
+							break
+						# Else we go check the next sketch in @sketches
+					else:	# If there is not a next cluster in evolution
+						check_next_model = True	# We consider it abnormal in this model and check next model.
+						break	# TODO: we have not yet coded recurrent modelling, which could happen.
+			if not check_next_model:
+				abnormal = False	# If we don't need to check with the next model, we know this test graph fits in this model, so we are done.
+				break
+	if not abnormal:	# We have decided that the test graph is not abnormal
+		print "This test graph: " + input_test_file + " fits into some model."
+	else
+		print "We have tested all the models but " + input_test_file + " does not fit into any model."
+
 
 
 
