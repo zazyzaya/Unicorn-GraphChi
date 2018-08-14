@@ -28,6 +28,7 @@ using namespace graphchi;
 
 graphchi_dynamicgraph_engine<VertexDataType, EdgeDataType> * dyngraph_engine;
 std::string stream_file;
+std::string sketch_file;
 
 pthread_barrier_t std::graph_barrier;
 pthread_barrier_t std::stream_barrier;
@@ -38,7 +39,6 @@ bool std::base_graph_constructed = false;
 int DECAY;
 float LAMBDA;
 int INTERVAL;
-const char* SKETCH_FILE;
 bool CHUNKIFY = true;
 int CHUNK_SIZE;
 
@@ -54,9 +54,9 @@ void * dynamic_graph_reader(void * info) {
 	logstream(LOG_INFO) << "Streaming begins from file: " << stream_file << std::endl;
 
 	/* Open the MODEL_FILE to write our sketches. */
-	FILE *fp = fopen(SKETCH_FILE, "a+");
+	FILE * fp = fopen(sketch_file.c_str(), "a+");
 	if (fp == NULL) {
-		logstream(LOG_ERROR) << "Cannot open the sketch file to write: " << SKETCH_FILE << std::endl;
+		logstream(LOG_ERROR) << "Cannot open the sketch file to write: " << sketch_file << ". Error code: " << strerror(errno) << std::endl;
 		return NULL;
 	}
 
@@ -198,10 +198,12 @@ void * dynamic_graph_reader(void * info) {
 	}
 	std::stop = 1;
 	pthread_barrier_wait(&std::graph_barrier);
-	fclose(f);
-	if (ferror(fp) != 0 || fclose(fp) != 0) {
-		logstream(LOG_ERROR) << "Unable to close the sketch file: " << SKETCH_FILE << std::endl;
+	if (ferror(f) != 0 || fclose(f) != 0) {
+		logstream(LOG_ERROR) << "Unable to close the stream file: " << stream_file << ". Error code: " << strerror(errno) << std::endl;
 		return NULL;
+	}
+	if (ferror(fp) != 0 || fclose(fp) != 0) {
+		logstream(LOG_ERROR) << "Unable to close the sketch file: " << sketch_file << ". Error code: " << strerror(errno) << std::endl;
 	}
 	/* After the file is closed, the engine will stop 1000 iterations after the current iteration in which the addition is finished. */
 	// dyngraph_engine->finish_after_iters(1000);
@@ -236,7 +238,7 @@ int main(int argc, const char ** argv) {
 	DECAY = get_option_int("decay", 10);
 	LAMBDA = get_option_float("lambda", 0.02);
 	INTERVAL = get_option_int("interval", 1000);
-	SKETCH_FILE = (const char*)get_option_string("sketch_file").c_str();
+	sketch_file = get_option_string("sketch_file");
 	int to_chunk = get_option_int("chunkify", 1);
 	if (!to_chunk)
 		CHUNKIFY = false;
@@ -263,21 +265,24 @@ int main(int argc, const char ** argv) {
 	dyngraph_engine->run(program, niters);
 
 	/* Once the streaming graph is all done, we will record the last sketch that sketches the complete graph. */
-	/* We append the last sketch to the SKETCH_FILE. */
-	FILE *fp = fopen(SKETCH_FILE, "a");
+	/* We append the last sketch to the @sketch_file. */
+	FILE * fp = fopen(sketch_file.c_str(), "a");
 	if (fp == NULL) {
-		logstream(LOG_ERROR) << "Cannot open the sketch file to append: " << SKETCH_FILE << std::endl;
-		return -1;
+		logstream(LOG_ERROR) << "Cannot open the sketch file to write: " << sketch_file << ". Error code: " << strerror(errno) << std::endl;
 	}
+	assert(fp != NULL);
 	Histogram* hist = Histogram::get_instance();
 
 	hist->get_lock();
 	logstream(LOG_INFO) << "Recording the final complete graph sketch... " << std::endl;
+	if (fp == NULL) {
+		logstream(LOG_ERROR) << "Sketch file no longer exists... " << std::endl;
+	}
 	hist->record_sketch(fp);
 	hist->release_lock();
 
 	if (ferror(fp) != 0 || fclose(fp) != 0) {
-		logstream(LOG_ERROR) << "Unable to close the sketch file: " << SKETCH_FILE << std::endl;
+		logstream(LOG_ERROR) << "Unable to close the sketch file: " << sketch_file <<  std::endl;
 		return -1;
 	}
 

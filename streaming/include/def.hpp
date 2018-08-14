@@ -30,8 +30,6 @@ extern int DECAY;
 extern float LAMBDA;
 /* Determines how many new edges we see before we record the hashed streaming histogram. */
 extern int INTERVAL;
-/* File name that saves histogram sketches. */
-extern const char * SKETCH_FILE;
 /* Determine if we want to chunk the string, and how big each chunk is. CHUNK_SIZE > 1 */
 extern bool CHUNKIFY;
 extern int CHUNK_SIZE;
