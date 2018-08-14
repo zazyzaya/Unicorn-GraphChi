@@ -83,7 +83,48 @@ run_youtube:
 	bin/streaming/main filetype edgelist file streaming/data/youtube_data/base-youtube-0.txt niters 10000 stream_file streaming/data/youtube_data/stream-youtube-0.txt decay 100 lambda 0.02 interval 5000 sketch_file streaming/analyze/data/sketch-youtube-0.txt chunkify 1 chunk_size 20
 	rm -rf streaming/data/youtube_data/base-youtube-0.txt.*
 	rm -rf streaming/data/youtube_data/base-youtube-0.txt_*
+	bin/streaming/main filetype edgelist file streaming/data/youtube_data/base-youtube-4.txt niters 10000 stream_file streaming/data/youtube_data/stream-youtube-4.txt decay 100 lambda 0.02 interval 5000 sketch_file streaming/analyze/data/sketch-youtube-4.txt chunkify 1 chunk_size 20
+	rm -rf streaming/data/youtube_data/base-youtube-4.txt.*
+	rm -rf streaming/data/youtube_data/base-youtube-4.txt_*
+	bin/streaming/main filetype edgelist file streaming/data/youtube_data/base-youtube-8.txt niters 10000 stream_file streaming/data/youtube_data/stream-youtube-8.txt decay 100 lambda 0.02 interval 5000 sketch_file streaming/analyze/data/sketch-youtube-8.txt chunkify 1 chunk_size 20
+	rm -rf streaming/data/youtube_data/base-youtube-8.txt.*
+	rm -rf streaming/data/youtube_data/base-youtube-8.txt_*
+	bin/streaming/main filetype edgelist file streaming/data/youtube_data/base-youtube-12.txt niters 10000 stream_file streaming/data/youtube_data/stream-youtube-12.txt decay 100 lambda 0.02 interval 5000 sketch_file streaming/analyze/data/sketch-youtube-12.txt chunkify 1 chunk_size 20
+	rm -rf streaming/data/youtube_data/base-youtube-12.txt.*
+	rm -rf streaming/data/youtube_data/base-youtube-12.txt_*
+	bin/streaming/main filetype edgelist file streaming/data/youtube_data/base-youtube-16.txt niters 10000 stream_file streaming/data/youtube_data/stream-youtube-16.txt decay 100 lambda 0.02 interval 5000 sketch_file streaming/analyze/data/sketch-youtube-16.txt chunkify 1 chunk_size 20
+	rm -rf streaming/data/youtube_data/base-youtube-16.txt.*
+	rm -rf streaming/data/youtube_data/base-youtube-16.txt_*
+	bin/streaming/main filetype edgelist file streaming/data/youtube_data/base-youtube-20.txt niters 10000 stream_file streaming/data/youtube_data/stream-youtube-20.txt decay 100 lambda 0.02 interval 5000 sketch_file streaming/analyze/data/sketch-youtube-20.txt chunkify 1 chunk_size 20
+	rm -rf streaming/data/youtube_data/base-youtube-20.txt.*
+	rm -rf streaming/data/youtube_data/base-youtube-20.txt_*
 
+run_gmail:
+	bin/streaming/main filetype edgelist file streaming/data/gmail_data/base-gmail.txt niters 10000 stream_file streaming/data/gmail_data/stream-gmail.txt decay 100 lambda 0.02 interval 5000 sketch_file streaming/analyze/train-data/sketch-gmail.txt chunkify 1 chunk_size 20
+	rm -rf streaming/data/youtube_data/base-gmail.txt.*
+	rm -rf streaming/data/youtube_data/base-gmail.txt_*
+
+run_vgame:
+	bin/streaming/main filetype edgelist file streaming/data/vgame_data/base-vgame.txt niters 10000 stream_file streaming/data/vgame_data/stream-vgame.txt decay 100 lambda 0.02 interval 5000 sketch_file streaming/analyze/train-data/sketch-vgame.txt chunkify 1 chunk_size 20
+	rm -rf streaming/data/youtube_data/base-vgame.txt.*
+	rm -rf streaming/data/youtube_data/base-vgame.txt_*
+
+run_download:
+	bin/streaming/main filetype edgelist file streaming/data/download_data/base-download.txt niters 10000 stream_file streaming/data/download_data/stream-download.txt decay 100 lambda 0.02 interval 5000 sketch_file streaming/analyze/train-data/sketch-download.txt chunkify 1 chunk_size 20
+	rm -rf streaming/data/youtube_data/base-download.txt.*
+	rm -rf streaming/data/youtube_data/base-download.txt_*
+
+run_cnn:
+	bin/streaming/main filetype edgelist file streaming/data/cnn_data/base-cnn.txt niters 10000 stream_file streaming/data/cnn_data/stream-cnn.txt decay 100 lambda 0.02 interval 5000 sketch_file streaming/analyze/train-data/sketch-cnn.txt chunkify 1 chunk_size 20
+	rm -rf streaming/data/youtube_data/base-cnn.txt.*
+	rm -rf streaming/data/youtube_data/base-cnn.txt_*
+
+run_attack:
+	bin/streaming/main filetype edgelist file streaming/data/attack_data/base-attack.txt niters 10000 stream_file streaming/data/attack_data/stream-attack.txt decay 100 lambda 0.02 interval 5000 sketch_file streaming/analyze/test-data/sketch-attack.txt chunkify 1 chunk_size 20
+	rm -rf streaming/data/youtube_data/base-attack.txt.*
+	rm -rf streaming/data/youtube_data/base-attack.txt_*
+
+run_all: run_youtube run_gmail run_vgame run_download run_cnn run_attack
 
 
 	

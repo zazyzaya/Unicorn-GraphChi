@@ -216,7 +216,7 @@ for input_test_file in test_files:
 				break
 	if not abnormal:	# We have decided that the test graph is not abnormal
 		print "This test graph: " + input_test_file + " fits into some model."
-	else
+	else:
 		print "We have tested all the models but " + input_test_file + " does not fit into any model."
 
 
