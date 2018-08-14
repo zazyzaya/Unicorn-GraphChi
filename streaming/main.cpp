@@ -51,7 +51,7 @@ bool next_itr = false;
 void * dynamic_graph_reader(void * info) {
 	// logstream(LOG_DEBUG) << "Waiting to start streaming the graph..." << std::endl;
 	// usleep(100000); /* We do not need to sleep to wait. We have a while loop to do so. */
-	logstream(LOG_INFO) << "Streaming begins from file: " << stream_file << std::endl;
+	logstream(LOG_DEBUG) << "Streaming begins from file: " << stream_file << std::endl;
 
 	/* Open the MODEL_FILE to write our sketches. */
 	FILE * fp = fopen(sketch_file.c_str(), "a+");
@@ -163,7 +163,7 @@ void * dynamic_graph_reader(void * info) {
 #ifdef DEBUG
 		k = strtok(NULL, delims);
 		if (k != NULL)
-			logstream(LOG_INFO) << "Extra info will be ignored." << std::endl;
+			logstream(LOG_DEBUG) << "Extra info will be ignored." << std::endl;
 #endif
 		if (from == to) {
 #ifdef DEBUG
@@ -183,7 +183,7 @@ void * dynamic_graph_reader(void * info) {
 		dyngraph_engine->add_task(from);
 		dyngraph_engine->add_task(to);
 #ifdef DEBUG
-		logstream(LOG_INFO) << "Schedule a new edge with possibly new nodes: " << from << " -> " << to << std::endl;
+		logstream(LOG_DEBUG) << "Schedule a new edge with possibly new nodes: " << from << " -> " << to << std::endl;
 #endif
 		if (cnt == INTERVAL) {
 			/* We continue to add new edges until INTERVAL edges are added. Then we let GraphChi starts its computation. */
@@ -224,7 +224,7 @@ int main(int argc, const char ** argv) {
 	/* Metrics object for keeping track of performance counters and other information. 
 	 * Currently required. */
 	metrics m("Streaming Extractor");
-	global_logger().set_log_level(LOG_DEBUG);
+	global_logger().set_log_level(LOG_INFO);
 
 	/* Parameters from command line. */
 	std::string filename = get_option_string("file");
@@ -274,7 +274,7 @@ int main(int argc, const char ** argv) {
 	Histogram* hist = Histogram::get_instance();
 
 	hist->get_lock();
-	logstream(LOG_INFO) << "Recording the final complete graph sketch... " << std::endl;
+	logstream(LOG_DEBUG) << "Recording the final complete graph sketch... " << std::endl;
 	if (fp == NULL) {
 		logstream(LOG_ERROR) << "Sketch file no longer exists... " << std::endl;
 	}

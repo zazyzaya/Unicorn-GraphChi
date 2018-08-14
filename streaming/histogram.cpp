@@ -45,7 +45,7 @@ void Histogram::insert_label(unsigned long label) {
 	rst = this->histogram_map.insert(std::pair<unsigned long, struct hist_elem>(label, new_elem));
 	if (rst.second == false) {
 #ifdef DEBUG
-		logstream(LOG_INFO) << "The label " << label << " is already in the map. Updating the value only." << std::endl;
+		logstream(LOG_DEBUG) << "The label " << label << " is already in the map. Updating the value only." << std::endl;
 #endif
 		((rst.first)->second).cnt++;
 	} else {
@@ -88,7 +88,7 @@ void Histogram::update(unsigned long label, bool increment_t) {
 	rst = this->histogram_map.insert(std::pair<unsigned long, struct hist_elem>(label, new_elem));
 	if (rst.second == false) {
 #ifdef DEBUG
-		logstream(LOG_INFO) << "The label " << label << " is already in the map. Updating the sketch and its hash." << std::endl;
+		logstream(LOG_DEBUG) << "The label " << label << " is already in the map. Updating the sketch and its hash." << std::endl;
 #endif
 		((rst.first)->second).cnt++;
 	} else {
@@ -178,8 +178,8 @@ void Histogram::record_sketch(FILE* fp) {
  */
 void Histogram::print_histogram() {
 	std::map<unsigned long, struct hist_elem>::iterator it;
-	logstream(LOG_INFO) << "Printing histogram map to the console..." << std::endl;
+	logstream(LOG_DEBUG) << "Printing histogram map to the console..." << std::endl;
 	for (it = this->histogram_map.begin(); it != this->histogram_map.end(); it++)
-		logstream(LOG_DEBUG) << "[" << it->first << "]->" << (it->second).cnt << "  ";
+		logstream(LOG_INFO) << "[" << it->first << "]->" << (it->second).cnt << "  ";
 	return;
 }

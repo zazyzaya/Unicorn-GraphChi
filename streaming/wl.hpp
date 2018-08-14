@@ -48,7 +48,7 @@ namespace graphchi {
 			 */
 #ifdef DEBUG
 			if (vertex.num_edges() <= 0) {
-				logstream(LOG_INFO) << "Isolated vertex #"<< vertex.id() <<" detected." << std::endl;
+				logstream(LOG_DEBUG) << "Isolated vertex #"<< vertex.id() <<" detected." << std::endl;
 				return;
 			}
 #endif
@@ -90,7 +90,7 @@ namespace graphchi {
 				// }
 				next_itr = true; /* We know a meaningful next iteration is needed. */
 #ifdef DEBUG
-				logstream(LOG_INFO) << "The original label of vertex #" << vertex.id() << " is: " << nl.lb[0] << std::endl;
+				logstream(LOG_DEBUG) << "The original label of vertex #" << vertex.id() << " is: " << nl.lb[0] << std::endl;
 #endif
 			} else if (gcontext.iteration < K_HOPS + 1){	/* we know after K_HOPS iterations, we will be done with the base graph. */
 				/* After the first iteration, all nodes in the base graph are initialized. 
@@ -151,7 +151,7 @@ namespace graphchi {
 						/* Simply use the last label of the vertex itself since it has no incoming neighbors. */
 						unsigned long last_itr_label = nl.lb[gcontext.iteration - 1];
 #ifdef DEBUG
-						logstream(LOG_INFO) << "The label string of the base vertex (with no neighbors) #" << vertex.id() << " is: " << last_itr_label << std::endl;
+						logstream(LOG_DEBUG) << "The label string of the base vertex (with no neighbors) #" << vertex.id() << " is: " << last_itr_label << std::endl;
 #endif
 						/* Populate histogram map. */
 						hist->get_lock();
@@ -201,7 +201,7 @@ namespace graphchi {
 						new_label_str += " " + node_str;
 					}
 #ifdef DEBUG
-					logstream(LOG_INFO) << "New label string of the vertex #" << vertex.id() << " is: " << new_label_str << std::endl;
+					logstream(LOG_DEBUG) << "New label string of the vertex #" << vertex.id() << " is: " << new_label_str << std::endl;
 #endif
 					/* Relabel by hashing. */
 					unsigned long new_label = hash((unsigned char *)new_label_str.c_str());
@@ -270,7 +270,7 @@ namespace graphchi {
 						 * - Mark the node as a leaf node.
 						 */
 #ifdef DEBUG
-						logstream(LOG_INFO) << "Processing new leaf vertex #" << vertex.id() << std::endl;
+						logstream(LOG_DEBUG) << "Processing new leaf vertex #" << vertex.id() << std::endl;
 #endif
 						graphchi_edge<EdgeDataType> * out_edge = vertex.random_outedge(); /* The node must have at least one outedge. */
 						assert(out_edge != NULL);
@@ -310,7 +310,7 @@ namespace graphchi {
 						/* This new node is not a leaf node. */
 						/* Use the first inedge to get its original label. */
 #ifdef DEBUG
-						logstream(LOG_INFO) << "Processing new non-leaf vertex #" << vertex.id() << std::endl;
+						logstream(LOG_DEBUG) << "Processing new non-leaf vertex #" << vertex.id() << std::endl;
 #endif
 						graphchi_edge<EdgeDataType> * edge = vertex.inedge(0);
 						struct node_label nl = vertex.get_data();
@@ -362,7 +362,7 @@ namespace graphchi {
 						out_edge->set_data(el);
 					}
 #ifdef DEBUG
-					logstream(LOG_INFO) << "Streaming edge refreshes an existing leaf node #" << vertex.id() << std::endl;
+					logstream(LOG_DEBUG) << "Streaming edge refreshes an existing leaf node #" << vertex.id() << std::endl;
 #endif
 					return; /* Update edge labels and then return without setting @next_itr to true.*/
 				} else {
@@ -401,7 +401,7 @@ namespace graphchi {
 					/* We do a check here since the minimum iteration value should be at least 1, but less than K_HOPS + 2. */
 					assert(min_itr > 0 && min_itr < K_HOPS + 2);
 #ifdef DEBUG
-					logstream(LOG_INFO) << "The min_itr of the vertex #" << vertex.id() << " is: " << min_itr << std::endl;
+					logstream(LOG_DEBUG) << "The min_itr of the vertex #" << vertex.id() << " is: " << min_itr << std::endl;
 #endif
 					if (min_itr == K_HOPS + 1) {
 						/* This node should not be scheduled again and do not run the rest of the logic.
@@ -453,7 +453,7 @@ namespace graphchi {
 						new_label_str += " " + node_str;
 					}
 #ifdef DEBUG
-					logstream(LOG_INFO) << "New label string of the vertex #" << vertex.id() << " is: " << new_label_str << std::endl;
+					logstream(LOG_DEBUG) << "New label string of the vertex #" << vertex.id() << " is: " << new_label_str << std::endl;
 #endif
 					/* Relabel by hashing. */
 					unsigned long new_label = hash((unsigned char *)new_label_str.c_str());
@@ -487,13 +487,13 @@ namespace graphchi {
 						/* Update their itr value. 
 						 */
 #ifdef DEBUG
-						logstream(LOG_INFO) << "Outgoing vertex #" << out_edge->vertex_id() << " current itr is " << el.itr << std::endl;
+						logstream(LOG_DEBUG) << "Outgoing vertex #" << out_edge->vertex_id() << " current itr is " << el.itr << std::endl;
 #endif
 						if (el.itr == K_HOPS + 1) {
 							// We only need to update those nodes whose that would not be scheduled otherwise.
 							el.itr = min_itr + 1;
 #ifdef DEBUG
-							logstream(LOG_INFO) << "Update outgoing vertex #" << out_edge->vertex_id() << "'s itr to' " << el.itr << std::endl;
+							logstream(LOG_DEBUG) << "Update outgoing vertex #" << out_edge->vertex_id() << "'s itr to' " << el.itr << std::endl;
 #endif
 						}
 						out_edge->set_data(el);
@@ -531,21 +531,21 @@ namespace graphchi {
 		 */
 		void after_iteration(int iteration, graphchi_context &gcontext) {
 #ifdef DEBUG
-			logstream(LOG_INFO) << "Current Iteration: " << iteration << std::endl;
+			logstream(LOG_DEBUG) << "Current Iteration: " << iteration << std::endl;
 			hist->print_histogram();
 #endif
 			if (iteration == K_HOPS) {
 				std::base_graph_constructed = true;
 			}
 			if (!next_itr) {
-				logstream(LOG_INFO) << "next_itr is false...Let's see if we need to stop or wait." << std::endl;
+				logstream(LOG_DEBUG) << "next_itr is false...Let's see if we need to stop or wait." << std::endl;
 				if (std::stop) {
-					logstream(LOG_INFO) << "Everything is done!" << std::endl;
+					logstream(LOG_DEBUG) << "Everything is done!" << std::endl;
 					gcontext.set_last_iteration(iteration);/* Set this iteration as the last one. */
 					return;
 				}
 				pthread_barrier_wait(&std::stream_barrier);
-				logstream(LOG_INFO) << "No new tasks to run! But have new streamed edges!" << std::endl;
+				logstream(LOG_DEBUG) << "No new tasks to run! But have new streamed edges!" << std::endl;
 				pthread_barrier_wait(&std::graph_barrier);
             }
 		}
