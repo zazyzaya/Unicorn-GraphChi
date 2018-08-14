@@ -51,10 +51,10 @@ bool next_itr = false;
 void * dynamic_graph_reader(void * info) {
 	// logstream(LOG_DEBUG) << "Waiting to start streaming the graph..." << std::endl;
 	// usleep(100000); /* We do not need to sleep to wait. We have a while loop to do so. */
-	logstream(LOG_DEBUG) << "Streaming begins from file: " << stream_file << std::endl;
+	logstream(LOG_INFO) << "Streaming begins from file: " << stream_file << std::endl;
 
 	/* Open the MODEL_FILE to write our sketches. */
-	FILE *fp = fopen(SKETCH_FILE, "a");
+	FILE *fp = fopen(SKETCH_FILE, "a+");
 	if (fp == NULL) {
 		logstream(LOG_ERROR) << "Cannot open the sketch file to write: " << SKETCH_FILE << std::endl;
 		return NULL;
@@ -163,11 +163,11 @@ void * dynamic_graph_reader(void * info) {
 #ifdef DEBUG
 		k = strtok(NULL, delims);
 		if (k != NULL)
-			logstream(LOG_DEBUG) << "Extra info will be ignored." << std::endl;
+			logstream(LOG_INFO) << "Extra info will be ignored." << std::endl;
 #endif
 		if (from == to) {
 #ifdef DEBUG
-			logstream(LOG_DEBUG) << "Ignoring edge because a self-loop is detected during streaming: " << from << "<->" << to <<std::endl;
+			logstream(LOG_ERROR) << "Ignoring edge because a self-loop is detected during streaming: " << from << "<->" << to <<std::endl;
 #endif
 			continue;
 		}
@@ -183,14 +183,14 @@ void * dynamic_graph_reader(void * info) {
 		dyngraph_engine->add_task(from);
 		dyngraph_engine->add_task(to);
 #ifdef DEBUG
-		logstream(LOG_DEBUG) << "Schedule a new edge with possibly new nodes: " << from << " -> " << to << std::endl;
+		logstream(LOG_INFO) << "Schedule a new edge with possibly new nodes: " << from << " -> " << to << std::endl;
 #endif
 		if (cnt == INTERVAL) {
 			/* We continue to add new edges until INTERVAL edges are added. Then we let GraphChi starts its computation. */
 			cnt = 0;
 			/* We first record the sketch from the updated graph. */
 			hist->get_lock();
-			logstream(LOG_DEBUG) << "Recording the base graph sketch... " << std::endl;
+			logstream(LOG_INFO) << "Recording the base graph sketch... " << std::endl;
 			hist->record_sketch(fp);
 			hist->release_lock();
 			pthread_barrier_wait(&std::graph_barrier);
@@ -272,7 +272,7 @@ int main(int argc, const char ** argv) {
 	Histogram* hist = Histogram::get_instance();
 
 	hist->get_lock();
-	logstream(LOG_DEBUG) << "Recording the final complete graph sketch... " << std::endl;
+	logstream(LOG_INFO) << "Recording the final complete graph sketch... " << std::endl;
 	hist->record_sketch(fp);
 	hist->release_lock();
 

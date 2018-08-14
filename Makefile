@@ -79,6 +79,12 @@ ta:
 docs: */**
 	doxygen conf/doxygen/doxygen.config
 
+run_youtube:
+	bin/streaming/main filetype edgelist file streaming/data/youtube_data/base-youtube-0.txt niters 10000 stream_file streaming/data/youtube_data/stream-youtube-0.txt decay 100 lambda 0.02 interval 5000 sketch_file streaming/analyze/data/sketch-youtube-0.txt chunkify 1 chunk_size 20
+	rm -rf streaming/data/youtube_data/base-youtube-0.txt.*
+	rm -rf streaming/data/youtube_data/base-youtube-0.txt_*
+
+
 
 	
 
