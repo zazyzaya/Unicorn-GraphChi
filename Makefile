@@ -80,22 +80,22 @@ docs: */**
 	doxygen conf/doxygen/doxygen.config
 
 run_youtube:
-	bin/streaming/main filetype edgelist file streaming/data/youtube_data/base-youtube-0.txt niters 10000 stream_file streaming/data/youtube_data/stream-youtube-0.txt decay 100 lambda 0.02 interval 5000 sketch_file streaming/analyze/data/sketch-youtube-0.txt chunkify 1 chunk_size 20
+	bin/streaming/main filetype edgelist file streaming/data/youtube_data/base-youtube-0.txt niters 10000 stream_file streaming/data/youtube_data/stream-youtube-0.txt decay 100 lambda 0.02 interval 5000 sketch_file streaming/analyze/train-data/sketch-youtube-0.txt chunkify 1 chunk_size 20
 	rm -rf streaming/data/youtube_data/base-youtube-0.txt.*
 	rm -rf streaming/data/youtube_data/base-youtube-0.txt_*
-	bin/streaming/main filetype edgelist file streaming/data/youtube_data/base-youtube-4.txt niters 10000 stream_file streaming/data/youtube_data/stream-youtube-4.txt decay 100 lambda 0.02 interval 5000 sketch_file streaming/analyze/data/sketch-youtube-4.txt chunkify 1 chunk_size 20
+	bin/streaming/main filetype edgelist file streaming/data/youtube_data/base-youtube-4.txt niters 10000 stream_file streaming/data/youtube_data/stream-youtube-4.txt decay 100 lambda 0.02 interval 5000 sketch_file streaming/analyze/train-data/sketch-youtube-4.txt chunkify 1 chunk_size 20
 	rm -rf streaming/data/youtube_data/base-youtube-4.txt.*
 	rm -rf streaming/data/youtube_data/base-youtube-4.txt_*
-	bin/streaming/main filetype edgelist file streaming/data/youtube_data/base-youtube-8.txt niters 10000 stream_file streaming/data/youtube_data/stream-youtube-8.txt decay 100 lambda 0.02 interval 5000 sketch_file streaming/analyze/data/sketch-youtube-8.txt chunkify 1 chunk_size 20
+	bin/streaming/main filetype edgelist file streaming/data/youtube_data/base-youtube-8.txt niters 10000 stream_file streaming/data/youtube_data/stream-youtube-8.txt decay 100 lambda 0.02 interval 5000 sketch_file streaming/analyze/train-data/sketch-youtube-8.txt chunkify 1 chunk_size 20
 	rm -rf streaming/data/youtube_data/base-youtube-8.txt.*
 	rm -rf streaming/data/youtube_data/base-youtube-8.txt_*
-	bin/streaming/main filetype edgelist file streaming/data/youtube_data/base-youtube-12.txt niters 10000 stream_file streaming/data/youtube_data/stream-youtube-12.txt decay 100 lambda 0.02 interval 5000 sketch_file streaming/analyze/data/sketch-youtube-12.txt chunkify 1 chunk_size 20
+	bin/streaming/main filetype edgelist file streaming/data/youtube_data/base-youtube-12.txt niters 10000 stream_file streaming/data/youtube_data/stream-youtube-12.txt decay 100 lambda 0.02 interval 5000 sketch_file streaming/analyze/train-data/sketch-youtube-12.txt chunkify 1 chunk_size 20
 	rm -rf streaming/data/youtube_data/base-youtube-12.txt.*
 	rm -rf streaming/data/youtube_data/base-youtube-12.txt_*
-	bin/streaming/main filetype edgelist file streaming/data/youtube_data/base-youtube-16.txt niters 10000 stream_file streaming/data/youtube_data/stream-youtube-16.txt decay 100 lambda 0.02 interval 5000 sketch_file streaming/analyze/data/sketch-youtube-16.txt chunkify 1 chunk_size 20
+	bin/streaming/main filetype edgelist file streaming/data/youtube_data/base-youtube-16.txt niters 10000 stream_file streaming/data/youtube_data/stream-youtube-16.txt decay 100 lambda 0.02 interval 5000 sketch_file streaming/analyze/train-data/sketch-youtube-16.txt chunkify 1 chunk_size 20
 	rm -rf streaming/data/youtube_data/base-youtube-16.txt.*
 	rm -rf streaming/data/youtube_data/base-youtube-16.txt_*
-	bin/streaming/main filetype edgelist file streaming/data/youtube_data/base-youtube-20.txt niters 10000 stream_file streaming/data/youtube_data/stream-youtube-20.txt decay 100 lambda 0.02 interval 5000 sketch_file streaming/analyze/data/sketch-youtube-20.txt chunkify 1 chunk_size 20
+	bin/streaming/main filetype edgelist file streaming/data/youtube_data/base-youtube-20.txt niters 10000 stream_file streaming/data/youtube_data/stream-youtube-20.txt decay 100 lambda 0.02 interval 5000 sketch_file streaming/analyze/train-data/sketch-youtube-20.txt chunkify 1 chunk_size 20
 	rm -rf streaming/data/youtube_data/base-youtube-20.txt.*
 	rm -rf streaming/data/youtube_data/base-youtube-20.txt_*
 
