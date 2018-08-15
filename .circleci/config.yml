@@ -29,6 +29,12 @@ jobs:
           command: 'cd ./streaming/data && make all'
           no_output_timeout: '90m'
       - run:
+          name: debug-file-there
+          command: 'cd ./streaming/data && ls'
+      - run:
+          name: debug-file-and-her
+          command: 'cd ../analyze/data && ls'
+      - run:
           name: run-graphchi
           command: 'make run_all'
       - run:
