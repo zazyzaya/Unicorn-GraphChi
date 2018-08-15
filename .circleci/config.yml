@@ -11,7 +11,7 @@ jobs:
       - checkout
       - run:
           name: dependencies
-          command: 'apt-get install -y g++-4.9'
+          command: 'apt-get install -y python g++-4.9'
       - run:
           name: compile
           command: 'make sdebug'
