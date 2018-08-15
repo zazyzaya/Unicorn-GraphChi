@@ -33,7 +33,7 @@ jobs:
           command: 'cd ./streaming/data && ls'
       - run:
           name: debug-file-and-her
-          command: 'cd ../analyze/data && ls'
+          command: 'cd ./streaming/analyze/data && ls'
       - run:
           name: run-graphchi
           command: 'make run_all'
