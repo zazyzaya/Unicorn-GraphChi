@@ -10,6 +10,9 @@ jobs:
     steps:
       - checkout
       - run:
+          name: dependencies
+          command: 'apt-get install -y g++-4.9'
+      - run:
           name: compile
           command: 'make sdebug'
       - run:
@@ -32,12 +35,12 @@ jobs:
               git config --global user.name $GH_NAME
               mkdir -p output
               cd output
-              mv ./streaming/analyze/out.txt .
+              mv ../streaming/analyze/out.txt .
               git status
               # is there any change
               if ! git diff-index --exit-code --quiet HEAD; then
                 echo 'Committing...'
-                git commit -a -m "[ci skip] CircleCI automated documentation generation, based on commit ${CIRCLE_SHA1}"
+                git commit -a -m "[ci skip] CircleCI's commit ${CIRCLE_SHA1}"
                 git push -q https://${GH_TOKEN}@github.com/crimson-unicorn/graphchi-cpp.git $TARGET_BRANCH
               else
                 echo 'Nothing to commit.'
