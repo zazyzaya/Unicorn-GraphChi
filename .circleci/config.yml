@@ -10,6 +10,12 @@ jobs:
     steps:
       - checkout
       - run:
+          name: update
+          command: 'apt-get update -qq'
+      - run:
+          name: sudo
+          command: 'apt-get install -y sudo'
+      - run:
           name: dependencies
           command: 'apt-get install -y python g++-4.9'
       - run:
