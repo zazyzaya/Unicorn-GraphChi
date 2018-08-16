@@ -31,6 +31,7 @@ jobs:
       - run:
           name: run-graphchi
           command: 'make run_youtube && make run_attack'
+          no_output_timeout: '60m'
       - run:
           name: analyze
           command: 'cd ./streaming/analyze && python model.py --train_dir train-data --test_dir test-data > out.txt'

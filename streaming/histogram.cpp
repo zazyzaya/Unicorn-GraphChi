@@ -174,12 +174,13 @@ void Histogram::record_sketch(FILE* fp) {
 
 /*!
  * @brief Print the histogram map for debugging.
+ * Simply returns for now since it slows the program down in CircleCI.
  *
  */
 void Histogram::print_histogram() {
-	std::map<unsigned long, struct hist_elem>::iterator it;
-	logstream(LOG_DEBUG) << "Printing histogram map to the console..." << std::endl;
-	for (it = this->histogram_map.begin(); it != this->histogram_map.end(); it++)
-		logstream(LOG_INFO) << "[" << it->first << "]->" << (it->second).cnt << "  ";
+	// std::map<unsigned long, struct hist_elem>::iterator it;
+	// logstream(LOG_DEBUG) << "Printing histogram map to the console..." << std::endl;
+	// for (it = this->histogram_map.begin(); it != this->histogram_map.end(); it++)
+	// 	logstream(LOG_INFO) << "[" << it->first << "]->" << (it->second).cnt << "  ";
 	return;
 }
