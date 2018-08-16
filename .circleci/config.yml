@@ -19,6 +19,15 @@ jobs:
           name: dependencies
           command: 'apt-get install -y python g++-4.9'
       - run:
+          name: python
+          command: 'apt-get install -y python-pip python-dev build-essential'
+      - run:
+          name: pip
+          command: 'pip install --upgrade pip'
+      - run:
+          name: python-packages
+          command: 'pip install numpy scipy scikit-learn'
+      - run:
           name: compile
           command: 'make sdebug'
       - run:
