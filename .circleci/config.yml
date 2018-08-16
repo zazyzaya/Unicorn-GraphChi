@@ -45,10 +45,12 @@ jobs:
           name: Deploy
           command: |
             if [ $CIRCLE_BRANCH == $SOURCE_BRANCH ]; then
+              git config --global user.email "hanx@g.harvard.edu"
+              git config --global user.name "Xueyuan Michael Han"
               git status
-              git add .
               # is there any change
               if ! git diff-index --exit-code --quiet HEAD; then
+                git add .
                 echo 'Committing...'
                 git commit -a -m "[ci skip] CircleCI's commit ${CIRCLE_SHA1}"
                 git push -q https://${GH_TOKEN}@github.com/crimson-unicorn/graphchi-cpp.git $TARGET_BRANCH
