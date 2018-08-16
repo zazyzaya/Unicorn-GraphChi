@@ -57,6 +57,7 @@ void * dynamic_graph_reader(void * info) {
 	FILE * fp = fopen(sketch_file.c_str(), "a+");
 	if (fp == NULL) {
 		logstream(LOG_ERROR) << "Cannot open the sketch file to write: " << sketch_file << ". Error code: " << strerror(errno) << std::endl;
+		assert(false);
 		return NULL;
 	}
 

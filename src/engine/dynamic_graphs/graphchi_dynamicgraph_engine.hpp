@@ -310,7 +310,7 @@ namespace graphchi {
             max_vertex_id = std::max(max_vertex_id, dst);
             max_vertex_id = std::max(max_vertex_id, src);
 #ifdef DEBUG
-            logstream(LOG_INFO) << "Current Max Vertex ID is: " << max_vertex_id << std::endl;
+            logstream(LOG_DEBUG) << "Current Max Vertex ID is: " << max_vertex_id << std::endl;
 #endif
             
             // Extend degree and vertex data files
