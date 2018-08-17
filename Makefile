@@ -80,11 +80,11 @@ docs: */**
 	doxygen conf/doxygen/doxygen.config
 
 run_youtube:
-	number=0 ; while [[ $$number -le 92 ]] ; do \
-		bin/streaming/main filetype edgelist file streaming/data/youtube_data/base-youtube-$$number.txt niters 10000 stream_file streaming/data/youtube_data/stream-youtube-$$number.txt decay 100 lambda 0.02 interval 5000 sketch_file streaming/analyze/train-data/sketch-youtube-$$number.txt chunkify 1 chunk_size 20 ; \
-		rm -rf streaming/data/youtube_data/base-youtube-$$number.txt.* ; \
-		rm -rf streaming/data/youtube_data/base-youtube-$$number.txt_* ; \
-		((number = number + 4)) ; \
+	number=0 ; while [ "$number" -le "92" ] ; do \
+		bin/streaming/main filetype edgelist file streaming/data/youtube_data/base-youtube-$number.txt niters 10000 stream_file streaming/data/youtube_data/stream-youtube-$number.txt decay 100 lambda 0.02 interval 5000 sketch_file streaming/analyze/train-data/sketch-youtube-$number.txt chunkify 1 chunk_size 20 ; \
+		rm -rf streaming/data/youtube_data/base-youtube-$number.txt.* ; \
+		rm -rf streaming/data/youtube_data/base-youtube-$number.txt_* ; \
+		number = `expr $number + 4` ; \
 	done
 	
 run_gmail:
