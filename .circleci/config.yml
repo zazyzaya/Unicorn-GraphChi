@@ -35,12 +35,16 @@ jobs:
           command: 'cd ./streaming/data && wget https://github.com/sbustreamspot/sbustreamspot-data/raw/master/all.tar.gz && tar -xzf all.tar.gz'
       - run:
           name: prepare-data
-          command: 'cd ./streaming/data && make youtube'
+          command: 'cd ./streaming/data && make youtube && make attack'
           no_output_timeout: '90m'
       - run:
           name: run-graphchi
-          command: 'make run_youtube'
+          command: 'make run_youtube && make run_attack'
           no_output_timeout: '120m'
+      - run:
+          name: analyze
+          command: 'cd ./streaming/analyze && python model.py --train_dir train-data --test_dir test-data > out.txt'
+          no_output_timeout: '90m'
       - deploy:
           name: Deploy
           command: |
