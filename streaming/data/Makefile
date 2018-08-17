@@ -7,13 +7,13 @@ endef
 
 youtube:
 	mkdir -p youtube_data
-	NUMBER=0 ; while [ "$NUMBER" -le "96" ] ; do \
-		START=`expr $NUMBER + 1` ; \
-		END=`expr $NUMBER + 3` ; \
-		python preprocess-ss.py $NUMBER $NUMBER $START $END all.tsv base-youtube-$NUMBER.txt stream-youtube-$NUMBER.txt ; \
-		mv base-youtube-$NUMBER.txt youtube_data ; \
-		mv stream-$youtube-$NUMBER.txt youtube_data ; \
-		NUMBER=`expr $NUMBER + 4` ; \
+	number=0 ; while [ $$number -le 96 ] ; do \
+		start=`expr $$number + 1` ; \
+		end=`expr $$number + 3` ; \
+		python preprocess-ss.py $$number $number $start $end all.tsv base-youtube-$$number.txt stream-youtube-$$number.txt ; \
+		mv base-youtube-$$number.txt youtube_data ; \
+		mv stream-youtube-$$number.txt youtube_data ; \
+		number=`expr $$number + 4` ; \
 	done
 
 gmail:
