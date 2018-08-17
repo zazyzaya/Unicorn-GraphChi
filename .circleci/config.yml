@@ -39,7 +39,7 @@ jobs:
           no_output_timeout: '90m'
       - run:
           name: run-graphchi
-          command: 'make run_youtube && make run_attack'
+          command: 'make run_youtube && make run_attack && make run_validate'
           no_output_timeout: '120m'
       - run:
           name: analyze
