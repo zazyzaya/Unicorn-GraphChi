@@ -6,12 +6,13 @@ define preprocess
 endef
 
 youtube:
-	$(call preprocess,0,1,2,3,youtube)
-	$(call preprocess,4,5,6,7,youtube)
-	$(call preprocess,8,9,10,11,youtube)
-	$(call preprocess,12,13,14,15,youtube)
-	$(call preprocess,16,17,18,19,youtube)
-	$(call preprocess,20,21,22,23,youtube)
+	mkdir -p youtube_data
+	number=0 ; while [[ $$number -le 96 ]] ; do \
+		python preprocess-ss.py $$number $$number $$(( $(number) + 1 )) $$(( $(number) + 3 )) all.tsv base-youtube-$$number.txt stream-youtube-$$number.txt ; \
+		mv base-youtube-$$number.txt youtube_data ; \
+		mv stream-$youtube-$$number.txt youtube_data ; \
+		((number = number + 4)) ; \
+	done
 
 gmail:
 	$(call preprocess,100,101,102,103,gmail)
