@@ -36,7 +36,7 @@ jobs:
       - run:
           name: prepare-data
           command: 'cd ./streaming/data && make youtube && make attack'
-          no_output_timeout: '90m'
+          no_output_timeout: '10h'
       - run:
           name: run-graphchi
           command: 'make run_youtube && make run_attack && make run_validate'
