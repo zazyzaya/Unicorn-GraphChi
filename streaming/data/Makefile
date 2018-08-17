@@ -10,7 +10,7 @@ youtube:
 	number=0 ; while [ $$number -le 96 ] ; do \
 		start=`expr $$number + 1` ; \
 		end=`expr $$number + 3` ; \
-		python preprocess-ss.py $$number $number $start $end all.tsv base-youtube-$$number.txt stream-youtube-$$number.txt ; \
+		python preprocess-ss.py $$number $$number $$start $$end all.tsv base-youtube-$$number.txt stream-youtube-$$number.txt ; \
 		mv base-youtube-$$number.txt youtube_data ; \
 		mv stream-youtube-$$number.txt youtube_data ; \
 		number=`expr $$number + 4` ; \
