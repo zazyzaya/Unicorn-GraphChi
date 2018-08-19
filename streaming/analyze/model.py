@@ -15,7 +15,6 @@ from medoids import _k_medoids_spawn_once
 from scipy.spatial.distance import pdist, squareform, hamming
 from sklearn.metrics import silhouette_score
 
-
 class Model():
 	"""
 	Each training graph constructs a model, which may be merged with other models if possible.
@@ -32,6 +31,13 @@ class Model():
 		self.thresholds = thresholds
 		self.members = members
 		self.evolution = evolution
+
+	def print_thresholds(self):
+		print self.thresholds
+
+	def print_evolution(self):
+		print self.evolution
+
 
 NUM_TRIALS = 20
 NUM_STDS = 3.0
@@ -61,7 +67,7 @@ test_files = os.listdir(test_dir_name)	# The testing file names within that dire
 # @models contains a list of models from each file.
 models = []
 
-for input_train_file in train_files:
+for model_num, input_train_file in enumerate(train_files):
 	with open(os.path.join(train_dir_name, input_train_file), 'r') as f:
 		sketches = []	# The sketch on row i is the ith stage of the changing graph.
 
@@ -162,11 +168,18 @@ for input_train_file in train_files:
 						break	# We simply move on to the next @elem_idx.
 					else:
 						# Otherwise, we record @current in the @evolution.
+						prev = current
 						evolution.append(current)
 
 		# Now that we have @evolution, we have all the information we need for our model. We create the model and save it in @models.
 		new_model = Model(cluster_medoids, cluster_means, cluster_thresholds, cluster_members, evolution)
+		
+		print "Model " + str(model_num) + " is done!"
+		new_model.print_thresholds()
+		new_model.print_evolution()
+		
 		models.append(new_model)
+
 	# We are done with this training file. Close the file and proceed to the next file.
 	f.close()
 
