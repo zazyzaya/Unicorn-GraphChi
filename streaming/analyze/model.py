@@ -147,14 +147,13 @@ for model_num, input_train_file in enumerate(train_files):
 			cluster_dists = [dists[cluster_center[cluster_idx]][skt] for skt in cluster_sketches if skt != cluster_center[cluster_idx]]
 			# Now we can calculate the threshold based on @mean_dist and @std_dist.
 			if len(cluster_dists) == 0: # This cluster has only one member.
-				meam_dist = 0.0
+				mean_dist = 0.0
 				std_dist = 0.0
 			else:
-				mean_dist = np.mean(cluster_dists)
+				mean_dist = np.max(cluster_dists)
 				std_dist = np.std(cluster_dists)
 			cluster_means[cluster_idx] = mean_dist
 			cluster_thresholds[cluster_idx] = mean_dist + NUM_STDS * std_dist
-
 		# The last step of generating a model from the training graph is to compute the evolution of the graph based on its members and the cluster index to which they belong.
 		evolution = []
 		prev = -1 	# Check what cluster index a previous sketch is in.
