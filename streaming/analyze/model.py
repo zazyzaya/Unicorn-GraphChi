@@ -197,11 +197,11 @@ for input_test_file in test_files:
 		sketches = np.array(sketches)
 
 		abnormal = True # Flag signalling whether the test graph is abnormal.
-		check_next_model = False	# Flag signalling whether we should proceed to check with the next model because the current one does not fit.
 		# We now fit the sketch vectors in @sketches to each model in @models. 
 		# As long as the test graph could fit into one of the models, we will set the @abnormal flag to False.
 		# If it could not fit into any of the models, the @abnormal flag remains True and we will signal the user.
 		for model in models:
+			check_next_model = False	# Flag signalling whether we should proceed to check with the next model because the current one does not fit.
 			current_evolution_idx = 0 
 			current_cluster_idx = model.evolution[current_evolution_idx]
 			current_medoid = model.medoids[current_cluster_idx]	# Get the medoid of the current cluster.
