@@ -32,3 +32,23 @@ cnn:
 	$(call preprocess,500,501,502,503,cnn)
 
 all: youtube gmail vgame attack download cnn
+
+wget:
+	mkdir -p wget_data
+	cd wget_data && mkdir -p train
+	number=0 ; while [ $$number -le 99 ] ; do \
+		python preprocess-camflow.py $$number train_edges_wget.txt wget_data/train/base-wget-$$number.txt wget_data/train/stream-wget-$$number.txt ; \
+		number=`expr $$number + 1` ; \
+	done
+
+wget_attack:
+	mkdir -p wget_data
+	cd wget_data && mkdir -p test
+	python preprocess-camflow.py 0 attack_edges_wget_1.txt wget_data/test/base-wget-attack.txt wget_data/test/stream-wget-attack.txt
+
+
+
+
+
+
+

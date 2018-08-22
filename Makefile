@@ -81,7 +81,7 @@ docs: */**
 
 run_youtube:
 	number=92 ; while [ $$number -le 96 ] ; do \
-		bin/streaming/main filetype edgelist file streaming/data/youtube_data/base-youtube-$$number.txt niters 10000 stream_file streaming/data/youtube_data/stream-youtube-$$number.txt decay 100 lambda 0.02 interval 5000 sketch_file streaming/analyze/train-data/sketch-youtube-$$number.txt chunkify 1 chunk_size 20 ; \
+		bin/streaming/main filetype edgelist file streaming/data/youtube_data/base-youtube-$$number.txt niters 10000 stream_file streaming/data/youtube_data/stream-youtube-$$number.txt decay 100 lambda 0.02 interval 5000 sketch_file streaming/analyze/train-data-youtube/sketch-youtube-$$number.txt chunkify 1 chunk_size 20 ; \
 		rm -rf streaming/data/youtube_data/base-youtube-$$number.txt.* ; \
 		rm -rf streaming/data/youtube_data/base-youtube-$$number.txt_* ; \
 		number=`expr $$number + 4` ; \
@@ -108,21 +108,37 @@ run_cnn:
 	rm -rf streaming/data/cnn_data/base-cnn-500.txt_*
 
 run_attack:
-	bin/streaming/main filetype edgelist file streaming/data/attack_data/base-attack-300.txt niters 10000 stream_file streaming/data/attack_data/stream-attack-300.txt decay 100 lambda 0.02 interval 5000 sketch_file streaming/analyze/test-data/sketch-attack-300.txt chunkify 1 chunk_size 20
+	bin/streaming/main filetype edgelist file streaming/data/attack_data/base-attack-300.txt niters 10000 stream_file streaming/data/attack_data/stream-attack-300.txt decay 100 lambda 0.02 interval 5000 sketch_file streaming/analyze/test-data-youtube/sketch-attack-300.txt chunkify 1 chunk_size 20
 	rm -rf streaming/data/attack_data/base-attack-300.txt.*
 	rm -rf streaming/data/attack_data/base-attack-300.txt_*
 
 run_validate:
-	bin/streaming/main filetype edgelist file streaming/data/youtube_data/base-youtube-88.txt niters 10000 stream_file streaming/data/youtube_data/stream-youtube-88.txt decay 100 lambda 0.02 interval 5000 sketch_file streaming/analyze/test-data/sketch-youtube-88.txt chunkify 1 chunk_size 20
+	bin/streaming/main filetype edgelist file streaming/data/youtube_data/base-youtube-88.txt niters 10000 stream_file streaming/data/youtube_data/stream-youtube-88.txt decay 100 lambda 0.02 interval 5000 sketch_file streaming/analyze/test-data-youtube/sketch-youtube-88.txt chunkify 1 chunk_size 20
 	rm -rf streaming/data/youtube_data/base-youtube-88.txt.*
 	rm -rf streaming/data/youtube_data/base-youtube-88.txt_*
-	bin/streaming/main filetype edgelist file streaming/data/youtube_data/base-youtube-96.txt niters 10000 stream_file streaming/data/youtube_data/stream-youtube-96.txt decay 100 lambda 0.02 interval 5000 sketch_file streaming/analyze/test-data/sketch-youtube-96.txt chunkify 1 chunk_size 20
+	bin/streaming/main filetype edgelist file streaming/data/youtube_data/base-youtube-96.txt niters 10000 stream_file streaming/data/youtube_data/stream-youtube-96.txt decay 100 lambda 0.02 interval 5000 sketch_file streaming/analyze/test-data-youtube/sketch-youtube-96.txt chunkify 1 chunk_size 20
 	rm -rf streaming/data/youtube_data/base-youtube-96.txt.*
 	rm -rf streaming/data/youtube_data/base-youtube-96.txt_*
 
 run_all: run_youtube run_gmail run_vgame run_download run_cnn run_attack run_validate
 
 
-	
+run_wget_train:
+	cd streaming/analyze && mkdir -p train-data-wget
+	number=0 ; while [ $$number -le 99 ] ; do \
+		bin/streaming/main filetype edgelist file streaming/data/wget_data/train/base-wget-$$number.txt niters 10000 stream_file streaming/data/wget_data/train/stream-youtube-$$number.txt decay 100 lambda 0.02 interval 200 sketch_file streaming/analyze/train-data-wget/sketch-wget-$$number.txt chunkify 1 chunk_size 20 ; \
+		rm -rf streaming/data/wget_data/train/base-wget-$$number.txt.* ; \
+		rm -rf streaming/data/wget_data/train/base-wget-$$number.txt_* ; \
+		number=`expr $$number + 1` ; \
+	done
+
+run_wget_test:
+	cd streaming/analyze && mkdir -p test-data-wget
+	bin/streaming/main filetype edgelist file streaming/data/wget_data/test/base-wget-test.txt niters 10000 stream_file streaming/data/wget_data/test/stream-wget-test.txt decay 100 lambda 0.02 interval 200 sketch_file streaming/analyze/test-data-wget/sketch-wget-test.txt chunkify 1 chunk_size 20
+	rm -rf streaming/data/wget_data/test/base-wget-test.txt.*
+	rm -rf streaming/data/wget_data/test/base-wget-test.txt_*
+	bin/streaming/main filetype edgelist file streaming/data/wget_data/test/base-wget-attack.txt niters 10000 stream_file streaming/data/wget_data/test/stream-wget-attack.txt decay 100 lambda 0.02 interval 5000 sketch_file streaming/analyze/test-data-wget/sketch-wget-attack.txt chunkify 1 chunk_size 20
+	rm -rf streaming/data/wget_data/test/base-wget-attack.txt.*
+	rm -rf streaming/data/wget_data/test/base-wget-attack.txt_*
 
 	
