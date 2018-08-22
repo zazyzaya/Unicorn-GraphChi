@@ -32,8 +32,12 @@ jobs:
           command: 'make sdebug'
       - run:
           name: run-graphchi
-          command: 'make run_wget_train'
+          command: 'make run_wget_train && make run_wget_test'
           no_output_timeout: '120m'
+      - run:
+          name: analyze
+          command: 'cd ./streaming/analyze && python model.py --train_dir train-data-wget --test_dir test-data-wget > out.txt'
+          no_output_timeout: ‘90m'
       - deploy:
           name: Deploy
           command: |
