@@ -36,8 +36,8 @@ jobs:
           no_output_timeout: '120m'
       - run:
           name: analyze
-          command: 'cd ./streaming/analyze && python model.py --train_dir train-data-wget --test_dir test-data-wget > out.txt'
-          no_output_timeout: '3h'
+          command: 'cd ./streaming/analyze && python model.py --train_dir train-data-wget --test_dir test-data-wget'
+          no_output_timeout: '4h'
       - deploy:
           name: Deploy
           command: |
