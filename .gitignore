@@ -184,3 +184,4 @@ xcuserdata
 # Large data file from StreamSpot
 *.tsv
 *.tar.gz
+*.db
