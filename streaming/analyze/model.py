@@ -95,7 +95,8 @@ for model_num, input_train_file in enumerate(train_files):
 		best_cluster_labels = None	# A vector contains labels for each sketch.
 		best_medoids = None	# A vector contains all medoids of clusters and their members (see @Medoid class in @medoids.py).
 
-		for num_clusters in range(2, sketches.shape[0]):	# At least 2 cluster and at most every sketch belongs to a different cluster.
+		# for num_clusters in range(2, sketches.shape[0]):	# At least 2 cluster and at most every sketch belongs to a different cluster.
+		for num_clusters in range(2, 6):	# Try 2 - 5 for now.
 			for trial in range(NUM_TRIALS):	# We run many trials for a given number of clusters for best performance.
 				# We use @_k_medoids_spawn_once from @medoids.py for computation.
 				_, medoids = _k_medoids_spawn_once(points=range(sketches.shape[0]), k=num_clusters, distance=distance, max_iterations=1000, verbose=False)
