@@ -12,6 +12,7 @@
  */
 #include "include/histogram.hpp"
 #include <math.h>
+#include <kissdb.h>
 
 Histogram* Histogram::histogram;
 
