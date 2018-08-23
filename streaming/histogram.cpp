@@ -24,7 +24,6 @@ Histogram* Histogram::get_instance() {
 }
 
 Histogram::~Histogram(){
-	this->size = 0;
 	delete histogram;
 }
 
