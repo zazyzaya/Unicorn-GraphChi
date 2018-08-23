@@ -169,4 +169,6 @@ extern int KISSDB_Iterator_next(KISSDB_Iterator *dbi,void *kbuf,void *vbuf);
 }
 #endif
 
+#include "../kissdb.cpp"
+
 #endif
