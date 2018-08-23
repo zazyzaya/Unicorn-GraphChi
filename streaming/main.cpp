@@ -16,6 +16,7 @@
 #include "include/def.hpp"
 #include "include/helper.hpp"
 #include "include/histogram.hpp"
+#include "include/kissdb.h"
 #include "graphchi_basic_includes.hpp"
 #include "logger/logger.hpp"
 #include "wl.hpp"
@@ -41,6 +42,7 @@ float LAMBDA;
 int INTERVAL;
 bool CHUNKIFY = true;
 int CHUNK_SIZE;
+KISSDB db;
 
 /* The following varible is global. */
 bool next_itr = false;
@@ -248,6 +250,14 @@ int main(int argc, const char ** argv) {
 	/* Process input file - if not already preprocessed */
 	int nshards = convert_if_notexists<EdgeDataType>(filename, get_option_string("nshards", "auto"));
 
+	/* Create a simple database to deal with hash values. */
+	logstream(LOG_DEBUG) << "Opening a new empty database call unicorn.db...\n" << std::endl;
+
+	if (KISSDB_open(&db, "unicorn.db", KISSDB_OPEN_MODE_RWCREAT, 1000000, sizeof(unsigned long), sizeof(struct hist_elem))) {
+		logstream(LOG_ERROR) << "Opening unicorn.db failed!" << std::endl;
+		return 1;
+	}
+
 	/* Create the engine object. */
 	dyngraph_engine = new graphchi_dynamicgraph_engine<VertexDataType, EdgeDataType>(filename, nshards, scheduler, m); 
 
@@ -296,6 +306,8 @@ int main(int argc, const char ** argv) {
 	if (ret_graph == EBUSY) {
 		logstream(LOG_ERROR) << "graph_barrier cannot be destroyed." << std::endl;
 	}
+
+	KISSDB_close(&db);
 	// metrics_report(m);
 	return 0;
 }
