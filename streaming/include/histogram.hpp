@@ -43,16 +43,14 @@ public:
 private:
 	static Histogram* histogram;
 
-	Histogram(int size = 0) {
-		this->size = size;
+	Histogram() {
 		this->t = 0;
 	}
 
-	std::map<unsigned long, struct hist_elem> histogram_map;
+	std::map<unsigned long, double> histogram_map; /* We use unicorn.db for hash values. histogram_map only maps label to counter. */
 	unsigned long sketch[SKETCH_SIZE];
 	double hash[SKETCH_SIZE];
 
-	int size; /* Number of elements in the histogram_map. */
 	int t; /* If t reaches decay, we decay the cnt and hash value by e^(-lambda).*/
 
 	/* The lock needed for updating histogram map. */

@@ -87,7 +87,7 @@ typedef node_label VertexDataType;
  * 2. r, beta, c: parameters to create hash values. r ~ Gamma(2, 1), c ~ Gamma(2, 1), beta ~ Uniform(0, 1)
  */
 struct hist_elem {
-	double cnt;
+	// double cnt;
 	double r[SKETCH_SIZE];
 	double beta[SKETCH_SIZE];
 	double c[SKETCH_SIZE]; 
