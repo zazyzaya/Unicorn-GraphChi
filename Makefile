@@ -82,7 +82,7 @@ docs: */**
 run_youtube:
 	cd streaming/analyze && mkdir -p train-data-youtube
 	number=0 ; while [ $$number -le 96 ] ; do \
-		bin/streaming/main filetype edgelist file streaming/data/youtube_data/base-youtube-$$number.txt niters 10000 stream_file streaming/data/youtube_data/stream-youtube-$$number.txt decay 100 lambda 0.02 interval 4000 sketch_file streaming/analyze/train-data-youtube/sketch-youtube-$$number.txt chunkify 1 chunk_size 20 ; \
+		bin/streaming/main filetype edgelist file streaming/data/youtube_data/base-youtube-$$number.txt niters 10000 stream_file streaming/data/youtube_data/stream-youtube-$$number.txt decay 100 lambda 0.02 interval 5000 sketch_file streaming/analyze/train-data-youtube/sketch-youtube-$$number.txt chunkify 1 chunk_size 20 ; \
 		rm -rf streaming/data/youtube_data/base-youtube-$$number.txt.* ; \
 		rm -rf streaming/data/youtube_data/base-youtube-$$number.txt_* ; \
 		number=`expr $$number + 4` ; \
@@ -110,7 +110,7 @@ run_cnn:
 
 run_attack:
 	cd streaming/analyze && mkdir -p test-data-youtube
-	bin/streaming/main filetype edgelist file streaming/data/attack_data/base-attack-300.txt niters 10000 stream_file streaming/data/attack_data/stream-attack-300.txt decay 100 lambda 0.02 interval 4000 sketch_file streaming/analyze/test-data-youtube/sketch-attack-300.txt chunkify 1 chunk_size 20
+	bin/streaming/main filetype edgelist file streaming/data/attack_data/base-attack-300.txt niters 10000 stream_file streaming/data/attack_data/stream-attack-300.txt decay 100 lambda 0.02 interval 5000 sketch_file streaming/analyze/test-data-youtube/sketch-attack-300.txt chunkify 1 chunk_size 20
 	rm -rf streaming/data/attack_data/base-attack-300.txt.*
 	rm -rf streaming/data/attack_data/base-attack-300.txt_*
 
