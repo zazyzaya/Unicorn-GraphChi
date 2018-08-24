@@ -32,7 +32,7 @@ jobs:
           command: 'make sdebug'
       - run:
           name: run-graphchi
-          command: 'make run_wget_train && make run_wget_test'
+          command: 'make run_youtube && make run_attack && make run_validate'
           no_output_timeout: '120m'
       - deploy:
           name: Deploy
