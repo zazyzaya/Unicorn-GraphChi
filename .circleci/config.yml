@@ -32,7 +32,7 @@ jobs:
           command: 'make sdebug'
       - run:
           name: analyze_wget
-          command: 'cd ./streaming/analyze && python model.py --train_dir train-data-wget --validate_dir validate-data-wget --test_dir test-data-wget'
+          command: 'cd ./streaming/analyze && python model.py --train_dir train-data-youtube --validate_dir validate-data-youtube --test_dir test-data-youtube'
           no_output_timeout: '90m'
       - deploy:
           name: Deploy
