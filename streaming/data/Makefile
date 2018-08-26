@@ -16,6 +16,15 @@ youtube:
 		number=`expr $$number + 4` ; \
 	done
 
+youtube_v2:
+	mkdir -p youtube_data_v2
+	number=0 ; while [ $$number -le 99 ] ; do \
+		python preprocess-ss-v2.py $$number all.tsv base-youtube-v2-$$number.txt stream-youtube-v2-$$number.txt ; \
+		mv base-youtube-v2-$$number.txt youtube_data_v2 ; \
+		mv stream-youtube-v2-$$number.txt youtube_data_v2 ; \
+		number=`expr $$number + 1` ; \
+	done
+
 gmail:
 	$(call preprocess,100,101,102,103,gmail)
 

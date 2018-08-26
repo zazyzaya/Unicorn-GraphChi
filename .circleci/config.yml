@@ -31,9 +31,12 @@ jobs:
           name: compile
           command: 'make sdebug'
       - run:
-          name: analyze_wget
-          command: 'cd ./streaming/analyze && python model.py --train_dir train-data-youtube --validate_dir validate-data-youtube --test_dir test-data-youtube'
-          no_output_timeout: '90m'
+          name: download-data
+          command: 'cd ./streaming/data && wget https://github.com/sbustreamspot/sbustreamspot-data/raw/master/all.tar.gz && tar -xzf all.tar.gz'
+      - run:
+          name: prepare-data
+          command: 'cd ./streaming/data && make youtube_v2'
+          no_output_timeout: '5h'
       - deploy:
           name: Deploy
           command: |

@@ -54,6 +54,7 @@ if __name__ == "__main__":
 		else:
 			stream_file.write(str(edge[0]) + " " + str(edge[2]) + " " + edge[1] + ":" + edge[3] + ":" + edge[4] + ":" + edge[6] + ":" + edge[7] + ":" + str(edge[8]) + "\n")
 
-
+	print "Done with: " + sys.argv[1]
+	
 	base_file.close()
 	stream_file.close()
