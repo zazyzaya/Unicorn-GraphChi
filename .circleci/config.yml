@@ -31,12 +31,9 @@ jobs:
           name: compile
           command: 'make sdebug'
       - run:
-          name: download-data
-          command: 'cd ./streaming/data && wget https://github.com/sbustreamspot/sbustreamspot-data/raw/master/all.tar.gz && tar -xzf all.tar.gz'
-      - run:
-          name: prepare-data
-          command: 'cd ./streaming/data && make youtube_v2'
-          no_output_timeout: '5h'
+          name: run-graphchi
+          command: 'make run_youtube_v2 && make run_attack_v2'
+          no_output_timeout: '120m'
       - deploy:
           name: Deploy
           command: |
