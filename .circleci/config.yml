@@ -35,7 +35,7 @@ jobs:
           command: 'cd ./streaming/data && wget https://github.com/sbustreamspot/sbustreamspot-data/raw/master/all.tar.gz && tar -xzf all.tar.gz'
       - run:
           name: prepare-data
-          command: 'cd ./streaming/data && make youtube_v2'
+          command: 'cd ./streaming/data && make attack_v2'
           no_output_timeout: '5h'
       - deploy:
           name: Deploy

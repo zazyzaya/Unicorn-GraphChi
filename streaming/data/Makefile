@@ -34,6 +34,15 @@ vgame:
 attack:
 	$(call preprocess,300,301,302,303,attack)
 
+attack_v2:
+	mkdir -p attack_data_v2
+	number=300 ; while [ $$number -le 304 ] ; do \
+		python preprocess-ss-v2.py $$number all.tsv base-attack-v2-$$number.txt stream-attack-v2-$$number.txt ; \
+		mv base-attack-v2-$$number.txt attack_data_v2 ; \
+		mv stream-attack-v2-$$number.txt attack_data_v2 ; \
+		number=`expr $$number + 1` ; \
+	done
+
 download:
 	$(call preprocess,400,401,402,403,download)
 
