@@ -79,15 +79,6 @@ ta:
 docs: */**
 	doxygen conf/doxygen/doxygen.config
 
-run_youtube:
-	cd streaming/analyze && mkdir -p train-data-youtube
-	number=0 ; while [ $$number -le 96 ] ; do \
-		bin/streaming/main filetype edgelist file streaming/data/youtube_data/base-youtube-$$number.txt niters 10000 stream_file streaming/data/youtube_data/stream-youtube-$$number.txt decay 100 lambda 0.02 interval 5000 sketch_file streaming/analyze/train-data-youtube/sketch-youtube-$$number.txt chunkify 1 chunk_size 20 ; \
-		rm -rf streaming/data/youtube_data/base-youtube-$$number.txt.* ; \
-		rm -rf streaming/data/youtube_data/base-youtube-$$number.txt_* ; \
-		number=`expr $$number + 4` ; \
-	done
-
 run_youtube_v2:
 	cd streaming/analyze && mkdir -p train-data-youtube-v2
 	number=0 ; while [ $$number -le 99 ] ; do \
@@ -97,26 +88,6 @@ run_youtube_v2:
 		number=`expr $$number + 1` ; \
 	done
 	
-run_gmail:
-	bin/streaming/main filetype edgelist file streaming/data/gmail_data/base-gmail-100.txt niters 10000 stream_file streaming/data/gmail_data/stream-gmail-100.txt decay 100 lambda 0.02 interval 5000 sketch_file streaming/analyze/train-data/sketch-gmail-100.txt chunkify 1 chunk_size 20
-	rm -rf streaming/data/gmail_data/base-gmail-100.txt.*
-	rm -rf streaming/data/gmail_data/base-gmail-100.txt_*
-
-run_vgame:
-	bin/streaming/main filetype edgelist file streaming/data/vgame_data/base-vgame-200.txt niters 10000 stream_file streaming/data/vgame_data/stream-vgame-200.txt decay 100 lambda 0.02 interval 5000 sketch_file streaming/analyze/train-data/sketch-vgame-200.txt chunkify 1 chunk_size 20
-	rm -rf streaming/data/vgame_data/base-vgame-200.txt.*
-	rm -rf streaming/data/vgame_data/base-vgame-200.txt_*
-
-run_download:
-	bin/streaming/main filetype edgelist file streaming/data/download_data/base-download-400.txt niters 10000 stream_file streaming/data/download_data/stream-download-400.txt decay 100 lambda 0.02 interval 5000 sketch_file streaming/analyze/train-data/sketch-download-400.txt chunkify 1 chunk_size 20
-	rm -rf streaming/data/download_data/base-download-400.txt.*
-	rm -rf streaming/data/download_data/base-download-400.txt_*
-
-run_cnn:
-	bin/streaming/main filetype edgelist file streaming/data/cnn_data/base-cnn-500.txt niters 10000 stream_file streaming/data/cnn_data/stream-cnn-500.txt decay 100 lambda 0.02 interval 5000 sketch_file streaming/analyze/train-data/sketch-cnn-500.txt chunkify 1 chunk_size 20
-	rm -rf streaming/data/cnn_data/base-cnn-500.txt.*
-	rm -rf streaming/data/cnn_data/base-cnn-500.txt_*
-
 run_attack:
 	cd streaming/analyze && mkdir -p test-data-youtube
 	bin/streaming/main filetype edgelist file streaming/data/attack_data/base-attack-300.txt niters 10000 stream_file streaming/data/attack_data/stream-attack-300.txt decay 100 lambda 0.02 interval 5000 sketch_file streaming/analyze/test-data-youtube/sketch-attack-300.txt chunkify 1 chunk_size 20
@@ -140,9 +111,6 @@ run_validate:
 	bin/streaming/main filetype edgelist file streaming/data/youtube_data/base-youtube-96.txt niters 10000 stream_file streaming/data/youtube_data/stream-youtube-96.txt decay 100 lambda 0.02 interval 5000 sketch_file streaming/analyze/test-data-youtube/sketch-youtube-96.txt chunkify 1 chunk_size 20
 	rm -rf streaming/data/youtube_data/base-youtube-96.txt.*
 	rm -rf streaming/data/youtube_data/base-youtube-96.txt_*
-
-run_all: run_youtube run_gmail run_vgame run_download run_cnn run_attack run_validate
-
 
 run_wget_train:
 	cd streaming/analyze && mkdir -p train-data-wget
