@@ -135,6 +135,7 @@ def model(train_files, train_dir_name, num_trials, threshold_metrics, nums_stds)
 					# For each cluster, we calulate the threshold based on the mean/max distances of each member of the cluster from the center, and standard deviations.
 					cluster_threshold = [-1] * best_num_clusters
 					for cluster_idx in range(best_num_clusters):
+						cluster_dists = all_cluster_dists[cluster_idx]
 						if len(cluster_dists) == 0: # This cluster has only one member.
 							param_dist = 0.0
 							std_dist = 0.0
@@ -212,7 +213,7 @@ def test(test_files, test_dir_name, models, index):
 					distance_from_medoid = hamming(sketch, current_medoid)	# Compute the hamming distance between the current medoid and the current test vector.
 					if distance_from_medoid > current_threshold:
 						# We check maybe the evolution has evolved to the next cluster if it exsits.
-						if current_evolution_idx < len(model.evolution):	# If there is actually a next cluster in evolution.
+						if current_evolution_idx < len(model.evolution) - 1:	# If there is actually a next cluster in evolution.
 							current_evolution_idx = current_evolution_idx + 1 # Let's move on to the next cluster and see if it fits.
 							current_cluster_idx = model.evolution[current_evolution_idx]
 							current_medoid = model.medoids[current_cluster_idx]
@@ -283,7 +284,7 @@ if __name__ == "__main__":
 
 	num_stds = args['num_stds']
 	if num_stds is None:	# If this argument is not supplied by the user, we try all possible configurations.
-		num_stds_config = [0.0, 0.1, 0.5, 1.0, 2.0, 2.5, 3.0]
+		num_stds_config = [1.0, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0]
 	else:
 		num_stds_config = [num_stds]
 
