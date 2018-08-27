@@ -118,7 +118,7 @@ run_wget_test:
 run_ruby_train:
 	cd streaming/analyze && mkdir -p train-data-ruby
 	number=0 ; while [ $$number -le 8 ] ; do \
-		bin/streaming/main filetype edgelist file streaming/data/ruby_data/base-ruby-$$number.txt niters 10000 stream_file streaming/data/ruby_data/stream-ruby-$$number.txt decay 30 lambda 0.02 interval 50 sketch_file streaming/analyze/train-data-ruby/sketch-ruby-$$number.txt chunkify 1 chunk_size 2 ; \
+		bin/streaming/main filetype edgelist file streaming/data/ruby_data/base-ruby-$$number.txt niters 10000 stream_file streaming/data/ruby_data/stream-ruby-$$number.txt decay 25 lambda 0.02 interval 25 sketch_file streaming/analyze/train-data-ruby/sketch-ruby-$$number.txt chunkify 1 chunk_size 2 ; \
 		rm -rf streaming/data/ruby_data/base-ruby-$$number.txt.* ; \
 		rm -rf streaming/data/ruby_data/base-ruby-$$number.txt_* ; \
 		number=`expr $$number + 1` ; \
@@ -126,7 +126,7 @@ run_ruby_train:
 
 run_ruby_test:
 	cd streaming/analyze && mkdir -p test-data-ruby
-	bin/streaming/main filetype edgelist file streaming/data/ruby_data/base-ruby-attack.txt niters 10000 stream_file streaming/data/ruby_data/stream-ruby-attack.txt decay 30 lambda 0.02 interval 50 sketch_file streaming/analyze/test-data-ruby/sketch-ruby-attack.txt chunkify 1 chunk_size 2
+	bin/streaming/main filetype edgelist file streaming/data/ruby_data/base-ruby-attack.txt niters 10000 stream_file streaming/data/ruby_data/stream-ruby-attack.txt decay 25 lambda 0.02 interval 25 sketch_file streaming/analyze/test-data-ruby/sketch-ruby-attack.txt chunkify 1 chunk_size 2
 	rm -rf streaming/data/ruby_data/base-ruby-attack.txt.*
 	rm -rf streaming/data/ruby_data/base-ruby-attack.txt_*
 
