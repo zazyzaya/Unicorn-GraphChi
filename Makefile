@@ -126,7 +126,7 @@ run_attack:
 run_attack_v2:
 	cd streaming/analyze && mkdir -p test-data-youtube-v2
 	number=300 ; while [ $$number -le 304 ] ; do \
-		bin/streaming/main filetype edgelist file streaming/data/attack_data_v2/base-attack-v2-$$number.txt niters 10000 stream_file streaming/data/attack_data_v2/stream-attack-v2-$$number.txt decay 100 lambda 0.02 interval 1500 sketch_file streaming/analyze/test-data-youtube-v2/sketch-attack-v2-$$number.txt chunkify 1 chunk_size 20
+		bin/streaming/main filetype edgelist file streaming/data/attack_data_v2/base-attack-v2-$$number.txt niters 10000 stream_file streaming/data/attack_data_v2/stream-attack-v2-$$number.txt decay 100 lambda 0.02 interval 1500 sketch_file streaming/analyze/test-data-youtube-v2/sketch-attack-v2-$$number.txt chunkify 1 chunk_size 20 ; \
 		rm -rf streaming/data/attack_data_v2/base-attack-v2-$$number.txt.* ; \
 		rm -rf streaming/data/attack_data_v2/base-attack-v2-$$number.txt_* ; \
 		number=`expr $$number + 1` ; \
