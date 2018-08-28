@@ -199,6 +199,7 @@ def test(test_files, test_dir_name, models, index):
 
 			sketches = np.array(sketches)
 
+			num_fitted_model = 0	# Calculate the total number of models that can be fitted with the test graph.
 			abnormal = True # Flag signalling whether the test graph is abnormal.
 			# We now fit the sketch vectors in @sketches to each model in @models. 
 			# As long as the test graph could fit into one of the models, we will set the @abnormal flag to False.
@@ -228,11 +229,11 @@ def test(test_files, test_dir_name, models, index):
 							break	# TODO: we have not yet coded recurrent modelling, which could happen.
 				if not check_next_model:
 					abnormal = False	# If we don't need to check with the next model, we know this test graph fits in this model, so we are done.
-					break
+					num_fitted_model = num_fitted_model + 1
 		f.close()
 		total_graphs = total_graphs + 1
 		if not abnormal:	# We have decided that the graph is not abnormal
-			print "This graph: " + input_test_file + " is considered NORMAL"
+			print "This graph: " + input_test_file + " is considered NORMAL (" + str(num_fitted_model) + "/" + str(len(models)) + ")"
 			if "attack" not in input_test_file:
 				predict_correct = predict_correct + 1
 		else:
