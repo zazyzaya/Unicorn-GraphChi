@@ -13,23 +13,26 @@ import random
 import os, sys
 from medoids import _k_medoids_spawn_once
 from scipy.spatial.distance import pdist, squareform, hamming
-from sklearn.metrics import silhouette_score
+from sklearn.metrics import silhouette_score, silhouette_samples
+from copy import deepcopy
 
 class Model():
 	"""
 	Each training graph constructs a model, which may be merged with other models if possible.
 	A model contains the following components:
 	1. A list of medoids, e.g., [M_a, M_b, M_c]
-	2. Parameters of each cluster correspond to the medoids. Currently, it can be mean or max of cluster distances between cluster member and the medoid. e.g., [[A_a, A_b, A_c], ...].
-	3. Thresholds of each cluster correspond to the medoids, e.g., [[T_a, T_b, T_c], ...]
+	2. Parameter of each cluster correspond to the medoids. Currently, it is the mean of cluster distances between cluster member and the medoid. e.g., [A_a, A_b, A_c].
+	3. Thresholds of each cluster correspond to the medoids (for all configuration), e.g., [[T_a, T_b, T_c], ...]
 	4. A list of lists of members belong to each cluster, e.g., [[E_a_1, E_a_2, ...], [E_b_1, E_b_2, ...], [E_c_1, E_c_2, ...]]
-	5. The evolution of the graph based on cluster indices, e.g., We have a total three clusters, [0, 1, 2, 1, 2, ...]
+	5. Confidence vector of the model
+	6. The evolution of the graph based on cluster indices, e.g., We have a total three clusters, [0, 1, 2, 1, 2, ...]
 	"""
-	def __init__(self, medoids, params, thresholds, members, evolution):
+	def __init__(self, medoids, params, thresholds, members, confidence, evolution):
 		self.medoids = medoids
 		self.params = params
 		self.thresholds = thresholds
 		self.members = members
+		self.confidence = confidence
 		self.evolution = evolution
 
 	def print_thresholds(self):
@@ -112,6 +115,8 @@ def model(train_files, train_dir_name, num_trials, threshold_metrics, nums_stds)
 			cluster_members = [[]] * best_num_clusters
 			# @cluster_center contains the index of the medoid of each cluster.
 			cluster_center = [-1] * best_num_clusters
+			# @cluster_param contains the density of each cluster used for normalization.
+			cluster_param = [-1] * best_num_clusters
 			# @all_cluster_dists contains cluster distances of all clusters.
 			all_cluster_dists = [[]] * best_num_clusters
 			for cluster_idx in range(best_num_clusters):
@@ -122,36 +127,36 @@ def model(train_files, train_dir_name, num_trials, threshold_metrics, nums_stds)
 				cluster_members[cluster_idx] = cluster_sketches
 				
 				cluster_dists = [dists[cluster_center[cluster_idx]][skt] for skt in cluster_sketches if skt != cluster_center[cluster_idx]]
+				if len(cluster_dists) == 0:	# This cluster has only one member.
+					cluster_param[cluster_idx] = 0.0
+				else:
+					cluster_param[cluster_idx] = np.mean(cluster_dists)
+				
 				all_cluster_dists[cluster_idx] = cluster_dists
 
 			# Now we can calculate the threshold based on @param_dist and @std_dist for all configurations.
-			cluster_params = []
 			cluster_thresholds = []
 			for threshold_metric in threshold_metrics:
 				for num_stds in nums_stds:
-					# @cluster_param contains a param (currently mean or max) for each cluster
-					cluster_param = [-1] * best_num_clusters
-					# @cluster_thresholds contains a threshold for each cluster.
+					# @cluster_threshold contains a threshold for each cluster.
 					# For each cluster, we calulate the threshold based on the mean/max distances of each member of the cluster from the center, and standard deviations.
 					cluster_threshold = [-1] * best_num_clusters
 					for cluster_idx in range(best_num_clusters):
 						cluster_dists = all_cluster_dists[cluster_idx]
 						if len(cluster_dists) == 0: # This cluster has only one member.
-							param_dist = 0.0
+							threshold_base = 0.0
 							std_dist = 0.0
 						else:
 							if threshold_metric == 'mean':
-								param_dist = np.mean(cluster_dists)
+								threshold_base = np.mean(cluster_dists)
 							elif threshold_metric == 'max':
-								param_dist = np.max(cluster_dists)
+								threshold_base = np.max(cluster_dists)
 							else:
 								print "Input threshold metric is currently not supported. We will the default metric (mean) instead."
-								param_dist = np.mean(cluster_dists)
+								threshold_base = np.mean(cluster_dists)
 							std_dist = np.std(cluster_dists)
-						cluster_param[cluster_idx] = param_dist
-						cluster_threshold[cluster_idx] = param_dist + num_stds * std_dist
-					# Add @cluster_param to @cluster_params and @cluster_threshold to cluster_thresholds
-					cluster_params.append(cluster_param)
+						cluster_threshold[cluster_idx] = threshold_base + num_stds * std_dist
+					# Add @cluster_threshold to cluster_thresholds
 					cluster_thresholds.append(cluster_threshold)
 			# The last step of generating a model from the training graph is to compute the evolution of the graph based on its members and the cluster index to which they belong.
 			evolution = []
@@ -169,8 +174,9 @@ def model(train_files, train_dir_name, num_trials, threshold_metrics, nums_stds)
 							prev = current
 							evolution.append(current)
 
+			model_confidence = confidence(sketches, best_cluster_labels, best_num_clusters, 2)
 			# Now that we have @evolution, we have all the information we need for our model. We create the model and save it in @models.
-			new_model = Model(cluster_medoids, cluster_params, cluster_thresholds, cluster_members, evolution)
+			new_model = Model(cluster_medoids, cluster_param, cluster_thresholds, cluster_members, model_confidence, evolution)
 			
 			print "Model " + str(model_num) + " is done!"
 			new_model.print_thresholds()
@@ -183,6 +189,20 @@ def model(train_files, train_dir_name, num_trials, threshold_metrics, nums_stds)
 	return models
 
 # TODO: We can merge similar models in @models here.
+
+def confidence(train_sketches, train_cluster_labels, best_num_clusters, l):
+	'''
+	Calculate confidence of the model.
+	'''
+	confidence = [0] * len(train_cluster_labels)
+	for n in range(len(train_cluster_labels)):
+		shift_sil = [0] * best_num_clusters
+		for m in range(best_num_clusters):
+			cluster_labels_copy = deepcopy(train_cluster_labels)
+			cluster_labels_copy[n] = m
+			shift_sil[m] = pow(silhouette_samples(train_sketches, cluster_labels_copy, "hamming")[n] + 1, l)
+		confidence[n] = max(shift_sil) / sum(shift_sil)
+	return np.array(confidence)
 
 def test(test_files, test_dir_name, models, index):
 	# Validation/Testing code starts here.
@@ -219,25 +239,31 @@ def test(test_files, test_dir_name, models, index):
 							current_cluster_idx = model.evolution[current_evolution_idx]
 							current_medoid = model.medoids[current_cluster_idx]
 							current_threshold = model.thresholds[index][current_cluster_idx]
+							current_param = model.params[current_cluster_idx]
 							distance_from_medoid = hamming(sketch, current_medoid)
 							if distance_from_medoid > current_threshold:	# if it still does not fit, we consider it abnormal
 								check_next_model = True	# So we know this graph does not fit into this model, but it can probably fit into a different model.
 								break
-							# Else we go check the next sketch in @sketches
 						else:	# If there is not a next cluster in evolution
 							check_next_model = True	# We consider it abnormal in this model and check next model.
 							break	# TODO: we have not yet coded recurrent modelling, which could happen.
 				if not check_next_model:
-					abnormal = False	# If we don't need to check with the next model, we know this test graph fits in this model, so we are done.
+					abnormal = False	
+					# If we don't need to check with the next model, we know this test graph fits in this model, so we are done.
+					# break
+					# However, we would like to see how many models our test graph could fit, so we will test all the models.
 					num_fitted_model = num_fitted_model + 1
+					# print the confidence stats of the model that fits
+					# print "This model fits. Stats: " + str(np.mean(model.confidence))
+				
 		f.close()
 		total_graphs = total_graphs + 1
 		if not abnormal:	# We have decided that the graph is not abnormal
-			print "This graph: " + input_test_file + " is considered NORMAL (" + str(num_fitted_model) + "/" + str(len(models)) + ")"
+			print "This graph: " + input_test_file + " is considered NORMAL (" + str(num_fitted_model) + "/" + str(len(models)) + ")."
 			if "attack" not in input_test_file:
 				predict_correct = predict_correct + 1
 		else:
-			print "This graph: " + input_test_file + " is considered ABNORMAL"
+			print "This graph: " + input_test_file + " is considered ABNORMAL."
 			if "attack" in input_test_file:
 				predict_correct = predict_correct + 1
 	accuracy = predict_correct / total_graphs
@@ -302,7 +328,7 @@ if __name__ == "__main__":
 			print "Threshold metric: " + tm
 			print "Number of standard deviations: " + str(ns)
 			print "Validation accuracy: " + str(validation_accuracy)
-			print "Test accuracy: " + str(test_accuracy)
+			print "Test accuracy: " + str(test_accuracy) + '\n'
 
 
 
