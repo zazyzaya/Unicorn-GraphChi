@@ -10,7 +10,7 @@
 import argparse
 import numpy as np
 import random
-import os, sys, shutil
+import os, sys, shutil, re
 from medoids import _k_medoids_spawn_once
 from scipy.spatial.distance import pdist, squareform, hamming
 from sklearn.metrics import silhouette_score, silhouette_samples
@@ -71,19 +71,17 @@ class Unicorn(MeasurementInterface):
 
 		# Run every training and test graph of the same experiment with the same hyperparameter
 		train_base_dir_name = self.args.base_folder_train	# The directory absolute path name from the user input of base training graphs.
-		train_base_files = os.listdir(train_base_dir_name)
+		train_base_files = sorted(os.listdir(train_base_dir_name))
 		train_stream_dir_name = self.args.stream_folder_train	# The directory absolute path name from the user input of streaming part of the training graphs.
-		train_stream_files = os.listdir(train_stream_dir_name)
+		train_stream_files = sorted(os.listdir(train_stream_dir_name))
 		train_sketch_dir_name = self.args.sketch_folder_train	# The directory absolute path name to save the training graph sketch
 
 		test_base_dir_name = self.args.base_folder_test	# The directory absolute path name from the user input of base test graphs.
-		test_base_files = os.listdir(test_base_dir_name)
+		test_base_files = sorted(os.listdir(test_base_dir_name))
 		test_stream_dir_name = self.args.stream_folder_test	# The directory absolute path name from the user input of streaming part of the test graphs.
-		test_stream_files = os.listdir(test_stream_dir_name)
+		test_stream_files = sorted(os.listdir(test_stream_dir_name))
 		test_sketch_dir_name = self.args.sketch_folder_test
 		
-		print train_base_files
-		print train_stream_files
 
 		for i in range(len(train_base_files)):
 			train_base_file_name = os.path.join(train_base_dir_name, train_base_files[i])
@@ -131,6 +129,29 @@ class Unicorn(MeasurementInterface):
 			run_result = self.call_program(run_cmd)
 			# print run_result
 
+		prog = re.compile("\.txt[\._]")
+		for file_name in os.listdir(train_base_dir_name):
+			file_path = os.path.join(train_base_dir_name, file_name)
+			if re.search(prog, file_path):
+				try:
+					if os.path.isfile(file_path):
+						os.unlink(file_path)
+					elif os.path.isdir(file_path):
+						shutil.rmtree(file_path)
+				except Exception as e:
+					print(e)
+
+		for file_name in os.listdir(test_base_dir_name):
+			file_path = os.path.join(test_base_dir_name, file_name)
+			if re.search(prog, file_path):
+				try:
+					if os.path.isfile(file_path):
+						os.unlink(file_path)
+					elif os.path.isdir(file_path):
+						shutil.rmtree(file_path)
+				except Exception as e:
+					print(e)
+
 		# train_dir_name = self.args['train-dir']	# The directory absolute path name from the user input of training vectors.
 		# train_files = os.listdir(train_dir_name)	# The training file names within that directory.
 		# Note that we will read every file within the directory @train_dir_name.
@@ -138,8 +159,8 @@ class Unicorn(MeasurementInterface):
 		# We do the same for validation/testing files.
 		# test_dir_name = self.args['test-dir']	# The directory absolute path name from the user input of testing vectors.
 		# test_files = os.listdir(test_dir_name)	# The testing file names within that directory.
-		sketch_train_files = os.listdir(train_sketch_dir_name)
-		sketch_test_files = os.listdir(test_sketch_dir_name)
+		sketch_train_files = sorted(os.listdir(train_sketch_dir_name))
+		sketch_test_files = sorted(os.listdir(test_sketch_dir_name))
 
 		# Modeling (training)
 		models = model(sketch_train_files, train_sketch_dir_name, NUM_TRIALS)
