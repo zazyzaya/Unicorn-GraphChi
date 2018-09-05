@@ -159,6 +159,11 @@ class Unicorn(MeasurementInterface):
 
 		return Result(accuracy=test_accuracy)
 
+	def save_final_config(self, configuration):
+	"""called at the end of tuning"""
+		print "Saving Optimal Configuration to a File..."
+		self.manipulator().save_to_file(configuration.data, 'final_config.json')
+
 class Model():
 	"""
 	Each training graph constructs a model, which may be merged with other models if possible.
