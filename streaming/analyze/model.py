@@ -210,13 +210,12 @@ class Model():
 	5. Confidence vector of the model
 	6. The evolution of the graph based on cluster indices, e.g., We have a total three clusters, [0, 1, 2, 1, 2, ...]
 	"""
-	def __init__(self, medoids, mean_thresholds, max_thresholds, stds, members, confidence, evolution):
+	def __init__(self, medoids, mean_thresholds, max_thresholds, stds, members, evolution):
 		self.medoids = medoids
 		self.mean_thresholds = mean_thresholds
 		self.max_thresholds = max_thresholds
 		self.stds = stds
 		self.members = members
-		self.confidence = confidence
 		self.evolution = evolution
 
 	def print_evolution(self):
@@ -332,9 +331,8 @@ def model(train_files, train_dir_name, num_trials):
 							prev = current
 							evolution.append(current)
 
-			model_confidence = confidence(sketches, best_cluster_labels, best_num_clusters, 2)
 			# Now that we have @evolution, we have all the information we need for our model. We create the model and save it in @models.
-			new_model = Model(cluster_medoids, cluster_mean_thresholds, cluster_max_thresholds, cluster_stds, cluster_members, model_confidence, evolution)
+			new_model = Model(cluster_medoids, cluster_mean_thresholds, cluster_max_thresholds, cluster_stds, cluster_members, evolution)
 			
 			print "Model " + str(model_num) + " is done!"
 			new_model.print_evolution()
@@ -346,21 +344,6 @@ def model(train_files, train_dir_name, num_trials):
 	return models
 
 # TODO: We can merge similar models in @models here.
-
-def confidence(train_sketches, train_cluster_labels, best_num_clusters, l):
-	'''
-	Calculate confidence of the model.
-	'''
-	confidence = [0] * len(train_cluster_labels)
-	for n in range(len(train_cluster_labels)):
-		shift_sil = [0] * best_num_clusters
-		for m in range(best_num_clusters):
-			cluster_labels_copy = deepcopy(train_cluster_labels)
-			cluster_labels_copy[n] = m
-			shift_sil[m] = pow(silhouette_samples(train_sketches, cluster_labels_copy, "hamming")[n] + 1, l)
-		confidence[n] = max(shift_sil) / sum(shift_sil)
-	return np.array(confidence)
-
 
 def test(test_files, test_dir_name, models, threshold_metric, num_std):
 	# Validation/Testing code starts here.
@@ -414,8 +397,7 @@ def test(test_files, test_dir_name, models, threshold_metric, num_std):
 					# break
 					# However, we would like to see how many models our test graph could fit, so we will test all the models.
 					num_fitted_model = num_fitted_model + 1
-					# print the confidence stats of the model that fits
-					# print "This model fits. Stats: " + str(np.mean(model.confidence))
+					
 		f.close()
 		total_graphs = total_graphs + 1
 		if not abnormal:	# We have decided that the graph is not abnormal
