@@ -102,7 +102,7 @@ class Unicorn(MeasurementInterface):
 			run_cmd += ' chunk_size ' + str(cfg['chunk-size'])
 
 			run_result = self.call_program(run_cmd)
-			print run_result
+			assert run_result['returncode'] == 0
 			
 
 		for i in range(len(test_base_files)):
@@ -127,7 +127,7 @@ class Unicorn(MeasurementInterface):
 			run_cmd += ' chunk_size ' + str(cfg['chunk-size'])
 
 			run_result = self.call_program(run_cmd)
-			print run_result
+			assert run_result['returncode'] == 0
 
 		prog = re.compile("\.txt[\._]")
 		for file_name in os.listdir(train_base_dir_name):
@@ -166,6 +166,7 @@ class Unicorn(MeasurementInterface):
 		models = model(sketch_train_files, train_sketch_dir_name, NUM_TRIALS)
 		# Testing
 		test_accuracy = test(sketch_test_files, test_sketch_dir_name, models, cfg['threshold-metric'], cfg['num-stds'])
+		print "Configuration: " + cfg['threshold-metric'] + " with " + str(cfg['num-stds'])
 		
 		# For next experiment, remove sketch files from this experiment
 		for sketch_train_file in sketch_train_files:
@@ -183,6 +184,13 @@ class Unicorn(MeasurementInterface):
 					os.unlink(file_to_remove)
 			except Exception as e:
 				print(e)
+
+		# remove Unicorn DB for this configuration
+		try:
+			if os.path.isfile("unicorn.db"):
+				os.unlink("unicorn.db")
+		except Exception as e:
+			print(e)
 
 		return Result(accuracy=test_accuracy)
 
