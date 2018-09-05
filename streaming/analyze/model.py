@@ -69,6 +69,8 @@ class Unicorn(MeasurementInterface):
 	def run(self, desired_result, input, limit):
 		cfg = desired_result.configuration.data
 
+		prog = re.compile("\.txt[\._]")
+
 		# Run every training and test graph of the same experiment with the same hyperparameter
 		train_base_dir_name = self.args.base_folder_train	# The directory absolute path name from the user input of base training graphs.
 		train_base_files = sorted(os.listdir(train_base_dir_name))
@@ -103,7 +105,18 @@ class Unicorn(MeasurementInterface):
 
 			run_result = self.call_program(run_cmd)
 			assert run_result['returncode'] == 0
-			
+
+			# clean up after every training graph is run
+			for file_name in os.listdir(train_base_dir_name):
+				file_path = os.path.join(train_base_dir_name, file_name)
+				if re.search(prog, file_path):
+					try:
+						if os.path.isfile(file_path):
+							os.unlink(file_path)
+						elif os.path.isdir(file_path):
+							shutil.rmtree(file_path)
+					except Exception as e:
+						print(e)
 
 		for i in range(len(test_base_files)):
 			test_base_file_name = os.path.join(test_base_dir_name, test_base_files[i])
@@ -129,28 +142,17 @@ class Unicorn(MeasurementInterface):
 			run_result = self.call_program(run_cmd)
 			assert run_result['returncode'] == 0
 
-		prog = re.compile("\.txt[\._]")
-		for file_name in os.listdir(train_base_dir_name):
-			file_path = os.path.join(train_base_dir_name, file_name)
-			if re.search(prog, file_path):
-				try:
-					if os.path.isfile(file_path):
-						os.unlink(file_path)
-					elif os.path.isdir(file_path):
-						shutil.rmtree(file_path)
-				except Exception as e:
-					print(e)
-
-		for file_name in os.listdir(test_base_dir_name):
-			file_path = os.path.join(test_base_dir_name, file_name)
-			if re.search(prog, file_path):
-				try:
-					if os.path.isfile(file_path):
-						os.unlink(file_path)
-					elif os.path.isdir(file_path):
-						shutil.rmtree(file_path)
-				except Exception as e:
-					print(e)
+			# clean up after every test graph is run
+			for file_name in os.listdir(test_base_dir_name):
+				file_path = os.path.join(test_base_dir_name, file_name)
+				if re.search(prog, file_path):
+					try:
+						if os.path.isfile(file_path):
+							os.unlink(file_path)
+						elif os.path.isdir(file_path):
+							shutil.rmtree(file_path)
+					except Exception as e:
+						print(e)
 
 		# train_dir_name = self.args['train-dir']	# The directory absolute path name from the user input of training vectors.
 		# train_files = os.listdir(train_dir_name)	# The training file names within that directory.
