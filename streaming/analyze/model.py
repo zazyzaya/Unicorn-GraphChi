@@ -81,6 +81,9 @@ class Unicorn(MeasurementInterface):
 		test_stream_dir_name = self.args.stream_folder_test	# The directory absolute path name from the user input of streaming part of the test graphs.
 		test_stream_files = os.listdir(test_stream_dir_name)
 		test_sketch_dir_name = self.args.sketch_folder_test
+		
+		print train_base_files
+		print train_stream_files
 
 		for i in range(len(train_base_files)):
 			train_base_file_name = os.path.join(train_base_dir_name, train_base_files[i])
@@ -89,7 +92,7 @@ class Unicorn(MeasurementInterface):
 			train_sketch_file_name = os.path.join(train_sketch_dir_name, train_sketch_file)
 
 
-			run_cmd = '../../../bin/streaming/main filetype edgelist'
+			run_cmd = '../../bin/streaming/main filetype edgelist'
 			run_cmd += ' file ' + train_base_file_name
 			run_cmd += ' niters 100000'
 			run_cmd += ' stream_file ' + train_stream_file_name
@@ -100,7 +103,9 @@ class Unicorn(MeasurementInterface):
 			run_cmd += ' chunkify 1 '
 			run_cmd += ' chunk_size ' + str(cfg['chunk-size'])
 
-			self.call_program(run_cmd)
+			run_result = self.call_program(run_cmd)
+			# print run_result
+			
 
 		for i in range(len(test_base_files)):
 			test_base_file_name = os.path.join(test_base_dir_name, test_base_files[i])
@@ -112,7 +117,7 @@ class Unicorn(MeasurementInterface):
 			test_sketch_file_name = os.path.join(test_sketch_dir_name, test_sketch_file)
 
 
-			run_cmd = '../../../bin/streaming/main filetype edgelist'
+			run_cmd = '../../bin/streaming/main filetype edgelist'
 			run_cmd += ' file ' + test_base_file_name
 			run_cmd += ' niters 100000'
 			run_cmd += ' stream_file ' + test_stream_file_name
@@ -123,7 +128,8 @@ class Unicorn(MeasurementInterface):
 			run_cmd += ' chunkify 1 '
 			run_cmd += ' chunk_size ' + str(cfg['chunk-size'])
 
-			self.call_program(run_cmd)
+			run_result = self.call_program(run_cmd)
+			# print run_result
 
 		# train_dir_name = self.args['train-dir']	# The directory absolute path name from the user input of training vectors.
 		# train_files = os.listdir(train_dir_name)	# The training file names within that directory.
@@ -193,7 +199,6 @@ def model(train_files, train_dir_name, num_trials):
 	# We will create a model for each file and then merge the models if necessary.
 	# @models contains a list of models from each file.
 	models = []
-
 	for model_num, input_train_file in enumerate(train_files):
 		with open(os.path.join(train_dir_name, input_train_file), 'r') as f:
 			sketches = []	# The sketch on row i is the ith stage of the changing graph.
