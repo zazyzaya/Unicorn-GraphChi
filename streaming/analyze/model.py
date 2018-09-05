@@ -138,7 +138,7 @@ class Unicorn(MeasurementInterface):
 		# Modeling (training)
 		models = model(sketch_train_files, train_sketch_dir_name, NUM_TRIALS)
 		# Testing
-		test_accuracy = test(sketch_test_files, test_sketch_dir_name, cfg['threshold-metric'], cfg['num-stds'])
+		test_accuracy = test(sketch_test_files, test_sketch_dir_name, models, cfg['threshold-metric'], cfg['num-stds'])
 		
 		# For next experiment, remove sketch files from this experiment
 		for sketch_train_file in sketch_train_files:
