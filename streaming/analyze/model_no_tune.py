@@ -10,154 +10,11 @@
 import argparse
 import numpy as np
 import random
-import os, sys, shutil
+import os, sys
 from medoids import _k_medoids_spawn_once
 from scipy.spatial.distance import pdist, squareform, hamming
 from sklearn.metrics import silhouette_score, silhouette_samples
 from copy import deepcopy
-
-import opentuner
-from opentuner.search.manipulator import ConfigurationManipulator
-from opentuner.search.manipulator import IntegerParameter
-from opentuner.search.manipulator import FloatParameter
-from opentuner.search.manipulator import EnumParameter
-from opentuner.measurement import MeasurementInterface
-from opentuner.resultsdb.models import Result
-
-
-# Marcos.
-NUM_TRIALS = 20
-SEED = 42
-random.seed(SEED)
-np.random.seed(SEED)
-
-# Parse arguments from the user who must provide the following information:
-parser = argparse.ArgumentParser(parents=opentuner.argparsers())
-parse.add_argument('--base-folder-train', help='Path to the directory that contains adjacency list files of base part of the training graphs', required=True)
-parse.add_argument('--stream-folder-train', help='Path to the directory that contains adjacency list files of streaming part of the training graphs', required=True)
-parse.add_argument('--sketch-folder-train', help='Path to the directory that saves the training graph sketches', required=True)
-parse.add_argument('--base-folder-test', help='Path to the directory that contains adjacency list files of base part of the test graphs', required=True)
-parse.add_argument('--stream-folder-test', help='Path to the directory that contains adjacency list files of streaming part of the test graphs', required=True)
-parse.add_argument('--sketch-folder-test', help='Path to the directory that saves the test graph sketches', required=True)
-# '--train-dir <directory_path>': the path to the directory that contains data files of all training graphs.
-# parser.add_argument('--train-dir', help='Absolute path to the directory that contains all training vectors', required=True)
-# '--test-dir <directory_path>': the path to the directory that contains data files of all testing graphs.
-# parser.add_argument('--test-dir', help='Absolute path to the directory that contains all testing vectors', required=True)
-# '--threshold-metric <mean/max>': whether the threshold uses mean or max of the cluster distances between cluster members and the medoid.
-# parser.add_argument('--threshold-metric', help='options: mean/max', required=False)
-# '--num-stds <number>': the number of standard deviations a threshold should tolerate.
-# parser.add_argument('--num-stds', help='Input a number of standard deviations the threshold should tolerate when testing', type=float, required=False)
-
-
-class Unicorn(MeasurementInterface):
-	'''
-	Use OpenTuner to turn hyperparameters used by Unicorn System.
-	'''
-	def manipulator(self):
-		'''
-		Define the search space by creating a ConfigurationManipulator
-		'''
-		manipulator = ConfigurationManipulator()
-		manipulator.add_parameter(IntegerParameter('decay', 20, 200))
-		manipulator.add_parameter(IntegerParameter('interval', 200, 2000))
-		manipulator.add_parameter(IntegerParameter('chunk-size', 2, 20))
-		manipulator.add_parameter(FloatParameter('lambda', 0.001, 0.5))
-		manipulator.add_parameter(EnumParameter('threshold-metric', ['mean', 'max']))
-		manipulator.add_parameter(FloatParameter('num-stds', 0.5, 5.0))
-		return manipulator
-
-	def run(self, desired_result, input, limit):
-		cfg = desired_result.configuration.data
-
-		# Run every training and test graph of the same experiment with the same hyperparameter
-		train_base_dir_name = self.args['base-folder-train']	# The directory absolute path name from the user input of base training graphs.
-		train_base_files = os.listdir(train_base_dir_name)
-		train_stream_dir_name = self.args['stream-folder-train']	# The directory absolute path name from the user input of streaming part of the training graphs.
-		train_stream_files = os.listdir(train_stream_dir_name)
-		train_sketch_dir_name = self.args['sketch-folder-train']	# The directory absolute path name to save the training graph sketch
-
-		test_base_dir_name = self.args['base-folder-test']	# The directory absolute path name from the user input of base test graphs.
-		test_base_files = os.listdir(test_base_dir_name)
-		test_stream_dir_name = self.args['stream-folder-test']	# The directory absolute path name from the user input of streaming part of the test graphs.
-		test_stream_files = os.listdir(test_stream_dir_name)
-		test_sketch_dir_name = self.args['sketch-folder-test']
-
-		for i in range(len(train_base_files)):
-			train_base_file_name = os.path.join(train_base_dir_name, train_base_files[i])
-			train_stream_file_name = os.path.join(train_stream_dir_name, train_stream_files[i])
-			train_sketch_file = 'sketch_' + str(i) + '.txt'
-			train_sketch_file_name = os.path.join(train_sketch_dir_name, train_sketch_file)
-
-
-			run_cmd = '../../../bin/streaming/main filetype edgelist'
-			run_cmd += ' file ' + train_base_file_name
-			run_cmd += ' niters 100000'
-			run_cmd += ' stream_file ' + train_stream_file_name
-			run_cmd += ' decay ' + cfg['decay']
-			run_cmd += ' lambda ' + cfg['lambda']
-			run_cmd += ' interval ' + cfg['interval']
-			run_cmd += ' sketch_file ' + train_sketch_file_name
-			run_cmd += ' chunkify 1 '
-			run_cmd += ' chunk_size ' + cfg['chunk-size']
-
-			self.call_program(run_cmd)
-
-		for i in range(len(test_base_files)):
-			test_base_file_name = os.path.join(test_base_dir_name, test_base_files[i])
-			test_stream_file_name = os.path.join(test_stream_dir_name, test_stream_files[i])
-			if "attack" in test_base_file_name:
-				test_sketch_file = 'sketch_attack' + str(i) + '.txt'
-			else:
-				test_sketch_file = 'sketch_' + str(i) + '.txt'
-			test_sketch_file_name = os.path.join(test_sketch_dir_name, test_sketch_file)
-
-
-			run_cmd = '../../../bin/streaming/main filetype edgelist'
-			run_cmd += ' file ' + test_base_file_name
-			run_cmd += ' niters 100000'
-			run_cmd += ' stream_file ' + test_stream_file_name
-			run_cmd += ' decay ' + cfg['decay']
-			run_cmd += ' lambda ' + cfg['lambda']
-			run_cmd += ' interval ' + cfg['interval']
-			run_cmd += ' sketch_file ' + test_sketch_file_name
-			run_cmd += ' chunkify 1 '
-			run_cmd += ' chunk_size ' + cfg['chunk-size']
-
-			self.call_program(run_cmd)
-
-		# train_dir_name = self.args['train-dir']	# The directory absolute path name from the user input of training vectors.
-		# train_files = os.listdir(train_dir_name)	# The training file names within that directory.
-		# Note that we will read every file within the directory @train_dir_name.
-		# We do not do error checking here. Therefore, make sure every file in @train_dir_name is valid.
-		# We do the same for validation/testing files.
-		# test_dir_name = self.args['test-dir']	# The directory absolute path name from the user input of testing vectors.
-		# test_files = os.listdir(test_dir_name)	# The testing file names within that directory.
-		sketch_train_files = os.listdir(train_sketch_dir_name)
-		sketch_test_files = os.listdir(test_sketch_dir_name)
-
-		# Modeling (training)
-		models = model(sketch_train_files, train_sketch_dir_name, NUM_TRIALS)
-		# Testing
-		test_accuracy = test(sketch_test_files, test_sketch_dir_name, cfg['threshold-metric'], cfg['num-stds'])
-		
-		# For next experiment, remove sketch files from this experiment
-		for sketch_train_file in sketch_train_files:
-			file_to_remove = os.path.join(train_sketch_dir_name, sketch_train_file)
-			try:
-				if os.path.isfile(file_to_remove):
-					os.unlink(file_to_remove)
-			except Exception as e:
-				print(e)
-
-		for sketch_test_file in sketch_test_files:
-			file_to_remove = os.path.join(test_sketch_dir_name, sketch_test_file)
-			try:
-				if os.path.isfile(file_to_remove):
-					os.unlink(file_to_remove)
-			except Exception as e:
-				print(e)
-
-		return Result(accuracy=test_accuracy)
 
 class Model():
 	"""
@@ -165,25 +22,28 @@ class Model():
 	A model contains the following components:
 	1. A list of medoids, e.g., [M_a, M_b, M_c]
 	2. Parameter of each cluster correspond to the medoids. Currently, it is the mean of cluster distances between cluster member and the medoid. e.g., [A_a, A_b, A_c].
-	3. Thresholds of each cluster correspond to the medoids
+	3. Thresholds of each cluster correspond to the medoids (for all configuration), e.g., [[T_a, T_b, T_c], ...]
 	4. A list of lists of members belong to each cluster, e.g., [[E_a_1, E_a_2, ...], [E_b_1, E_b_2, ...], [E_c_1, E_c_2, ...]]
 	5. Confidence vector of the model
 	6. The evolution of the graph based on cluster indices, e.g., We have a total three clusters, [0, 1, 2, 1, 2, ...]
 	"""
-	def __init__(self, medoids, mean_thresholds, max_thresholds, stds, members, confidence, evolution):
+	def __init__(self, medoids, params, thresholds, members, confidence, evolution):
 		self.medoids = medoids
-		self.mean_thresholds = mean_thresholds
-		self.max_thresholds = max_thresholds
-		self.stds = stds
+		self.params = params
+		self.thresholds = thresholds
 		self.members = members
 		self.confidence = confidence
 		self.evolution = evolution
+
+	def print_thresholds(self):
+		for ts in self.thresholds:
+			print ts
 
 	def print_evolution(self):
 		print self.evolution
 
 
-def model(train_files, train_dir_name, num_trials):
+def model(train_files, train_dir_name, num_trials, threshold_metrics, nums_stds):
 	# Now we will open every file and read the sketch vectors in the file for modeling.
 	# We will create a model for each file and then merge the models if necessary.
 	# @models contains a list of models from each file.
@@ -255,12 +115,10 @@ def model(train_files, train_dir_name, num_trials):
 			cluster_members = [[]] * best_num_clusters
 			# @cluster_center contains the index of the medoid of each cluster.
 			cluster_center = [-1] * best_num_clusters
-			# @cluster_mean_thresholds contains the mean of each cluster used for normalization.
-			cluster_mean_thresholds = [-1] * best_num_clusters
-			# @cluster_max_thresholds contains the max of each cluster used for normalization.
-			cluster_max_thresholds = [-1] * best_num_clusters
-			# @cluster_stds contains the standard deviation of each cluster used for normalization.
-			cluster_stds = [-1] * best_num_clusters
+			# @cluster_param contains the density of each cluster used for normalization.
+			cluster_param = [-1] * best_num_clusters
+			# @all_cluster_dists contains cluster distances of all clusters.
+			all_cluster_dists = [[]] * best_num_clusters
 			for cluster_idx in range(best_num_clusters):
 				cluster_center[cluster_idx] = best_medoids[cluster_idx].kernel	# @kernel is the index of the sketch that is considered the centroid.
 				cluster_medoids[cluster_idx] = sketches[cluster_center[cluster_idx]]
@@ -270,13 +128,36 @@ def model(train_files, train_dir_name, num_trials):
 				
 				cluster_dists = [dists[cluster_center[cluster_idx]][skt] for skt in cluster_sketches if skt != cluster_center[cluster_idx]]
 				if len(cluster_dists) == 0:	# This cluster has only one member.
-					cluster_mean_thresholds[cluster_idx] = 0.0
-					cluster_max_thresholds[cluster_idx] = 0.0
+					cluster_param[cluster_idx] = 0.0
 				else:
-					cluster_mean_thresholds[cluster_idx] = np.mean(cluster_dists)
-					cluster_max_thresholds[cluster_idx] = np.max(cluster_dists)
-				cluster_stds[cluster_idx] = np.std(cluster_dists)
+					cluster_param[cluster_idx] = np.mean(cluster_dists)
 				
+				all_cluster_dists[cluster_idx] = cluster_dists
+
+			# Now we can calculate the threshold based on @param_dist and @std_dist for all configurations.
+			cluster_thresholds = []
+			for threshold_metric in threshold_metrics:
+				for num_stds in nums_stds:
+					# @cluster_threshold contains a threshold for each cluster.
+					# For each cluster, we calulate the threshold based on the mean/max distances of each member of the cluster from the center, and standard deviations.
+					cluster_threshold = [-1] * best_num_clusters
+					for cluster_idx in range(best_num_clusters):
+						cluster_dists = all_cluster_dists[cluster_idx]
+						if len(cluster_dists) == 0: # This cluster has only one member.
+							threshold_base = 0.0
+							std_dist = 0.0
+						else:
+							if threshold_metric == 'mean':
+								threshold_base = np.mean(cluster_dists)
+							elif threshold_metric == 'max':
+								threshold_base = np.max(cluster_dists)
+							else:
+								print "Input threshold metric is currently not supported. We will the default metric (mean) instead."
+								threshold_base = np.mean(cluster_dists)
+							std_dist = np.std(cluster_dists)
+						cluster_threshold[cluster_idx] = threshold_base + num_stds * std_dist
+					# Add @cluster_threshold to cluster_thresholds
+					cluster_thresholds.append(cluster_threshold)
 			# The last step of generating a model from the training graph is to compute the evolution of the graph based on its members and the cluster index to which they belong.
 			evolution = []
 			prev = -1 	# Check what cluster index a previous sketch is in.
@@ -295,9 +176,10 @@ def model(train_files, train_dir_name, num_trials):
 
 			model_confidence = confidence(sketches, best_cluster_labels, best_num_clusters, 2)
 			# Now that we have @evolution, we have all the information we need for our model. We create the model and save it in @models.
-			new_model = Model(cluster_medoids, cluster_mean_thresholds, cluster_max_thresholds, cluster_stds, cluster_members, model_confidence, evolution)
+			new_model = Model(cluster_medoids, cluster_param, cluster_thresholds, cluster_members, model_confidence, evolution)
 			
 			print "Model " + str(model_num) + " is done!"
+			new_model.print_thresholds()
 			new_model.print_evolution()
 			
 			models.append(new_model)
@@ -322,8 +204,7 @@ def confidence(train_sketches, train_cluster_labels, best_num_clusters, l):
 		confidence[n] = max(shift_sil) / sum(shift_sil)
 	return np.array(confidence)
 
-
-def test(test_files, test_dir_name, models, threshold_metric, num_std):
+def test(test_files, test_dir_name, models, index):
 	# Validation/Testing code starts here.
 	total_graphs = 0.0
 	predict_correct = 0.0
@@ -348,10 +229,7 @@ def test(test_files, test_dir_name, models, threshold_metric, num_std):
 				current_evolution_idx = 0 
 				current_cluster_idx = model.evolution[current_evolution_idx]
 				current_medoid = model.medoids[current_cluster_idx]	# Get the medoid of the current cluster.
-				if threshold_metric == 'mean':
-					current_threshold = model.mean_thresholds[current_cluster_idx] + num_std * model.stds[current_cluster_idx]
-				elif threshold_metric == 'max':
-					current_threshold = model.max_thresholds[current_cluster_idx] + num_std * model.stds[current_cluster_idx]
+				current_threshold = model.thresholds[index][current_cluster_idx]	# Get the threshold of the current cluster.
 				for sketch in sketches:
 					distance_from_medoid = hamming(sketch, current_medoid)	# Compute the hamming distance between the current medoid and the current test vector.
 					if distance_from_medoid > current_threshold:
@@ -377,6 +255,7 @@ def test(test_files, test_dir_name, models, threshold_metric, num_std):
 					num_fitted_model = num_fitted_model + 1
 					# print the confidence stats of the model that fits
 					# print "This model fits. Stats: " + str(np.mean(model.confidence))
+				
 		f.close()
 		total_graphs = total_graphs + 1
 		if not abnormal:	# We have decided that the graph is not abnormal
@@ -391,11 +270,65 @@ def test(test_files, test_dir_name, models, threshold_metric, num_std):
 	return accuracy
 
 
+
 if __name__ == "__main__":
+
+	# Marcos that are fixed every time.
+	NUM_TRIALS = 20
+	SEED = 42
+	random.seed(SEED)
+	np.random.seed(SEED)
+
+	# Parse arguments from the user who must provide the following information:
+	# '--train_dir <directory_path>': the path to the directory that contains data files of all training graphs.
+	parser = argparse.ArgumentParser()
+	parser.add_argument('--train_dir', help='Absolute path to the directory that contains all training vectors', required=True)
+	# '--validate_dir <directory_path>': the path to the directory that contains data files of all validation graphs.
+	parser.add_argument('--validate_dir', help='Absolute path to the directory that contains all validation vectors', required=True)
+	# '--test_dir <directory_path>': the path to the directory that contains data files of all testing graphs.
+	parser.add_argument('--test_dir', help='Absolute path to the directory that contains all testing vectors', required=True)
+	# '--threshold_metric <mean/max>': whether the threshold uses mean or max of the cluster distances between cluster members and the medoid.
+	parser.add_argument('--threshold_metric', help='options: mean/max', required=False)
+	# '--num_stds <number>': the number of standard deviations a threshold should tolerate.
+	parser.add_argument('--num_stds', help='Input a number of standard deviations the threshold should tolerate when testing', type=float, required=False)
 	args = vars(parser.parse_args())
-	Unicorn.main(args)
 
+	train_dir_name = args['train_dir']	# The directory absolute path name from the user input of training vectors.
+	train_files = os.listdir(train_dir_name)	# The training file names within that directory.
+	# Note that we will read every file within the directory @train_dir_name.
+	# We do not do error checking here. Therefore, make sure every file in @train_dir_name is valid.
+	# We do the same for validation/testing files.
+	validate_dir_name = args['validate_dir']	# The directory absolute path name from the user input of validation vectors.
+	validate_files = os.listdir(validate_dir_name)	# The validation file names within that directory.
+	test_dir_name = args['test_dir']	# The directory absolute path name from the user input of testing vectors.
+	test_files = os.listdir(test_dir_name)	# The testing file names within that directory.
 
+	threshold_metric = args['threshold_metric']
+	if threshold_metric is None:	# If this argument is not supplied by the user, we try all possible configurations.
+		threshold_metric_config = ['mean', 'max']
+	else:
+		threshold_metric_config = [threshold_metric]
+
+	num_stds = args['num_stds']
+	if num_stds is None:	# If this argument is not supplied by the user, we try all possible configurations.
+		num_stds_config = [1.0, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0]
+	else:
+		num_stds_config = [num_stds]
+
+	# Modeling (training)
+	models = model(train_files, train_dir_name, NUM_TRIALS, threshold_metric_config, num_stds_config)
+
+	for tm_num, tm in enumerate(threshold_metric_config):
+		for ns_num, ns in enumerate(num_stds_config):
+			# Validation/Testing
+			index = tm_num * len(num_stds_config) + ns_num
+			validation_accuracy = test(validate_files, validate_dir_name, models, index)
+			test_accuracy = test(test_files, test_dir_name, models, index)
+			print "Configuration: "
+			print "Threshold metric: " + tm
+			print "Number of standard deviations: " + str(ns)
+			print "Validation accuracy: " + str(validation_accuracy)
+			print "Test accuracy: " + str(test_accuracy) + '\n'
 
 
 
