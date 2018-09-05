@@ -63,7 +63,7 @@ class Unicorn(MeasurementInterface):
 		manipulator.add_parameter(IntegerParameter('chunk-size', 2, 20))
 		manipulator.add_parameter(FloatParameter('lambda', 0.001, 0.5))
 		manipulator.add_parameter(EnumParameter('threshold-metric', ['mean', 'max']))
-		manipulator.add_parameter(FloatParameter('num_stds', 0.5, 5.0))
+		manipulator.add_parameter(FloatParameter('num-stds', 0.5, 5.0))
 		return manipulator
 
 	def run(self, desired_result, input, limit):
