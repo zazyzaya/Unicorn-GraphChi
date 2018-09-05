@@ -102,14 +102,14 @@ class Unicorn(MeasurementInterface):
 			run_cmd += ' chunk_size ' + str(cfg['chunk-size'])
 
 			run_result = self.call_program(run_cmd)
-			# print run_result
+			print run_result
 			
 
 		for i in range(len(test_base_files)):
 			test_base_file_name = os.path.join(test_base_dir_name, test_base_files[i])
 			test_stream_file_name = os.path.join(test_stream_dir_name, test_stream_files[i])
 			if "attack" in test_base_file_name:
-				test_sketch_file = 'sketch_attack' + str(i) + '.txt'
+				test_sketch_file = 'sketch_attack_' + str(i) + '.txt'
 			else:
 				test_sketch_file = 'sketch_' + str(i) + '.txt'
 			test_sketch_file_name = os.path.join(test_sketch_dir_name, test_sketch_file)
@@ -127,7 +127,7 @@ class Unicorn(MeasurementInterface):
 			run_cmd += ' chunk_size ' + str(cfg['chunk-size'])
 
 			run_result = self.call_program(run_cmd)
-			# print run_result
+			print run_result
 
 		prog = re.compile("\.txt[\._]")
 		for file_name in os.listdir(train_base_dir_name):
