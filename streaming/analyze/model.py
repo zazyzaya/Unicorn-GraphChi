@@ -160,7 +160,7 @@ class Unicorn(MeasurementInterface):
 		return Result(accuracy=test_accuracy)
 
 	def save_final_config(self, configuration):
-	"""called at the end of tuning"""
+		"""called at the end of tuning"""
 		print "Saving Optimal Configuration to a File..."
 		self.manipulator().save_to_file(configuration.data, 'final_config.json')
 
