@@ -33,12 +33,12 @@ np.random.seed(SEED)
 
 # Parse arguments from the user who must provide the following information:
 parser = argparse.ArgumentParser(parents=opentuner.argparsers())
-parser.add_argument('--base-folder-train', help='Path to the directory that contains adjacency list files of base part of the training graphs', required=True)
-parser.add_argument('--stream-folder-train', help='Path to the directory that contains adjacency list files of streaming part of the training graphs', required=True)
-parser.add_argument('--sketch-folder-train', help='Path to the directory that saves the training graph sketches', required=True)
-parser.add_argument('--base-folder-test', help='Path to the directory that contains adjacency list files of base part of the test graphs', required=True)
-parser.add_argument('--stream-folder-test', help='Path to the directory that contains adjacency list files of streaming part of the test graphs', required=True)
-parser.add_argument('--sketch-folder-test', help='Path to the directory that saves the test graph sketches', required=True)
+parser.add_argument('--base_folder_train', help='Path to the directory that contains adjacency list files of base part of the training graphs', required=True)
+parser.add_argument('--stream_folder_train', help='Path to the directory that contains adjacency list files of streaming part of the training graphs', required=True)
+parser.add_argument('--sketch_folder_train', help='Path to the directory that saves the training graph sketches', required=True)
+parser.add_argument('--base_folder_test', help='Path to the directory that contains adjacency list files of base part of the test graphs', required=True)
+parser.add_argument('--stream_folder_test', help='Path to the directory that contains adjacency list files of streaming part of the test graphs', required=True)
+parser.add_argument('--sketch_folder_test', help='Path to the directory that saves the test graph sketches', required=True)
 # '--train-dir <directory_path>': the path to the directory that contains data files of all training graphs.
 # parser.add_argument('--train-dir', help='Absolute path to the directory that contains all training vectors', required=True)
 # '--test-dir <directory_path>': the path to the directory that contains data files of all testing graphs.
@@ -63,24 +63,24 @@ class Unicorn(MeasurementInterface):
 		manipulator.add_parameter(IntegerParameter('chunk-size', 2, 20))
 		manipulator.add_parameter(FloatParameter('lambda', 0.001, 0.5))
 		manipulator.add_parameter(EnumParameter('threshold-metric', ['mean', 'max']))
-		manipulator.add_parameter(FloatParameter('num-stds', 0.5, 5.0))
+		manipulator.add_parameter(FloatParameter('num_stds', 0.5, 5.0))
 		return manipulator
 
 	def run(self, desired_result, input, limit):
 		cfg = desired_result.configuration.data
 
 		# Run every training and test graph of the same experiment with the same hyperparameter
-		train_base_dir_name = self.args['base-folder-train']	# The directory absolute path name from the user input of base training graphs.
+		train_base_dir_name = self.args.base_folder_train	# The directory absolute path name from the user input of base training graphs.
 		train_base_files = os.listdir(train_base_dir_name)
-		train_stream_dir_name = self.args['stream-folder-train']	# The directory absolute path name from the user input of streaming part of the training graphs.
+		train_stream_dir_name = self.args.stream_folder_train	# The directory absolute path name from the user input of streaming part of the training graphs.
 		train_stream_files = os.listdir(train_stream_dir_name)
-		train_sketch_dir_name = self.args['sketch-folder-train']	# The directory absolute path name to save the training graph sketch
+		train_sketch_dir_name = self.args.sketch_folder_train	# The directory absolute path name to save the training graph sketch
 
-		test_base_dir_name = self.args['base-folder-test']	# The directory absolute path name from the user input of base test graphs.
+		test_base_dir_name = self.args.base_folder_test	# The directory absolute path name from the user input of base test graphs.
 		test_base_files = os.listdir(test_base_dir_name)
-		test_stream_dir_name = self.args['stream-folder-test']	# The directory absolute path name from the user input of streaming part of the test graphs.
+		test_stream_dir_name = self.args.stream_folder_test	# The directory absolute path name from the user input of streaming part of the test graphs.
 		test_stream_files = os.listdir(test_stream_dir_name)
-		test_sketch_dir_name = self.args['sketch-folder-test']
+		test_sketch_dir_name = self.args.sketch_folder_test
 
 		for i in range(len(train_base_files)):
 			train_base_file_name = os.path.join(train_base_dir_name, train_base_files[i])
@@ -397,7 +397,7 @@ def test(test_files, test_dir_name, models, threshold_metric, num_std):
 
 
 if __name__ == "__main__":
-	args = vars(parser.parse_args())
+	args = parser.parse_args()
 	Unicorn.main(args)
 
 
