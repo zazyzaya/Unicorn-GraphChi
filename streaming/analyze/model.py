@@ -93,12 +93,12 @@ class Unicorn(MeasurementInterface):
 			run_cmd += ' file ' + train_base_file_name
 			run_cmd += ' niters 100000'
 			run_cmd += ' stream_file ' + train_stream_file_name
-			run_cmd += ' decay ' + cfg['decay']
-			run_cmd += ' lambda ' + cfg['lambda']
-			run_cmd += ' interval ' + cfg['interval']
+			run_cmd += ' decay ' + str(cfg['decay'])
+			run_cmd += ' lambda ' + str(cfg['lambda'])
+			run_cmd += ' interval ' + str(cfg['interval'])
 			run_cmd += ' sketch_file ' + train_sketch_file_name
 			run_cmd += ' chunkify 1 '
-			run_cmd += ' chunk_size ' + cfg['chunk-size']
+			run_cmd += ' chunk_size ' + str(cfg['chunk-size'])
 
 			self.call_program(run_cmd)
 
