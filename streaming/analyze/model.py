@@ -10,7 +10,7 @@
 import argparse
 import numpy as np
 import random
-import os, sys
+import os, sys, shutil
 from medoids import _k_medoids_spawn_once
 from scipy.spatial.distance import pdist, squareform, hamming
 from sklearn.metrics import silhouette_score, silhouette_samples
@@ -22,6 +22,7 @@ from opentuner.search.manipulator import IntegerParameter
 from opentuner.search.manipulator import FloatParameter
 from opentuner.search.manipulator import EnumParameter
 from opentuner.measurement import MeasurementInterface
+from opentuner.resultsdb.models import Result
 
 
 # Marcos.
@@ -39,9 +40,9 @@ parse.add_argument('--base-folder-test', help='Path to the directory that contai
 parse.add_argument('--stream-folder-test', help='Path to the directory that contains adjacency list files of streaming part of the test graphs', required=True)
 parse.add_argument('--sketch-folder-test', help='Path to the directory that saves the test graph sketches', required=True)
 # '--train-dir <directory_path>': the path to the directory that contains data files of all training graphs.
-parser.add_argument('--train-dir', help='Absolute path to the directory that contains all training vectors', required=True)
+# parser.add_argument('--train-dir', help='Absolute path to the directory that contains all training vectors', required=True)
 # '--test-dir <directory_path>': the path to the directory that contains data files of all testing graphs.
-parser.add_argument('--test-dir', help='Absolute path to the directory that contains all testing vectors', required=True)
+# parser.add_argument('--test-dir', help='Absolute path to the directory that contains all testing vectors', required=True)
 # '--threshold-metric <mean/max>': whether the threshold uses mean or max of the cluster distances between cluster members and the medoid.
 # parser.add_argument('--threshold-metric', help='options: mean/max', required=False)
 # '--num-stds <number>': the number of standard deviations a threshold should tolerate.
@@ -104,7 +105,10 @@ class Unicorn(MeasurementInterface):
 		for i in range(len(test_base_files)):
 			test_base_file_name = os.path.join(test_base_dir_name, test_base_files[i])
 			test_stream_file_name = os.path.join(test_stream_dir_name, test_stream_files[i])
-			test_sketch_file = 'sketch_' + str(i) + '.txt'
+			if "attack" in test_base_file_name:
+				test_sketch_file = 'sketch_attack' + str(i) + '.txt'
+			else:
+				test_sketch_file = 'sketch_' + str(i) + '.txt'
 			test_sketch_file_name = os.path.join(test_sketch_dir_name, test_sketch_file)
 
 
@@ -121,18 +125,39 @@ class Unicorn(MeasurementInterface):
 
 			self.call_program(run_cmd)
 
-		train_dir_name = self.args['train-dir']	# The directory absolute path name from the user input of training vectors.
-		train_files = os.listdir(train_dir_name)	# The training file names within that directory.
+		# train_dir_name = self.args['train-dir']	# The directory absolute path name from the user input of training vectors.
+		# train_files = os.listdir(train_dir_name)	# The training file names within that directory.
 		# Note that we will read every file within the directory @train_dir_name.
 		# We do not do error checking here. Therefore, make sure every file in @train_dir_name is valid.
 		# We do the same for validation/testing files.
-		test_dir_name = self.args['test-dir']	# The directory absolute path name from the user input of testing vectors.
-		test_files = os.listdir(test_dir_name)	# The testing file names within that directory.
+		# test_dir_name = self.args['test-dir']	# The directory absolute path name from the user input of testing vectors.
+		# test_files = os.listdir(test_dir_name)	# The testing file names within that directory.
+		sketch_train_files = os.listdir(train_sketch_dir_name)
+		sketch_test_files = os.listdir(test_sketch_dir_name)
 
 		# Modeling (training)
-		models = model(train_files, train_dir_name, NUM_TRIALS)
+		models = model(sketch_train_files, train_sketch_dir_name, NUM_TRIALS)
 		# Testing
-		test_accuracy = test(test_files, test_dir_name, cfg['threshold-metric'], cfg['num-stds'])
+		test_accuracy = test(sketch_test_files, test_sketch_dir_name, cfg['threshold-metric'], cfg['num-stds'])
+		
+		# For next experiment, remove sketch files from this experiment
+		for sketch_train_file in sketch_train_files:
+			file_to_remove = os.path.join(train_sketch_dir_name, sketch_train_file)
+			try:
+				if os.path.isfile(file_to_remove):
+					os.unlink(file_to_remove)
+				except Exception as e:
+					print(e)
+
+		for sketch_test_file in sketch_test_files:
+			file_to_remove = os.path.join(test_sketch_dir_name, sketch_test_file)
+			try:
+				if os.path.isfile(file_to_remove):
+					os.unlink(file_to_remove)
+				except Exception as e:
+					print(e)
+
+		return Result(accuracy=test_accuracy)
 
 class Model():
 	"""
