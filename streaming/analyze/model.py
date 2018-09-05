@@ -33,12 +33,12 @@ np.random.seed(SEED)
 
 # Parse arguments from the user who must provide the following information:
 parser = argparse.ArgumentParser(parents=opentuner.argparsers())
-parse.add_argument('--base-folder-train', help='Path to the directory that contains adjacency list files of base part of the training graphs', required=True)
-parse.add_argument('--stream-folder-train', help='Path to the directory that contains adjacency list files of streaming part of the training graphs', required=True)
-parse.add_argument('--sketch-folder-train', help='Path to the directory that saves the training graph sketches', required=True)
-parse.add_argument('--base-folder-test', help='Path to the directory that contains adjacency list files of base part of the test graphs', required=True)
-parse.add_argument('--stream-folder-test', help='Path to the directory that contains adjacency list files of streaming part of the test graphs', required=True)
-parse.add_argument('--sketch-folder-test', help='Path to the directory that saves the test graph sketches', required=True)
+parser.add_argument('--base-folder-train', help='Path to the directory that contains adjacency list files of base part of the training graphs', required=True)
+parser.add_argument('--stream-folder-train', help='Path to the directory that contains adjacency list files of streaming part of the training graphs', required=True)
+parser.add_argument('--sketch-folder-train', help='Path to the directory that saves the training graph sketches', required=True)
+parser.add_argument('--base-folder-test', help='Path to the directory that contains adjacency list files of base part of the test graphs', required=True)
+parser.add_argument('--stream-folder-test', help='Path to the directory that contains adjacency list files of streaming part of the test graphs', required=True)
+parser.add_argument('--sketch-folder-test', help='Path to the directory that saves the test graph sketches', required=True)
 # '--train-dir <directory_path>': the path to the directory that contains data files of all training graphs.
 # parser.add_argument('--train-dir', help='Absolute path to the directory that contains all training vectors', required=True)
 # '--test-dir <directory_path>': the path to the directory that contains data files of all testing graphs.
