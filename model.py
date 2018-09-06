@@ -75,7 +75,7 @@ class Unicorn(MeasurementInterface):
 		gcc_cmd = 'g++-4.9 -std=c++11 -g -O3 -I/usr/local/include/ -I./src/  -fopenmp -Wall -Wno-strict-aliasing -lpthread'
 		gcc_cmd += ' -DSKETCH_SIZE=' + str(cfg['sketch-size'])
 		gcc_cmd += ' -DK_HOPS=' + str(cfg['k-hops'])
-		gcc_cmd += ' -DDEBUG -g -Istreaming/ ../main.cpp -o ../../bin/streaming/main -lz'
+		gcc_cmd += ' -DDEBUG -g -Istreaming/ streaming/main.cpp -o bin/streaming/main -lz'
 
 		compile_result = self.call_program(gcc_cmd)
 		assert compile_result['returncode'] == 0
