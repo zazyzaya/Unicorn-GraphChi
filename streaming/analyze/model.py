@@ -64,10 +64,21 @@ class Unicorn(MeasurementInterface):
 		manipulator.add_parameter(FloatParameter('lambda', 0.001, 0.5))
 		manipulator.add_parameter(EnumParameter('threshold-metric', ['mean', 'max']))
 		manipulator.add_parameter(FloatParameter('num-stds', 0.5, 5.0))
+		manipulator.add_parameter(IntegerParameter('sketch-size', 2000, 3000))
+		manipulator.add_parameter(IntegerParameter('k-hops', 3, 5))
 		return manipulator
 
 	def run(self, desired_result, input, limit):
 		cfg = desired_result.configuration.data
+
+		# Compile GraphChi with different flags.
+		gcc_cmd = 'g++-4.9 -std=c++11 -g -O3 -I/usr/local/include/ -I./src/  -fopenmp -Wall -Wno-strict-aliasing -lpthread'
+		gcc_cmd += ' -DSKETCH_SIZE=' + str(cfg['sketch-size'])
+		gcc_cmd += ' -DK_HOPS=' + str(cfg['k-hops'])
+		gcc_cmd += ' -DDEBUG -g -Istreaming/ ../main.cpp -o ../../bin/streaming/main -lz'
+
+		compile_result = self.call_program(gcc_cmd)
+		assert compile_result['returncode'] == 0
 
 		prog = re.compile("\.txt[\._]")
 
