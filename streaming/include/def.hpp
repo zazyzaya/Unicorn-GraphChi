@@ -22,9 +22,9 @@
 
 #include "kissdb.h"
 /* This is the size of the sketch. */
-#define SKETCH_SIZE 2000
+// #define SKETCH_SIZE 2000
 /* The WL algorithm will explore K_HOPS-hop neighbors. */
-#define K_HOPS 3
+// #define K_HOPS 3
 
 /* The value of "cnt" element in the histogram will decay every DECAY updates. */
 extern int DECAY;
