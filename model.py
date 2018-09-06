@@ -11,7 +11,7 @@ import argparse
 import numpy as np
 import random
 import os, sys, shutil, re
-from streaming.analyze.medoids import _k_medoids_spawn_once
+from medoids import _k_medoids_spawn_once
 from scipy.spatial.distance import pdist, squareform, hamming
 from sklearn.metrics import silhouette_score, silhouette_samples
 from copy import deepcopy
