@@ -11,7 +11,7 @@ import argparse
 import numpy as np
 import random
 import os, sys, shutil, re
-from medoids import _k_medoids_spawn_once
+from streaming.analyze.medoids import _k_medoids_spawn_once
 from scipy.spatial.distance import pdist, squareform, hamming
 from sklearn.metrics import silhouette_score, silhouette_samples
 from copy import deepcopy
@@ -103,7 +103,7 @@ class Unicorn(MeasurementInterface):
 			train_sketch_file_name = os.path.join(train_sketch_dir_name, train_sketch_file)
 
 
-			run_cmd = '../../bin/streaming/main filetype edgelist'
+			run_cmd = 'bin/streaming/main filetype edgelist'
 			run_cmd += ' file ' + train_base_file_name
 			run_cmd += ' niters 100000'
 			run_cmd += ' stream_file ' + train_stream_file_name
@@ -139,7 +139,7 @@ class Unicorn(MeasurementInterface):
 			test_sketch_file_name = os.path.join(test_sketch_dir_name, test_sketch_file)
 
 
-			run_cmd = '../../bin/streaming/main filetype edgelist'
+			run_cmd = 'bin/streaming/main filetype edgelist'
 			run_cmd += ' file ' + test_base_file_name
 			run_cmd += ' niters 100000'
 			run_cmd += ' stream_file ' + test_stream_file_name
