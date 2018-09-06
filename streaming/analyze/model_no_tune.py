@@ -27,12 +27,11 @@ class Model():
 	5. Confidence vector of the model
 	6. The evolution of the graph based on cluster indices, e.g., We have a total three clusters, [0, 1, 2, 1, 2, ...]
 	"""
-	def __init__(self, medoids, params, thresholds, members, confidence, evolution):
+	def __init__(self, medoids, params, thresholds, members, evolution):
 		self.medoids = medoids
 		self.params = params
 		self.thresholds = thresholds
 		self.members = members
-		self.confidence = confidence
 		self.evolution = evolution
 
 	def print_thresholds(self):
@@ -174,9 +173,8 @@ def model(train_files, train_dir_name, num_trials, threshold_metrics, nums_stds)
 							prev = current
 							evolution.append(current)
 
-			model_confidence = confidence(sketches, best_cluster_labels, best_num_clusters, 2)
 			# Now that we have @evolution, we have all the information we need for our model. We create the model and save it in @models.
-			new_model = Model(cluster_medoids, cluster_param, cluster_thresholds, cluster_members, model_confidence, evolution)
+			new_model = Model(cluster_medoids, cluster_param, cluster_thresholds, cluster_members, evolution)
 			
 			print "Model " + str(model_num) + " is done!"
 			new_model.print_thresholds()
@@ -284,7 +282,7 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 	parser.add_argument('--train_dir', help='Absolute path to the directory that contains all training vectors', required=True)
 	# '--validate_dir <directory_path>': the path to the directory that contains data files of all validation graphs.
-	parser.add_argument('--validate_dir', help='Absolute path to the directory that contains all validation vectors', required=True)
+	# parser.add_argument('--validate_dir', help='Absolute path to the directory that contains all validation vectors', required=True)
 	# '--test_dir <directory_path>': the path to the directory that contains data files of all testing graphs.
 	parser.add_argument('--test_dir', help='Absolute path to the directory that contains all testing vectors', required=True)
 	# '--threshold_metric <mean/max>': whether the threshold uses mean or max of the cluster distances between cluster members and the medoid.
@@ -298,8 +296,8 @@ if __name__ == "__main__":
 	# Note that we will read every file within the directory @train_dir_name.
 	# We do not do error checking here. Therefore, make sure every file in @train_dir_name is valid.
 	# We do the same for validation/testing files.
-	validate_dir_name = args['validate_dir']	# The directory absolute path name from the user input of validation vectors.
-	validate_files = os.listdir(validate_dir_name)	# The validation file names within that directory.
+	# validate_dir_name = args['validate_dir']	# The directory absolute path name from the user input of validation vectors.
+	# validate_files = os.listdir(validate_dir_name)	# The validation file names within that directory.
 	test_dir_name = args['test_dir']	# The directory absolute path name from the user input of testing vectors.
 	test_files = os.listdir(test_dir_name)	# The testing file names within that directory.
 
@@ -322,12 +320,10 @@ if __name__ == "__main__":
 		for ns_num, ns in enumerate(num_stds_config):
 			# Validation/Testing
 			index = tm_num * len(num_stds_config) + ns_num
-			validation_accuracy = test(validate_files, validate_dir_name, models, index)
 			test_accuracy = test(test_files, test_dir_name, models, index)
 			print "Configuration: "
 			print "Threshold metric: " + tm
 			print "Number of standard deviations: " + str(ns)
-			print "Validation accuracy: " + str(validation_accuracy)
 			print "Test accuracy: " + str(test_accuracy) + '\n'
 
 
