@@ -185,3 +185,5 @@ xcuserdata
 *.tsv
 *.tar.gz
 *.db
+opentuner.log
+opentuner.db
