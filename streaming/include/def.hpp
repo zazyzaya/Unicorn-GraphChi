@@ -21,6 +21,7 @@
 #include <string>
 
 #include "kissdb.h"
+/* SKETCH_SIZE and K_HOPS are now compilation constant defined using -D flags. */
 /* This is the size of the sketch. */
 // #define SKETCH_SIZE 2000
 /* The WL algorithm will explore K_HOPS-hop neighbors. */
