@@ -19,3 +19,14 @@ wget_test:
 		rm wget-attack-preprocess-$$number.txt ; \
 		number=`expr $$number + 1` ; \
 	done
+
+background:
+	mkdir -p background_data_multilabel
+	cd background_data_multilabel && mkdir -p base_train && mkdir -p stream_train
+	number=0 ; while [ $$number -le 99 ] ; do \
+		python preprocess-w3c.py ../../../../prov-ips/streamspot/experiment/openssl/data/whole-system-$$number.log whole-system-preprocess-$$number.txt ; \
+		python parse-w3c.py whole-system-preprocess-$$number.txt background_data_multilabel/base_train/base-background-$$number.txt background_data_multilabel/stream_train/stream-background-$$number.txt ; \
+		rm error.log ; \
+		rm whole-system-preprocess-$$number.txt ; \
+		number=`expr $$number + 1` ; \
+	done
