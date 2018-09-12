@@ -180,7 +180,11 @@ class Unicorn(MeasurementInterface):
 		# Testing
 		test_accuracy = test(sketch_test_files, test_sketch_dir_name, models, cfg['threshold-metric'], cfg['num-stds'])
 		print "Configuration: " + cfg['threshold-metric'] + " with " + str(cfg['num-stds'])
-		
+		print "\t Decay: " + str(cfg['decay'])
+		print "\t Interval: " + str(cfg['interval'])
+		print "\t Lambda: " + str(cfg['lambda'])
+		print "\t Chunk Size: " + str(cfg['chunk-size'])
+	
 		# For next experiment, remove sketch files from this experiment
 		for sketch_train_file in sketch_train_files:
 			file_to_remove = os.path.join(train_sketch_dir_name, sketch_train_file)
