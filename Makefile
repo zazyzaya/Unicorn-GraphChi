@@ -148,5 +148,14 @@ run_wget_test_multilabel:
 		number=`expr $$number + 1` ; \
 	done
 
+run_background_train_multilabel:
+	cd streaming/analyze && mkdir -p train-data-background-multilabel
+	number=0 ; while [ $$number -le 99 ] ; do \
+		bin/streaming/main filetype edgelist file streaming/data/multilabel/background_data_multilabel/base_train/base-background-$$number.txt niters 10000 stream_file streaming/data/multilabel/background_data_multilabel/stream_train/stream-background-$$number.txt decay 100 lambda 0.02 interval 200 sketch_file streaming/analyze/train-data-background-multilabel/sketch-background-$$number.txt chunkify 1 chunk_size 5 ; \
+		rm -rf streaming/data/multilabel/background_data_multilabel/base_train/base-background-$$number.txt.* ; \
+		rm -rf streaming/data/multilabel/background_data_multilabel/base_train/base-background-$$number.txt_* ; \
+		number=`expr $$number + 1` ; \
+	done
+
 
 	
