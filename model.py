@@ -179,6 +179,7 @@ class Unicorn(MeasurementInterface):
 		models = model(sketch_train_files, train_sketch_dir_name, NUM_TRIALS)
 		# Testing
 		test_accuracy = test(sketch_test_files, test_sketch_dir_name, models, cfg['threshold-metric'], cfg['num-stds'])
+		print "Test Accuracy: " + str(test_accuracy)
 		print "Configuration: " + cfg['threshold-metric'] + " with " + str(cfg['num-stds'])
 		print "\t Decay: " + str(cfg['decay'])
 		print "\t Interval: " + str(cfg['interval'])
