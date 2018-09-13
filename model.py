@@ -385,6 +385,9 @@ def test(test_files, test_dir_name, models, threshold_metric, num_std):
 			# If it could not fit into any of the models, the @abnormal flag remains True and we will signal the user.
 			for model in models:
 				check_next_model = False	# Flag signalling whether we should proceed to check with the next model because the current one does not fit.
+				if not model.evolution:	# If the evolution is empty
+					check_next_model = True
+					break
 				current_evolution_idx = 0 
 				current_cluster_idx = model.evolution[current_evolution_idx]
 				current_medoid = model.medoids[current_cluster_idx]	# Get the medoid of the current cluster.
