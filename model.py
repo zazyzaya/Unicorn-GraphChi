@@ -204,8 +204,8 @@ class Unicorn(MeasurementInterface):
 
 		# remove Unicorn DB for this configuration
 		try:
-			if os.path.isfile("unicorn.db"):
-				os.unlink("unicorn.db")
+			if os.path.isfile("/local/data/unicorn.db"):
+				os.unlink("/local/data/unicorn.db")
 		except Exception as e:
 			print(e)
 
@@ -403,8 +403,10 @@ def test(test_files, test_dir_name, models, threshold_metric, num_std):
 							current_evolution_idx = current_evolution_idx + 1 # Let's move on to the next cluster and see if it fits.
 							current_cluster_idx = model.evolution[current_evolution_idx]
 							current_medoid = model.medoids[current_cluster_idx]
-							current_threshold = model.thresholds[index][current_cluster_idx]
-							current_param = model.params[current_cluster_idx]
+							if threshold_metric == 'mean':
+								current_threshold = model.mean_thresholds[current_cluster_idx] + num_std * model.stds[current_cluster_idx]
+							elif threshold_metric == 'max':
+								current_threshold = model.max_thresholds[current_cluster_idx] + num_std * model.stds[current_cluster_idx]
 							distance_from_medoid = hamming(sketch, current_medoid)
 							if distance_from_medoid > current_threshold:	# if it still does not fit, we consider it abnormal
 								check_next_model = True	# So we know this graph does not fit into this model, but it can probably fit into a different model.
