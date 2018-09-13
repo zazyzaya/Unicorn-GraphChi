@@ -58,14 +58,14 @@ class Unicorn(MeasurementInterface):
 		Define the search space by creating a ConfigurationManipulator
 		'''
 		manipulator = ConfigurationManipulator()
-		manipulator.add_parameter(IntegerParameter('decay', 100, 200))
-		manipulator.add_parameter(IntegerParameter('interval', 1000, 2000))
-		manipulator.add_parameter(IntegerParameter('chunk-size', 5, 20))
-		manipulator.add_parameter(FloatParameter('lambda', 0.005, 0.5))
+		manipulator.add_parameter(IntegerParameter('decay', 10, 15))
+		manipulator.add_parameter(IntegerParameter('interval', 50, 52))
+		manipulator.add_parameter(IntegerParameter('chunk-size', 3, 5))
+		manipulator.add_parameter(FloatParameter('lambda', 0.05, 0.1))
 		manipulator.add_parameter(EnumParameter('threshold-metric', ['mean', 'max']))
 		manipulator.add_parameter(FloatParameter('num-stds', 0.5, 5.0))
-		manipulator.add_parameter(IntegerParameter('sketch-size', 2000, 3000))
-		manipulator.add_parameter(IntegerParameter('k-hops', 3, 5))
+		manipulator.add_parameter(IntegerParameter('sketch-size', 2000, 2500))
+		manipulator.add_parameter(IntegerParameter('k-hops', 3, 4))
 		return manipulator
 
 	def run(self, desired_result, input, limit):
