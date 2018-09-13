@@ -204,8 +204,8 @@ class Unicorn(MeasurementInterface):
 
 		# remove Unicorn DB for this configuration
 		try:
-			if os.path.isfile("/local/data/unicorn.db"):
-				os.unlink("/local/data/unicorn.db")
+			if os.path.isfile("unicorn.db"):
+				os.unlink("unicorn.db")
 		except Exception as e:
 			print(e)
 
