@@ -253,7 +253,7 @@ int main(int argc, const char ** argv) {
 	/* Create a simple database to deal with hash values. */
 	logstream(LOG_DEBUG) << "Opening a new empty database call unicorn.db...\n" << std::endl;
 
-	if (KISSDB_open(&db, "unicorn.db", KISSDB_OPEN_MODE_RWCREAT, 1000000, sizeof(unsigned long), sizeof(struct hist_elem))) {
+	if (KISSDB_open(&db, "/local/data/unicorn.db", KISSDB_OPEN_MODE_RWCREAT, 1000000, sizeof(unsigned long), sizeof(struct hist_elem))) {
 		logstream(LOG_ERROR) << "Opening unicorn.db failed!" << std::endl;
 		return 1;
 	}
