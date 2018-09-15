@@ -41,7 +41,6 @@ void Histogram::insert_label(unsigned long label) {
 	if (fp == NULL) {
 		logstream(LOG_ERROR) << "Cannot open the histogram file to write" << ". Error code: " << strerror(errno) << std::endl;
 		assert(false);
-		return NULL;
 	}
 	struct hist_elem new_elem;
 	if (KISSDB_get(&db, &label, &new_elem)) {
@@ -56,16 +55,16 @@ void Histogram::insert_label(unsigned long label) {
 		}
 
 		for (int i = 0; i < SKETCH_SIZE; i++) {
-			fprintf(fp,"%lu ", new_elem.r[i]);
+			fprintf(fp,"%f ", new_elem.r[i]);
 		}
 		for (int i = 0; i < SKETCH_SIZE; i++) {
-			fprintf(fp,"%lu ", new_elem.c[i]);
+			fprintf(fp,"%f ", new_elem.c[i]);
 		}
 		for (int i = 0; i < SKETCH_SIZE; i++) {
-			fprintf(fp,"%lu ", new_elem.beta[i]);
+			fprintf(fp,"%f ", new_elem.beta[i]);
 		}
-		fclose(fp);
 	}
+	fclose(fp);
 	double counter = 1;
 	std::pair<std::map<unsigned long, double>::iterator, bool> rst;
 	rst = this->histogram_map.insert(std::pair<unsigned long, double>(label, counter));
