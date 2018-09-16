@@ -85,9 +85,11 @@ download_fix:
 		number=`expr $$number + 1` ; \
 	done
 
-cnn:
+cnn_fix:
 	number=500 ; while [ $$number -le 599 ] ; do \
-		sed -n '1,300p;301q' cnn_data_v2/stream_train/stream-cnn-v2-$$number.txt >> cnn_data_v2/base_train/base-cnn-v2-$$number.txt ; \
-		sed -i '1,300d' cnn_data_v2/stream_train/stream-cnn-v2-$$number.txt ; \
+		sed -i "s/:0:0:/:/" cnn_data_v2/base_train/base-cnn-v2-$$number.txt ; \
+		sed -i "s/:0:1:/:/" cnn_data_v2/base_train/base-cnn-v2-$$number.txt ; \
+		sed -i "s/:1:0:/:/" cnn_data_v2/base_train/base-cnn-v2-$$number.txt ; \
+		sed -i "s/:1:1:/:/" cnn_data_v2/base_train/base-cnn-v2-$$number.txt ; \
 		number=`expr $$number + 1` ; \
 	done
