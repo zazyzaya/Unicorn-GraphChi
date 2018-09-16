@@ -54,7 +54,7 @@ class Unicorn(MeasurementInterface):
 	Use OpenTuner to turn hyperparameters used by Unicorn System.
 	'''
 	def __init__(self, args):
-		super(Unicorn, self).__init__(objective=MaximizeAccuracy())
+		super(Unicorn, self).__init__(args, objective=MaximizeAccuracy())
 
 	def manipulator(self):
 		'''
