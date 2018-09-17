@@ -126,6 +126,7 @@ class Unicorn(MeasurementInterface):
 			run_cmd += ' chunkify 1 '
 			run_cmd += ' chunk_size ' + str(cfg['chunk-size'])
 
+			print run_cmd
 			run_result = self.call_program(run_cmd)
 			assert run_result['returncode'] == 0
 
@@ -162,6 +163,7 @@ class Unicorn(MeasurementInterface):
 			run_cmd += ' chunkify 1 '
 			run_cmd += ' chunk_size ' + str(cfg['chunk-size'])
 
+			print run_cmd
 			run_result = self.call_program(run_cmd)
 			assert run_result['returncode'] == 0
 
