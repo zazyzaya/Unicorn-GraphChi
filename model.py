@@ -216,7 +216,7 @@ class Unicorn(MeasurementInterface):
 		except Exception as e:
 			print(e)
 
-		return Result(accuracy=test_accuracy)
+		return Result(time=1.0, accuracy=test_accuracy)
 
 	def save_final_config(self, configuration):
 		"""called at the end of tuning"""
