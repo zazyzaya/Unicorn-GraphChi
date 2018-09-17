@@ -21,6 +21,7 @@
 #include <string>
 
 #include "kissdb.h"
+#include "storage.hpp"
 /* SKETCH_SIZE and K_HOPS are now compilation constant defined using -D flags. */
 /* This is the size of the sketch. */
 // #define SKETCH_SIZE 2000
@@ -39,7 +40,8 @@ extern int CHUNK_SIZE;
 
 extern bool next_itr; /* We do not need any more iterations if next_itr is false. GraphChi should stop. */
 
-extern KISSDB db;
+// extern KISSDB db;
+extern kiss_storage ks;
 
 /* In a truly streaming setting, GraphChi does not allow dynamic vertex/edge type.
  * We therefore must fixed the neighborhood we are exploring.

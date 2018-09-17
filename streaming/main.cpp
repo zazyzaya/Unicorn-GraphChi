@@ -17,10 +17,12 @@
 #include "include/helper.hpp"
 #include "include/histogram.hpp"
 #include "include/kissdb.h"
+#include "include/storage.hpp"
 #include "graphchi_basic_includes.hpp"
 #include "logger/logger.hpp"
 #include "wl.hpp"
 #include "../extern/extern.hpp"
+
 
 #include <pthread.h> 
 #include <sys/types.h>
@@ -42,7 +44,7 @@ float LAMBDA;
 int INTERVAL;
 bool CHUNKIFY = true;
 int CHUNK_SIZE;
-KISSDB db;
+kiss_storage ks;
 
 /* The following varible is global. */
 bool next_itr = false;
@@ -253,7 +255,8 @@ int main(int argc, const char ** argv) {
 	/* Create a simple database to deal with hash values. */
 	logstream(LOG_DEBUG) << "Opening a new empty database call unicorn.db...\n" << std::endl;
 
-	if (KISSDB_open(&db, "/local/data/unicorn.db", KISSDB_OPEN_MODE_RWCREAT, 1000000, sizeof(unsigned long), sizeof(struct hist_elem))) {
+	if (ks.init_storage("unicorn.db")) {
+	// if (KISSDB_open(&db, "unicorn.db", KISSDB_OPEN_MODE_RWCREAT, 1000000, sizeof(unsigned long), sizeof(struct hist_elem))) {
 		logstream(LOG_ERROR) << "Opening unicorn.db failed!" << std::endl;
 		return 1;
 	}
@@ -307,7 +310,8 @@ int main(int argc, const char ** argv) {
 		logstream(LOG_ERROR) << "graph_barrier cannot be destroyed." << std::endl;
 	}
 
-	KISSDB_close(&db);
+	ks.close_storage();
+	// KISSDB_close(&db);
 	// metrics_report(m);
 	return 0;
 }
