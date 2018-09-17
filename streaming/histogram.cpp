@@ -15,9 +15,6 @@
 
 #include <math.h>
 
-/* The following variables are declared in def.hpp. */
-double total_access = 0;
-double total_retrieval = 0;
 
 Histogram* Histogram::histogram;
 
@@ -42,7 +39,6 @@ void Histogram::insert_label(unsigned long label) {
 	struct hist_elem new_elem;
 	if (KISSDB_get(&db, &label, &new_elem)) {
 		/* If label does not exist in the database*/
-		total_access++;
 		for (int i = 0; i < SKETCH_SIZE; i++) {
 			new_elem.r[i] = gamma_dist(r_generator);
 			new_elem.beta[i] = uniform_dist(beta_generator);
@@ -51,9 +47,6 @@ void Histogram::insert_label(unsigned long label) {
 		if (KISSDB_put(&db, &label, &new_elem)) {
 			logstream(LOG_ERROR) << "KISSDB_put failed." << std::endl;
 		}
-	} else {
-		total_access++;
-		total_retrieval++;
 	}
 	double counter = 1;
 	std::pair<std::map<unsigned long, double>::iterator, bool> rst;
@@ -93,7 +86,6 @@ void Histogram::update(unsigned long label, bool increment_t) {
 	std::pair<std::map<unsigned long, double>::iterator, bool> rst;
 	struct hist_elem new_elem;
 	if (KISSDB_get(&db, &label, &new_elem)) {
-		total_access++;
 		for (int i = 0; i < SKETCH_SIZE; i++) {
 			new_elem.r[i] = gamma_dist(r_generator);
 			new_elem.beta[i] = uniform_dist(beta_generator);
@@ -102,9 +94,6 @@ void Histogram::update(unsigned long label, bool increment_t) {
 		if (KISSDB_put(&db, &label, &new_elem)) {
 			logstream(LOG_ERROR) << "KISSDB_put failed." << std::endl;
 		}
-	} else {
-		total_access++;
-		total_retrieval++;
 	}
 	double counter = 1;
 	rst = this->histogram_map.insert(std::pair<unsigned long, double>(label, counter));
@@ -199,8 +188,6 @@ void Histogram::record_sketch(FILE* fp) {
 		fprintf(fp,"%lu ", this->sketch[i]);
 	}
 	fprintf(fp, "\n");
-	logstream(LOG_INFO) << "Total Access: " << total_access << std::endl;
-	logstream(LOG_INFO) << "Total Retrieval: " << total_retrieval << std::endl;
 	return;
 }
 
@@ -210,9 +197,9 @@ void Histogram::record_sketch(FILE* fp) {
  *
  */
 void Histogram::print_histogram() {
-	// std::map<unsigned long, struct hist_elem>::iterator it;
-	// logstream(LOG_DEBUG) << "Printing histogram map to the console..." << std::endl;
-	// for (it = this->histogram_map.begin(); it != this->histogram_map.end(); it++)
-	// 	logstream(LOG_INFO) << "[" << it->first << "]->" << (it->second).cnt << "  ";
+	std::map<unsigned long, struct hist_elem>::iterator it;
+	logstream(LOG_INFO) << "Printing histogram map to the console..." << std::endl;
+	for (it = this->histogram_map.begin(); it != this->histogram_map.end(); it++)
+		logstream(LOG_INFO) << "[" << it->first << "]->" << (it->second).cnt << "  ";
 	return;
 }
