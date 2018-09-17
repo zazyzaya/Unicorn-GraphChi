@@ -77,6 +77,12 @@ class Unicorn(MeasurementInterface):
 	def run(self, desired_result, input, limit):
 		cfg = desired_result.configuration.data
 
+		print "Configuration: " + cfg['threshold-metric'] + " with " + str(cfg['num-stds'])
+		print "\t\t Decay: " + str(cfg['decay'])
+		print "\t\t Interval: " + str(cfg['interval'])
+		print "\t\t Lambda: " + str(cfg['lambda'])
+		print "\t\t Chunk Size: " + str(cfg['chunk-size'])
+
 		# Compile GraphChi with different flags.
 		gcc_cmd = 'g++-4.9 -std=c++11 -g -O3 -I/usr/local/include/ -I./src/  -fopenmp -Wall -Wno-strict-aliasing -lpthread'
 		gcc_cmd += ' -DSKETCH_SIZE=' + str(cfg['sketch-size'])
@@ -186,11 +192,6 @@ class Unicorn(MeasurementInterface):
 		# Testing
 		test_accuracy = test(sketch_test_files, test_sketch_dir_name, models, cfg['threshold-metric'], cfg['num-stds'])
 		print "Test Accuracy: " + str(test_accuracy)
-		print "Configuration: " + cfg['threshold-metric'] + " with " + str(cfg['num-stds'])
-		print "\t Decay: " + str(cfg['decay'])
-		print "\t Interval: " + str(cfg['interval'])
-		print "\t Lambda: " + str(cfg['lambda'])
-		print "\t Chunk Size: " + str(cfg['chunk-size'])
 	
 		# For next experiment, remove sketch files from this experiment
 		for sketch_train_file in sketch_train_files:
