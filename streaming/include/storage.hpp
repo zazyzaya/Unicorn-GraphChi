@@ -38,6 +38,8 @@ class kiss_storage: public Storage {
 		KISSDB db;
 };
 
+extern kiss_storage ks;
+
 #include "storage.cpp"
 
 #endif
