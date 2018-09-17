@@ -3,10 +3,11 @@
 
 int main()
 {
-	std::default_random_engine generator;
-	generator.seed(24);
-	std::default_random_engine generator2;
-	generator2.seed(24);
+	std::default_random_engine generator(24);
+	/* Another way to set a fixed seed. */
+	// generator.seed(24);
+	std::default_random_engine generator2(24);
+	// generator2.seed(24);
  	std::gamma_distribution<double> d1(2.0,2.0);
  	std::gamma_distribution<double> d2(d1.param());
 
