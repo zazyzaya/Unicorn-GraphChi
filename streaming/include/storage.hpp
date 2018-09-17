@@ -12,6 +12,7 @@
  */
 #ifndef storage_hpp
 #define storage_hpp
+
 #include "def.hpp"
 #include "kissdb.h"
 
