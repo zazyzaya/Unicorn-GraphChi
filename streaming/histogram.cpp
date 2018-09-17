@@ -13,6 +13,7 @@
 #include "include/histogram.hpp"
 #include "include/kissdb.h"
 
+#include <fstream>
 #include <math.h>
 
 
@@ -36,6 +37,12 @@ Histogram::~Histogram(){
  *
  */
 void Histogram::insert_label(unsigned long label) {
+	FILE * fp = fopen("histo.txt", "a+");
+	if (fp == NULL) {
+		logstream(LOG_ERROR) << "Cannot open the histogram file to write" << ". Error code: " << strerror(errno) << std::endl;
+		assert(false);
+		return NULL;
+	}
 	struct hist_elem new_elem;
 	if (KISSDB_get(&db, &label, &new_elem)) {
 		/* If label does not exist in the database*/
@@ -47,6 +54,17 @@ void Histogram::insert_label(unsigned long label) {
 		if (KISSDB_put(&db, &label, &new_elem)) {
 			logstream(LOG_ERROR) << "KISSDB_put failed." << std::endl;
 		}
+
+		for (int i = 0; i < SKETCH_SIZE; i++) {
+			fprintf(fp,"%lu ", new_elem.r[i]);
+		}
+		for (int i = 0; i < SKETCH_SIZE; i++) {
+			fprintf(fp,"%lu ", new_elem.c[i]);
+		}
+		for (int i = 0; i < SKETCH_SIZE; i++) {
+			fprintf(fp,"%lu ", new_elem.beta[i]);
+		}
+		fclose(fp);
 	}
 	double counter = 1;
 	std::pair<std::map<unsigned long, double>::iterator, bool> rst;
