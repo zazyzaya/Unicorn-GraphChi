@@ -96,8 +96,11 @@ struct hist_elem {
 };
 
 std::default_random_engine r_generator;
+r_generator.seed(24);
 std::default_random_engine c_generator;
+c_generator.seed(12);
 std::default_random_engine beta_generator;
+beta_generator.seed(3);
 std::gamma_distribution<double> gamma_dist(2.0, 1.0);
 std::uniform_real_distribution<double> uniform_dist(0.0, 1.0);
 
