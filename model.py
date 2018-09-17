@@ -22,8 +22,9 @@ from opentuner.search.manipulator import IntegerParameter
 from opentuner.search.manipulator import FloatParameter
 from opentuner.search.manipulator import EnumParameter
 from opentuner.measurement import MeasurementInterface
-from opentuner.resultsdb.models import Result
 from opentuner.search.objective import MaximizeAccuracy
+from opentuner.resultsdb.models import Result
+from opentuner.measurement.inputmanager import FixedInputManager
 
 # Marcos.
 NUM_TRIALS = 20
@@ -54,7 +55,9 @@ class Unicorn(MeasurementInterface):
 	Use OpenTuner to turn hyperparameters used by Unicorn System.
 	'''
 	def __init__(self, args):
-		super(Unicorn, self).__init__(args, objective=MaximizeAccuracy())
+		super(Unicorn, self).__init__(args,
+			input_manager=FixedInputManager(),
+			objective=MaximizeAccuracy())
 
 	def manipulator(self):
 		'''
