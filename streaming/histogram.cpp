@@ -37,11 +37,11 @@ Histogram::~Histogram(){
  *
  */
 void Histogram::insert_label(unsigned long label) {
-	FILE * fp = fopen("histo.txt", "a+");
-	if (fp == NULL) {
-		logstream(LOG_ERROR) << "Cannot open the histogram file to write" << ". Error code: " << strerror(errno) << std::endl;
-		assert(false);
-	}
+	// FILE * fp = fopen("histo.txt", "a+");
+	// if (fp == NULL) {
+	// 	logstream(LOG_ERROR) << "Cannot open the histogram file to write" << ". Error code: " << strerror(errno) << std::endl;
+	// 	assert(false);
+	// }
 	struct hist_elem new_elem;
 	if (KISSDB_get(&db, &label, &new_elem)) {
 		/* If label does not exist in the database*/
@@ -54,17 +54,17 @@ void Histogram::insert_label(unsigned long label) {
 			logstream(LOG_ERROR) << "KISSDB_put failed." << std::endl;
 		}
 
-		for (int i = 0; i < SKETCH_SIZE; i++) {
-			fprintf(fp,"%f ", new_elem.r[i]);
-		}
-		for (int i = 0; i < SKETCH_SIZE; i++) {
-			fprintf(fp,"%f ", new_elem.c[i]);
-		}
-		for (int i = 0; i < SKETCH_SIZE; i++) {
-			fprintf(fp,"%f ", new_elem.beta[i]);
-		}
+		// for (int i = 0; i < SKETCH_SIZE; i++) {
+		// 	fprintf(fp,"%f ", new_elem.r[i]);
+		// }
+		// for (int i = 0; i < SKETCH_SIZE; i++) {
+		// 	fprintf(fp,"%f ", new_elem.c[i]);
+		// }
+		// for (int i = 0; i < SKETCH_SIZE; i++) {
+		// 	fprintf(fp,"%f ", new_elem.beta[i]);
+		// }
 	}
-	fclose(fp);
+	// fclose(fp);
 	double counter = 1;
 	std::pair<std::map<unsigned long, double>::iterator, bool> rst;
 	rst = this->histogram_map.insert(std::pair<unsigned long, double>(label, counter));
