@@ -197,9 +197,9 @@ void Histogram::record_sketch(FILE* fp) {
  *
  */
 void Histogram::print_histogram() {
-	std::map<unsigned long, struct hist_elem>::iterator it;
+	std::map<unsigned long, double>::iterator it;
 	logstream(LOG_INFO) << "Printing histogram map to the console..." << std::endl;
 	for (it = this->histogram_map.begin(); it != this->histogram_map.end(); it++)
-		logstream(LOG_INFO) << "[" << it->first << "]->" << (it->second).cnt << "  ";
+		logstream(LOG_INFO) << "[" << it->first << "]->" << it->second << "  ";
 	return;
 }
