@@ -536,8 +536,9 @@ namespace graphchi {
 			if (iteration == K_HOPS) {
 				std::base_graph_constructed = true;
 			}
-			if (!next_itr) {
-				logstream(LOG_DEBUG) << "next_itr is false...Let's see if we need to stop or wait." << std::endl;
+			// if (!next_itr) {
+			if (!gcontext.scheduler->has_new_tasks){
+				logstream(LOG_DEBUG) << "No new task at the moment...Let's see if we need to stop or wait." << std::endl;
 				if (std::stop) {
 					logstream(LOG_DEBUG) << "Everything is done!" << std::endl;
 					gcontext.set_last_iteration(iteration);/* Set this iteration as the last one. */
