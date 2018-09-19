@@ -57,6 +57,8 @@
 #include "util/pthread_tools.hpp"
 #include "output/output.hpp"
 
+#include "../extern/extern.hpp"
+
 namespace graphchi {
 
     template <typename VertexDataType, typename EdgeDataType,
