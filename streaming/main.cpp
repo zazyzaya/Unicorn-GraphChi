@@ -35,6 +35,7 @@ pthread_barrier_t std::graph_barrier;
 pthread_barrier_t std::stream_barrier;
 int std::stop = 0;
 bool std::base_graph_constructed = false;
+bool std::no_new_task = false;
 /* The following variables are declared in def.hpp.
  * They are defined here and will be assigned values in main function. */
 int DECAY;

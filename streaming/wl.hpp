@@ -537,7 +537,7 @@ namespace graphchi {
 				std::base_graph_constructed = true;
 			}
 			// if (!next_itr) {
-			if (!gcontext.scheduler->has_new_tasks){
+			if (std::no_new_tasks){
 				logstream(LOG_DEBUG) << "No new task at the moment...Let's see if we need to stop or wait." << std::endl;
 				if (std::stop) {
 					logstream(LOG_DEBUG) << "Everything is done!" << std::endl;
@@ -545,6 +545,7 @@ namespace graphchi {
 					return;
 				}
 				pthread_barrier_wait(&std::stream_barrier);
+				std::no_new_tasks = false;
 				logstream(LOG_DEBUG) << "No new tasks to run! But have new streamed edges!" << std::endl;
 				pthread_barrier_wait(&std::graph_barrier);
             }

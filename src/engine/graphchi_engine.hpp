@@ -805,6 +805,7 @@ namespace graphchi {
                     if (scheduler != NULL) {
                         if (!scheduler->has_new_tasks) {
                             logstream(LOG_INFO) << "No new tasks to run!" << std::endl;
+                            std::no_new_task = true;
                             // break;
                         }
                         scheduler->has_new_tasks = false; // Kind of misleading since scheduler may still have tasks - but no new tasks.
