@@ -36,7 +36,7 @@ extern int INTERVAL;
 extern bool CHUNKIFY;
 extern int CHUNK_SIZE;
 
-extern bool next_itr; /* We do not need any more iterations if next_itr is false. GraphChi should stop. */
+// extern bool next_itr; /* We do not need any more iterations if next_itr is false. GraphChi should stop. */
 
 /* In a truly streaming setting, GraphChi does not allow dynamic vertex/edge type.
  * We therefore must fixed the neighborhood we are exploring.

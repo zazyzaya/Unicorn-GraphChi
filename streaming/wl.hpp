@@ -85,10 +85,10 @@ namespace graphchi {
 				 * We now always schedule every vertex to the next iteration, until a macro @next_itr says otherwise.
 				 * We will have to turn off the selective scheduler.
 				 */
-				// if (gcontext.scheduler != NULL) {
-				// 	gcontext.scheduler->add_task(vertex.id());
-				// }
-				next_itr = true; /* We know a meaningful next iteration is needed. */
+				if (gcontext.scheduler != NULL) {
+					gcontext.scheduler->add_task(vertex.id());
+				}
+				// next_itr = true; /* We know a meaningful next iteration is needed. */
 #ifdef DEBUG
 				logstream(LOG_DEBUG) << "The original label of vertex #" << vertex.id() << " is: " << nl.lb[0] << std::endl;
 #endif
@@ -232,15 +232,15 @@ namespace graphchi {
 					}
 				}
 				/* Always schedule itself for the next iteration, until the base graph is constructed. */
-				// if (gcontext.scheduler != NULL) {
-				// 	if (gcontext.iteration < K_HOPS) {
-				// 		// Do not schedule for the next iteration during the K_HOPSth iteration because all nodes in the base graph should have been processed.
-				// 		gcontext.scheduler->add_task(vertex.id());
-				// 	}
-				// }
-				if (gcontext.iteration < K_HOPS) {
-					next_itr = true;
+				if (gcontext.scheduler != NULL) {
+					if (gcontext.iteration < K_HOPS) {
+						// Do not schedule for the next iteration during the K_HOPSth iteration because all nodes in the base graph should have been processed.
+						gcontext.scheduler->add_task(vertex.id());
+					}
 				}
+				// if (gcontext.iteration < K_HOPS) {
+				// 	next_itr = true;
+				// }
 			} else { /* Now we are dealing with the case of streaming nodes/edges. */
 				/* We first check if the node is a new node or not so that we can do some initialization. */
 				/* The node is a new node if any of its edges marks the node new. */
@@ -364,7 +364,7 @@ namespace graphchi {
 #ifdef DEBUG
 					logstream(LOG_DEBUG) << "Streaming edge refreshes an existing leaf node #" << vertex.id() << std::endl;
 #endif
-					return; /* Update edge labels and then return without setting @next_itr to true.*/
+					// return; /* Update edge labels and then return without setting @next_itr to true.*/
 				} else {
 					/* Now we deal with nodes with incoming edges. */
 					struct node_label nl = vertex.get_data();
@@ -405,7 +405,6 @@ namespace graphchi {
 #endif
 					if (min_itr == K_HOPS + 1) {
 						/* This node should not be scheduled again and do not run the rest of the logic.
-						 * Not setting @next_itr to true.
 						 * This node could be, for example, the source node of a new edge added.
 						 */
 						return;
@@ -500,19 +499,19 @@ namespace graphchi {
 
 						if (min_itr < K_HOPS) {
 							/* Schedule the outgoing neighbor because it needs to update its label too. */
-							// if (gcontext.scheduler != NULL) {
-							// 	gcontext.scheduler->add_task(out_edge->vertex_id());
-							// }
-							next_itr = true;
+							if (gcontext.scheduler != NULL) {
+								gcontext.scheduler->add_task(out_edge->vertex_id());
+							}
+							// next_itr = true;
 						}
 					}
 					/* Now we decide if we want to schedule the node itself. */
 					if (min_itr < K_HOPS + 1) {
 						/* Schedule itself because we haven't explore all hops yet. */
-						// if (gcontext.scheduler != NULL) {
-						// 	gcontext.scheduler->add_task(vertex.id());
-						// }
-						next_itr = true;
+						if (gcontext.scheduler != NULL) {
+							gcontext.scheduler->add_task(vertex.id());
+						}
+						// next_itr = true;
 					}
 				}
 			}
@@ -523,7 +522,7 @@ namespace graphchi {
 		 */
 		void before_iteration(int iteration, graphchi_context &gcontext) {
 			/* Always reset @next_itr to false before an iteration. */
-			next_itr = false;
+			// next_itr = false;
 		}
 	    
 		/**

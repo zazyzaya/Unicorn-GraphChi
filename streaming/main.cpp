@@ -44,7 +44,7 @@ bool CHUNKIFY = true;
 int CHUNK_SIZE;
 
 /* The following varible is global. */
-bool next_itr = false;
+// bool next_itr = false;
 
 /*!
  * @brief A separate thread execute this function to stream graph from a file.
@@ -226,12 +226,12 @@ int main(int argc, const char ** argv) {
 	/* Metrics object for keeping track of performance counters and other information. 
 	 * Currently required. */
 	metrics m("Streaming Extractor");
-	global_logger().set_log_level(LOG_INFO);
+	global_logger().set_log_level(LOG_DEBUG);
 
 	/* Parameters from command line. */
 	std::string filename = get_option_string("file");
-	int niters = get_option_int("niters", 1000);
-	bool scheduler = false; /* We cannot use selective scheduling. */
+	int niters = get_option_int("niters", 1000000);
+	bool scheduler = true;
 	stream_file = get_option_string("stream_file");
 
 	/* More parameters from command line to configure hyperparameters of feature vector generation. 
