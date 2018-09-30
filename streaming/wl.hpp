@@ -467,7 +467,6 @@ namespace graphchi {
 						}
 					}
 					// hist->remove_label(nl.lb[min_itr]);
-					hist->release_lock();
 					/* Update the vertex's label*/
 					nl.lb[min_itr] = new_label;
 					vertex.set_data(nl);
