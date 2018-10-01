@@ -20,6 +20,7 @@ namespace std {
 	extern pthread_barrier_t stream_barrier;
     extern int stop;
     extern bool base_graph_constructed;
+    extern bool no_new_tasks;
 }
 
 #endif

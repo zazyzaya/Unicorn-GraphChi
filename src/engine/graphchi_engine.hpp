@@ -57,6 +57,8 @@
 #include "util/pthread_tools.hpp"
 #include "output/output.hpp"
 
+#include "../extern/extern.hpp"
+
 namespace graphchi {
 
     template <typename VertexDataType, typename EdgeDataType,
@@ -805,7 +807,8 @@ namespace graphchi {
                     if (scheduler != NULL) {
                         if (!scheduler->has_new_tasks) {
                             logstream(LOG_INFO) << "No new tasks to run!" << std::endl;
-                            break;
+                            std::no_new_tasks = true;
+                            // break;
                         }
                         scheduler->has_new_tasks = false; // Kind of misleading since scheduler may still have tasks - but no new tasks.
                     }

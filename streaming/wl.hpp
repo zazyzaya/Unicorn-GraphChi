@@ -77,18 +77,16 @@ namespace graphchi {
 				vertex.set_data(nl);
 
 				/* Populate histogram map. */
-				hist->get_lock();
-				hist->insert_label(nl.lb[0]);
-				hist->release_lock();
+				hist->update(nl.lb[0], true);
 
 				/* Always schedule itself for the next iteration. 
 				 * We now always schedule every vertex to the next iteration, until a macro @next_itr says otherwise.
 				 * We will have to turn off the selective scheduler.
 				 */
-				// if (gcontext.scheduler != NULL) {
-				// 	gcontext.scheduler->add_task(vertex.id());
-				// }
-				next_itr = true; /* We know a meaningful next iteration is needed. */
+				if (gcontext.scheduler != NULL) {
+					gcontext.scheduler->add_task(vertex.id());
+				}
+				// next_itr = true; /* We know a meaningful next iteration is needed. */
 #ifdef DEBUG
 				logstream(LOG_DEBUG) << "The original label of vertex #" << vertex.id() << " is: " << nl.lb[0] << std::endl;
 #endif
@@ -154,9 +152,8 @@ namespace graphchi {
 						logstream(LOG_DEBUG) << "The label string of the base vertex (with no neighbors) #" << vertex.id() << " is: " << last_itr_label << std::endl;
 #endif
 						/* Populate histogram map. */
-						hist->get_lock();
-						hist->insert_label(last_itr_label);
-						hist->release_lock();
+						hist->update(last_itr_label, true);
+
 						/* Update the vertex's label vector. */
 						nl.lb[gcontext.iteration] = last_itr_label;
 						nl.tm[gcontext.iteration] = 0; /* All timestamps of the leaf vertex is set to be 0. */
@@ -206,16 +203,15 @@ namespace graphchi {
 					/* Relabel by hashing. */
 					unsigned long new_label = hash((unsigned char *)new_label_str.c_str());
 					/* Populate histogram map, depending if we CHUNKIFY or not. */
-					hist->get_lock();
 					if (!CHUNKIFY) {
-						hist->insert_label(new_label);
+						hist->update(new_label, true);
 					} else {
 						std::vector<unsigned long> to_insert = chunkify((unsigned char *)new_label_str.c_str(), CHUNK_SIZE);
 						for (std::vector<unsigned long>::iterator ti = to_insert.begin(); ti != to_insert.end(); ++ti) {
-							hist->insert_label(*ti);
+							hist->update(*ti, true);
 						}
 					}
-					hist->release_lock();
+
 					/* Update the vertex's label*/
 					nl.lb[gcontext.iteration] = new_label;
 					nl.tm[gcontext.iteration] = neighborhood[0].tme[gcontext.iteration - 1];
@@ -232,15 +228,15 @@ namespace graphchi {
 					}
 				}
 				/* Always schedule itself for the next iteration, until the base graph is constructed. */
-				// if (gcontext.scheduler != NULL) {
-				// 	if (gcontext.iteration < K_HOPS) {
-				// 		// Do not schedule for the next iteration during the K_HOPSth iteration because all nodes in the base graph should have been processed.
-				// 		gcontext.scheduler->add_task(vertex.id());
-				// 	}
-				// }
-				if (gcontext.iteration < K_HOPS) {
-					next_itr = true;
+				if (gcontext.scheduler != NULL) {
+					if (gcontext.iteration < K_HOPS) {
+						// Do not schedule for the next iteration during the K_HOPSth iteration because all nodes in the base graph should have been processed.
+						gcontext.scheduler->add_task(vertex.id());
+					}
 				}
+				// if (gcontext.iteration < K_HOPS) {
+				// 	next_itr = true;
+				// }
 			} else { /* Now we are dealing with the case of streaming nodes/edges. */
 				/* We first check if the node is a new node or not so that we can do some initialization. */
 				/* The node is a new node if any of its edges marks the node new. */
@@ -288,11 +284,11 @@ namespace graphchi {
 						/* Update node label. */
 						vertex.set_data(nl);
 						/* Populate histogram map of all its labels. */
-						hist->get_lock();
 						for (int i = 0; i < K_HOPS + 1; i++) {
-							hist->update(nl.lb[i], true);	
+							hist->decay();
+							hist->update(nl.lb[i], false);	
 						}
-						hist->release_lock();
+
 						/* Populate the labels to all of its out-going edges. */
 						for (int i = 0; i < vertex.num_outedges(); i++) {
 							graphchi_edge<EdgeDataType> * out_edge = vertex.outedge(i);
@@ -336,9 +332,8 @@ namespace graphchi {
 						}
 
 						/* Populate histogram map. */
-						hist->get_lock();
-						hist->update(nl.lb[0], true);
-						hist->release_lock();
+						hist->decay();
+						hist->update(nl.lb[0], false);
 					}
 				}
 				/* Now node is known to the system. */
@@ -364,7 +359,7 @@ namespace graphchi {
 #ifdef DEBUG
 					logstream(LOG_DEBUG) << "Streaming edge refreshes an existing leaf node #" << vertex.id() << std::endl;
 #endif
-					return; /* Update edge labels and then return without setting @next_itr to true.*/
+					// return; /* Update edge labels and then return without setting @next_itr to true.*/
 				} else {
 					/* Now we deal with nodes with incoming edges. */
 					struct node_label nl = vertex.get_data();
@@ -405,7 +400,6 @@ namespace graphchi {
 #endif
 					if (min_itr == K_HOPS + 1) {
 						/* This node should not be scheduled again and do not run the rest of the logic.
-						 * Not setting @next_itr to true.
 						 * This node could be, for example, the source node of a new edge added.
 						 */
 						return;
@@ -458,19 +452,21 @@ namespace graphchi {
 					/* Relabel by hashing. */
 					unsigned long new_label = hash((unsigned char *)new_label_str.c_str());
 					/* Populate histogram map. */
-					hist->get_lock();
 					if (!CHUNKIFY) {
-						hist->update(new_label, true);
+						hist->decay();
+						hist->update(new_label, false);
 					} else {
 						std::vector<unsigned long> to_insert = chunkify((unsigned char *)new_label_str.c_str(), CHUNK_SIZE);
 						bool first = true;
 						for (std::vector<unsigned long>::iterator ti = to_insert.begin(); ti != to_insert.end(); ++ti) {
-							hist->update(*ti, first); /* Only increment decay value once. */
+							if (first) {
+								hist->decay(); /* Only increment decay value once. */
+							}
+							hist->update(*ti, false);
 							first = false;
 						}
 					}
 					// hist->remove_label(nl.lb[min_itr]);
-					hist->release_lock();
 					/* Update the vertex's label*/
 					nl.lb[min_itr] = new_label;
 					vertex.set_data(nl);
@@ -500,19 +496,19 @@ namespace graphchi {
 
 						if (min_itr < K_HOPS) {
 							/* Schedule the outgoing neighbor because it needs to update its label too. */
-							// if (gcontext.scheduler != NULL) {
-							// 	gcontext.scheduler->add_task(out_edge->vertex_id());
-							// }
-							next_itr = true;
+							if (gcontext.scheduler != NULL) {
+								gcontext.scheduler->add_task(out_edge->vertex_id());
+							}
+							// next_itr = true;
 						}
 					}
 					/* Now we decide if we want to schedule the node itself. */
 					if (min_itr < K_HOPS + 1) {
 						/* Schedule itself because we haven't explore all hops yet. */
-						// if (gcontext.scheduler != NULL) {
-						// 	gcontext.scheduler->add_task(vertex.id());
-						// }
-						next_itr = true;
+						if (gcontext.scheduler != NULL) {
+							gcontext.scheduler->add_task(vertex.id());
+						}
+						// next_itr = true;
 					}
 				}
 			}
@@ -523,7 +519,7 @@ namespace graphchi {
 		 */
 		void before_iteration(int iteration, graphchi_context &gcontext) {
 			/* Always reset @next_itr to false before an iteration. */
-			next_itr = false;
+			// next_itr = false;
 		}
 	    
 		/**
@@ -537,14 +533,16 @@ namespace graphchi {
 			if (iteration == K_HOPS) {
 				std::base_graph_constructed = true;
 			}
-			if (!next_itr) {
-				logstream(LOG_DEBUG) << "next_itr is false...Let's see if we need to stop or wait." << std::endl;
+			// if (!next_itr) {
+			if (std::no_new_tasks){
+				logstream(LOG_DEBUG) << "No new task at the moment...Let's see if we need to stop or wait." << std::endl;
 				if (std::stop) {
 					logstream(LOG_DEBUG) << "Everything is done!" << std::endl;
 					gcontext.set_last_iteration(iteration);/* Set this iteration as the last one. */
 					return;
 				}
 				pthread_barrier_wait(&std::stream_barrier);
+				std::no_new_tasks = false;
 				logstream(LOG_DEBUG) << "No new tasks to run! But have new streamed edges!" << std::endl;
 				pthread_barrier_wait(&std::graph_barrier);
             }

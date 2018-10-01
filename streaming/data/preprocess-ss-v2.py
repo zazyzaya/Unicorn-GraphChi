@@ -31,7 +31,7 @@ def read_single_graph(file_name, graph_id):
 def print_instruction():
 	print(
 		"Usage: python preprocess-ss.py <graph_id> <input_file_path> <base_graph_file_path> <stream_file_path>\n"
-		"The first 10% of the edges in the graph will be considered as the basis of the streaming graph, stored in <base_graph_file_path>.\n"
+		"The first 200 edges in the graph will be considered as the basis of the streaming graph, stored in <base_graph_file_path>.\n"
 		"The rest of the edges will be streamed in, stored in <stream_file_path>.\n")
 
 if __name__ == "__main__":
@@ -40,7 +40,7 @@ if __name__ == "__main__":
 		sys.exit(1)
 
 	graph = read_single_graph(sys.argv[2], sys.argv[1])
-	base_graph_size = math.ceil(len(graph) * 0.1)	# The size of base graph.
+	base_graph_size = 200	# The size of base graph.
 	stream_graph_size = len(graph) - base_graph_size
 
 	base_file = open(sys.argv[3], "w")

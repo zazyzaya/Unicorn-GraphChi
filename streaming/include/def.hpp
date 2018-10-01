@@ -20,11 +20,11 @@
 #include <pthread.h> 
 #include <string>
 
-#include "kissdb.h"
+/* SKETCH_SIZE and K_HOPS are now compilation constant defined using -D flags. */
 /* This is the size of the sketch. */
-#define SKETCH_SIZE 2000
+// #define SKETCH_SIZE 2000
 /* The WL algorithm will explore K_HOPS-hop neighbors. */
-#define K_HOPS 3
+// #define K_HOPS 3
 
 /* The value of "cnt" element in the histogram will decay every DECAY updates. */
 extern int DECAY;
@@ -36,9 +36,8 @@ extern int INTERVAL;
 extern bool CHUNKIFY;
 extern int CHUNK_SIZE;
 
-extern bool next_itr; /* We do not need any more iterations if next_itr is false. GraphChi should stop. */
+// extern bool next_itr; /* We do not need any more iterations if next_itr is false. GraphChi should stop. */
 
-extern KISSDB db;
 /* In a truly streaming setting, GraphChi does not allow dynamic vertex/edge type.
  * We therefore must fixed the neighborhood we are exploring.
  * Currently we implement K_HOPS neighborhood.
@@ -93,9 +92,9 @@ struct hist_elem {
 	double c[SKETCH_SIZE]; 
 };
 
-std::default_random_engine r_generator;
-std::default_random_engine c_generator;
-std::default_random_engine beta_generator;
+// std::default_random_engine r_generator(24);
+// std::default_random_engine c_generator(12);
+// std::default_random_engine beta_generator(3);
 std::gamma_distribution<double> gamma_dist(2.0, 1.0);
 std::uniform_real_distribution<double> uniform_dist(0.0, 1.0);
 

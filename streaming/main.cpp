@@ -16,11 +16,11 @@
 #include "include/def.hpp"
 #include "include/helper.hpp"
 #include "include/histogram.hpp"
-#include "include/kissdb.h"
 #include "graphchi_basic_includes.hpp"
 #include "logger/logger.hpp"
 #include "wl.hpp"
 #include "../extern/extern.hpp"
+
 
 #include <pthread.h> 
 #include <sys/types.h>
@@ -35,6 +35,7 @@ pthread_barrier_t std::graph_barrier;
 pthread_barrier_t std::stream_barrier;
 int std::stop = 0;
 bool std::base_graph_constructed = false;
+bool std::no_new_tasks = false;
 /* The following variables are declared in def.hpp.
  * They are defined here and will be assigned values in main function. */
 int DECAY;
@@ -42,10 +43,9 @@ float LAMBDA;
 int INTERVAL;
 bool CHUNKIFY = true;
 int CHUNK_SIZE;
-KISSDB db;
 
 /* The following varible is global. */
-bool next_itr = false;
+// bool next_itr = false;
 
 /*!
  * @brief A separate thread execute this function to stream graph from a file.
@@ -73,9 +73,7 @@ void * dynamic_graph_reader(void * info) {
 	Histogram* hist = Histogram::get_instance();
 
 	/* We create and initailize the sketch of the histogram. */
-	hist->get_lock();
 	hist->create_sketch();
-	hist->release_lock();
 
 	/* Open the file for streaming. */
 	FILE * f = fopen(stream_file.c_str(), "r");
@@ -192,10 +190,8 @@ void * dynamic_graph_reader(void * info) {
 			/* We continue to add new edges until INTERVAL edges are added. Then we let GraphChi starts its computation. */
 			cnt = 0;
 			/* We first record the sketch from the updated graph. */
-			hist->get_lock();
 			logstream(LOG_INFO) << "Recording the base graph sketch... " << std::endl;
 			hist->record_sketch(fp);
-			hist->release_lock();
 			pthread_barrier_wait(&std::graph_barrier);
 		}
 	}
@@ -231,8 +227,8 @@ int main(int argc, const char ** argv) {
 
 	/* Parameters from command line. */
 	std::string filename = get_option_string("file");
-	int niters = get_option_int("niters", 1000);
-	bool scheduler = false; /* We cannot use selective scheduling. */
+	int niters = get_option_int("niters", 1000000);
+	bool scheduler = true;
 	stream_file = get_option_string("stream_file");
 
 	/* More parameters from command line to configure hyperparameters of feature vector generation. 
@@ -249,14 +245,6 @@ int main(int argc, const char ** argv) {
 	
 	/* Process input file - if not already preprocessed */
 	int nshards = convert_if_notexists<EdgeDataType>(filename, get_option_string("nshards", "auto"));
-
-	/* Create a simple database to deal with hash values. */
-	logstream(LOG_DEBUG) << "Opening a new empty database call unicorn.db...\n" << std::endl;
-
-	if (KISSDB_open(&db, "unicorn.db", KISSDB_OPEN_MODE_RWCREAT, 1000000, sizeof(unsigned long), sizeof(struct hist_elem))) {
-		logstream(LOG_ERROR) << "Opening unicorn.db failed!" << std::endl;
-		return 1;
-	}
 
 	/* Create the engine object. */
 	dyngraph_engine = new graphchi_dynamicgraph_engine<VertexDataType, EdgeDataType>(filename, nshards, scheduler, m); 
@@ -284,13 +272,11 @@ int main(int argc, const char ** argv) {
 	assert(fp != NULL);
 	Histogram* hist = Histogram::get_instance();
 
-	hist->get_lock();
 	logstream(LOG_DEBUG) << "Recording the final complete graph sketch... " << std::endl;
 	if (fp == NULL) {
 		logstream(LOG_ERROR) << "Sketch file no longer exists... " << std::endl;
 	}
 	hist->record_sketch(fp);
-	hist->release_lock();
 
 	if (ferror(fp) != 0 || fclose(fp) != 0) {
 		logstream(LOG_ERROR) << "Unable to close the sketch file: " << sketch_file <<  std::endl;
@@ -307,7 +293,6 @@ int main(int argc, const char ** argv) {
 		logstream(LOG_ERROR) << "graph_barrier cannot be destroyed." << std::endl;
 	}
 
-	KISSDB_close(&db);
 	// metrics_report(m);
 	return 0;
 }
