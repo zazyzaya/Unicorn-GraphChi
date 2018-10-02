@@ -94,8 +94,8 @@ run_toy:
 		rm -rf ../../data/toy_data/base_test/base-attack-$$number.txt_* ; \
 		number=`expr $$number + 16` ; \
 	done
-	mv ./../data/train_toy/sketch-toy-20.txt ../../data/test_toy/
-	mv ./../data/train_toy/sketch-toy-80.txt ../../data/test_toy/
+	mv ../../data/train_toy/sketch-toy-20.txt ../../data/test_toy/
+	mv ../../data/train_toy/sketch-toy-80.txt ../../data/test_toy/
 
 run_youtube_v2:
 	cd streaming/analyze && mkdir -p train-data-streamspot-large
