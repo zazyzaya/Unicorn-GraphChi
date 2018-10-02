@@ -72,8 +72,3 @@ wget_attack:
 	python preprocess-camflow.py 0 attack_edges_wget.txt wget_data/test/base-wget-attack.txt wget_data/test/stream-wget-attack.txt
 
 
-
-
-
-
-
