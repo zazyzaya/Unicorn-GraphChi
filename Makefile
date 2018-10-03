@@ -150,3 +150,102 @@ run_attack:
 		rm -rf ../../data/attack_data/base_train/base-attack-$$number.txt_* ; \
 		number=`expr $$number + 1` ; \
 	done
+	mv ../../data/train_streamspot/sketch-youtube-2.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-youtube-8.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-youtube-13.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-youtube-16.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-youtube-20.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-youtube-23.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-youtube-29.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-youtube-35.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-youtube-38.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-youtube-40.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-youtube-43.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-youtube-48.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-youtube-51.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-youtube-56.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-youtube-59.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-youtube-64.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-youtube-67.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-youtube-70.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-youtube-75.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-youtube-79.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-youtube-84.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-youtube-86.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-youtube-89.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-youtube-92.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-youtube-97.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-gmail-101.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-gmail-106.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-gmail-109.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-gmail-112.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-gmail-114.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-gmail-117.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-gmail-124.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-gmail-127.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-gmail-129.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-gmail-136.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-gmail-139.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-gmail-142.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-gmail-144.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-gmail-148.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-gmail-153.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-gmail-158.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-gmail-161.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-gmail-165.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-gmail-169.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-gmail-171.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-gmail-177.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-gmail-180.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-gmail-186.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-gmail-195.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-gmail-198.txt ../../data/test_streamspot/
+
+
+
+run_wget:
+	cd ../../data && mkdir -p train_wget
+	number=0 ; while [ $$number -le 109 ] ; do \
+		bin/streaming/main filetype edgelist file ../../data/benign/base/base-wget-$$number.txt niters 10000 stream_file ./../data/benign/stream/stream-wget-$$number.txt decay 100 lambda 0.02 interval 200 sketch_file ../../data/train_wget/sketch-wget-$$number.txt chunkify 1 chunk_size 5 ; \
+		rm -rf ../../data/benign/base/base-wget-$$number.txt.* ; \
+		rm -rf ../../data/benign/base/base-wget-$$number.txt_* ; \
+		number=`expr $$number + 1` ; \
+	done
+
+run_wget_baseline_attack:
+	cd ../../data && mkdir -p test_wget_baseline
+	number=0 ; while [ $$number -le 24 ] ; do \
+		bin/streaming/main filetype edgelist file ../../data/attack_baseline/base/base-wget-attack-baseline-$$number.txt niters 10000 stream_file ./../data/attack_baseline/stream/stream-wget-attack-baseline-$$number.txt decay 100 lambda 0.02 interval 200 sketch_file ../../data/test_wget_baseline/sketch-wget-attack-baseline-$$number.txt chunkify 1 chunk_size 5 ; \
+		rm -rf ../../data/attack_baseline/base/base-wget-attack-baseline-$$number.txt.* ; \
+		rm -rf ../../data/attack_baseline/base/base-wget-attack-baseline-$$number.txt_* ; \
+		number=`expr $$number + 1` ; \
+	done
+	cp ../../data/train_wget/sketch-wget-6.txt ../../data/test_wget_baseline
+	cp ../../data/train_wget/sketch-wget-13.txt ../../data/test_wget_baseline
+	cp ../../data/train_wget/sketch-wget-23.txt ../../data/test_wget_baseline
+	cp ../../data/train_wget/sketch-wget-46.txt ../../data/test_wget_baseline
+	cp ../../data/train_wget/sketch-wget-53.txt ../../data/test_wget_baseline
+	cp ../../data/train_wget/sketch-wget-68.txt ../../data/test_wget_baseline
+	cp ../../data/train_wget/sketch-wget-79.txt ../../data/test_wget_baseline
+	cp ../../data/train_wget/sketch-wget-84.txt ../../data/test_wget_baseline
+	cp ../../data/train_wget/sketch-wget-92.txt ../../data/test_wget_baseline
+	cp ../../data/train_wget/sketch-wget-105.txt ../../data/test_wget_baseline
+
+run_wget_interval_attack:
+	cd ../../data && mkdir -p test_wget_interval
+	number=0 ; while [ $$number -le 24 ] ; do \
+		bin/streaming/main filetype edgelist file ../../data/attack_interval/base/base-wget-attack-interval-$$number.txt niters 10000 stream_file ./../data/attack_interval/stream/stream-wget-attack-interval-$$number.txt decay 100 lambda 0.02 interval 200 sketch_file ../../data/test_wget_interval/sketch-wget-attack-interval-$$number.txt chunkify 1 chunk_size 5 ; \
+		rm -rf ../../data/attack_interval/base/base-wget-attack-interval-$$number.txt.* ; \
+		rm -rf ../../data/attack_interval/base/base-wget-attack-interval-$$number.txt_* ; \
+		number=`expr $$number + 1` ; \
+	done
+	mv ../../data/train_wget/sketch-wget-6.txt ../../data/test_wget_interval
+	mv ../../data/train_wget/sketch-wget-13.txt ../../data/test_wget_interval
+	mv ../../data/train_wget/sketch-wget-23.txt ../../data/test_wget_interval
+	mv ../../data/train_wget/sketch-wget-46.txt ../../data/test_wget_interval
+	mv ../../data/train_wget/sketch-wget-53.txt ../../data/test_wget_interval
+	mv ../../data/train_wget/sketch-wget-68.txt ../../data/test_wget_interval
+	mv ../../data/train_wget/sketch-wget-79.txt ../../data/test_wget_interval
+	mv ../../data/train_wget/sketch-wget-84.txt ../../data/test_wget_interval
+	mv ../../data/train_wget/sketch-wget-92.txt ../../data/test_wget_interval
+	mv ../../data/train_wget/sketch-wget-105.txt ../../data/test_wget_interval
