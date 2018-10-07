@@ -539,7 +539,6 @@ namespace graphchi {
 				if (std::stop) {
 					logstream(LOG_DEBUG) << "Everything is done!" << std::endl;
 					gcontext.set_last_iteration(iteration);/* Set this iteration as the last one. */
-					pthread_barrier_wait(&std::graph_barrier);
 					return;
 				}
 				pthread_barrier_wait(&std::stream_barrier);
