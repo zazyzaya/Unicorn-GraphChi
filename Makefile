@@ -322,3 +322,33 @@ run_wget_interval_attack:
 	mv ../../data/train_wget/sketch-wget-86.txt ../../data/test_wget_interval
 	mv ../../data/train_wget/sketch-wget-92.txt ../../data/test_wget_interval
 	mv ../../data/train_wget/sketch-wget-103.txt ../../data/test_wget_interval
+
+run_cadets:
+	cd ../../data && mkdir -p train_cadets
+	number=0 ; while [ $$number -le 49 ] ; do \
+		bin/streaming/main filetype edgelist file ../../data/benign/base/base-benign1-$$number.txt niters 10000 stream_file ../../data/benign/stream/stream-benign1-$$number.txt decay 500 lambda 0.02 interval 500 sketch_file ../../data/train_cadets/sketch-benign1-$$number.txt chunkify 1 chunk_size 5 ; \
+		rm -rf ../../data/benign/base/base-benign1-$$number.txt.* ; \
+		rm -rf ../../data/benign/base/base-benign1-$$number.txt_* ; \
+		number=`expr $$number + 1` ; \
+	done
+	number=0 ; while [ $$number -le 9 ] ; do \
+		bin/streaming/main filetype edgelist file ../../data/benign/base/base-benign2-$$number.txt niters 10000 stream_file ../../data/benign/stream/stream-benign2-$$number.txt decay 500 lambda 0.02 interval 500 sketch_file ../../data/train_cadets/sketch-benign2-$$number.txt chunkify 1 chunk_size 5 ; \
+		rm -rf ../../data/benign/base/base-benign2-$$number.txt.* ; \
+		rm -rf ../../data/benign/base/base-benign2-$$number.txt_* ; \
+		number=`expr $$number + 1` ; \
+	done
+	number=0 ; while [ $$number -le 49 ] ; do \
+		bin/streaming/main filetype edgelist file ../../data/benign/base/base-benign3-$$number.txt niters 10000 stream_file ../../data/benign/stream/stream-benign3-$$number.txt decay 500 lambda 0.02 interval 500 sketch_file ../../data/train_cadets/sketch-benign3-$$number.txt chunkify 1 chunk_size 5 ; \
+		rm -rf ../../data/benign/base/base-benign3-$$number.txt.* ; \
+		rm -rf ../../data/benign/base/base-benign3-$$number.txt_* ; \
+		number=`expr $$number + 1` ; \
+	done
+
+run_cadets_attack:
+	cd ../../data && mkdir -p test_cadets
+	number=0 ; while [ $$number -le 24 ] ; do \
+		bin/streaming/main filetype edgelist file ../../data/attack/base/base-attack-$$number.txt niters 10000 stream_file ../../data/attack/stream/stream-attack-$$number.txt decay 500 lambda 0.02 interval 500 sketch_file ../../data/test_cadets/sketch-attack-$$number.txt chunkify 1 chunk_size 5 ; \
+		rm -rf ../../data/attack/base/base-attack-$$number.txt.* ; \
+		rm -rf ../../data/attack/base/base-attack-$$number.txt_* ; \
+		number=`expr $$number + 1` ; \
+	done
