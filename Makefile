@@ -352,3 +352,14 @@ run_cadets_attack:
 		rm -rf ../../data/attack/base/base-attack-$$number.txt_* ; \
 		number=`expr $$number + 1` ; \
 	done
+	mv ../../data/train_cadets/sketch-benign1-6.txt ../../data/test_cadets
+	mv ../../data/train_cadets/sketch-benign1-15.txt ../../data/test_cadets
+	mv ../../data/train_cadets/sketch-benign1-23.txt ../../data/test_cadets
+	mv ../../data/train_cadets/sketch-benign1-37.txt ../../data/test_cadets
+	mv ../../data/train_cadets/sketch-benign1-46.txt ../../data/test_cadets
+	mv ../../data/train_cadets/sketch-benign2-3.txt ../../data/test_cadets
+	mv ../../data/train_cadets/sketch-benign3-2.txt ../../data/test_cadets
+	mv ../../data/train_cadets/sketch-benign3-13.txt ../../data/test_cadets
+	mv ../../data/train_cadets/sketch-benign3-27.txt ../../data/test_cadets
+	mv ../../data/train_cadets/sketch-benign3-32.txt ../../data/test_cadets
+	mv ../../data/train_cadets/sketch-benign3-48.txt ../../data/test_cadets
