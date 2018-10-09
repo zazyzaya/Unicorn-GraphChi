@@ -285,10 +285,40 @@ run_wget:
 		number=`expr $$number + 1` ; \
 	done
 
+run_wget_subset:
+	cd ../../data && mkdir -p train_wget
+	number=0 ; while [ $$number -le 109 ] ; do \
+		bin/streaming/main filetype edgelist file ../../data/benign/base/base-wget-$$number.txt niters 10000 stream_file ../../data/benign/stream/stream-wget-$$number.txt decay 200 lambda 0.02 interval 1500 sketch_file ../../data/train_wget/sketch-wget-$$number.txt chunkify 1 chunk_size 20 ; \
+		rm -rf ../../data/benign/base/base-wget-$$number.txt.* ; \
+		rm -rf ../../data/benign/base/base-wget-$$number.txt_* ; \
+		number=`expr $$number + 4` ; \
+	done
+	bin/streaming/main filetype edgelist file ../../data/benign/base/base-wget-6.txt niters 10000 stream_file ../../data/benign/stream/stream-wget-6.txt decay 200 lambda 0.02 interval 1500 sketch_file ../../data/train_wget/sketch-wget-6.txt chunkify 1 chunk_size 20
+	rm -rf ../../data/benign/base/base-wget-6.txt.*
+	rm -rf ../../data/benign/base/base-wget-6.txt_*
+	bin/streaming/main filetype edgelist file ../../data/benign/base/base-wget-14.txt niters 10000 stream_file ../../data/benign/stream/stream-wget-14.txt decay 200 lambda 0.02 interval 1500 sketch_file ../../data/train_wget/sketch-wget-14.txt chunkify 1 chunk_size 20
+	rm -rf ../../data/benign/base/base-wget-14.txt.*
+	rm -rf ../../data/benign/base/base-wget-14.txt_*
+	bin/streaming/main filetype edgelist file ../../data/benign/base/base-wget-25.txt niters 10000 stream_file ../../data/benign/stream/stream-wget-25.txt decay 200 lambda 0.02 interval 1500 sketch_file ../../data/train_wget/sketch-wget-25.txt chunkify 1 chunk_size 20
+	rm -rf ../../data/benign/base/base-wget-25.txt.*
+	rm -rf ../../data/benign/base/base-wget-25.txt_*
+	bin/streaming/main filetype edgelist file ../../data/benign/base/base-wget-43.txt niters 10000 stream_file ../../data/benign/stream/stream-wget-43.txt decay 200 lambda 0.02 interval 1500 sketch_file ../../data/train_wget/sketch-wget-43.txt chunkify 1 chunk_size 20
+	rm -rf ../../data/benign/base/base-wget-43.txt.*
+	rm -rf ../../data/benign/base/base-wget-43.txt_*
+	bin/streaming/main filetype edgelist file ../../data/benign/base/base-wget-53.txt niters 10000 stream_file ../../data/benign/stream/stream-wget-53.txt decay 200 lambda 0.02 interval 1500 sketch_file ../../data/train_wget/sketch-wget-53.txt chunkify 1 chunk_size 20
+	rm -rf ../../data/benign/base/base-wget-53.txt.*
+	rm -rf ../../data/benign/base/base-wget-53.txt_*
+	bin/streaming/main filetype edgelist file ../../data/benign/base/base-wget-86.txt niters 10000 stream_file ../../data/benign/stream/stream-wget-86.txt decay 200 lambda 0.02 interval 1500 sketch_file ../../data/train_wget/sketch-wget-86.txt chunkify 1 chunk_size 20
+	rm -rf ../../data/benign/base/base-wget-86.txt.*
+	rm -rf ../../data/benign/base/base-wget-86.txt_*
+	bin/streaming/main filetype edgelist file ../../data/benign/base/base-wget-103.txt niters 10000 stream_file ../../data/benign/stream/stream-wget-103.txt decay 200 lambda 0.02 interval 1500 sketch_file ../../data/train_wget/sketch-wget-103.txt chunkify 1 chunk_size 20
+	rm -rf ../../data/benign/base/base-wget-103.txt.*
+	rm -rf ../../data/benign/base/base-wget-103.txt_*
+
 run_wget_baseline_attack:
 	cd ../../data && mkdir -p test_wget_baseline
 	number=0 ; while [ $$number -le 24 ] ; do \
-		bin/streaming/main filetype edgelist file ../../data/attack_baseline/base/base-wget-attack-baseline-$$number.txt niters 10000 stream_file ../../data/attack_baseline/stream/stream-wget-attack-baseline-$$number.txt decay 500 lambda 0.02 interval 500 sketch_file ../../data/test_wget_baseline/sketch-wget-attack-baseline-$$number.txt chunkify 1 chunk_size 5 ; \
+		bin/streaming/main filetype edgelist file ../../data/attack_baseline/base/base-wget-attack-baseline-$$number.txt niters 10000 stream_file ../../data/attack_baseline/stream/stream-wget-attack-baseline-$$number.txt decay 200 lambda 0.02 interval 1500 sketch_file ../../data/test_wget_baseline/sketch-wget-attack-baseline-$$number.txt chunkify 1 chunk_size 20 ; \
 		rm -rf ../../data/attack_baseline/base/base-wget-attack-baseline-$$number.txt.* ; \
 		rm -rf ../../data/attack_baseline/base/base-wget-attack-baseline-$$number.txt_* ; \
 		number=`expr $$number + 1` ; \
@@ -307,7 +337,7 @@ run_wget_baseline_attack:
 run_wget_interval_attack:
 	cd ../../data && mkdir -p test_wget_interval
 	number=0 ; while [ $$number -le 24 ] ; do \
-		bin/streaming/main filetype edgelist file ../../data/attack_interval/base/base-wget-attack-interval-$$number.txt niters 10000 stream_file ../../data/attack_interval/stream/stream-wget-attack-interval-$$number.txt decay 500 lambda 0.02 interval 500 sketch_file ../../data/test_wget_interval/sketch-wget-attack-interval-$$number.txt chunkify 1 chunk_size 5 ; \
+		bin/streaming/main filetype edgelist file ../../data/attack_interval/base/base-wget-attack-interval-$$number.txt niters 10000 stream_file ../../data/attack_interval/stream/stream-wget-attack-interval-$$number.txt decay 200 lambda 0.02 interval 1500 sketch_file ../../data/test_wget_interval/sketch-wget-attack-interval-$$number.txt chunkify 1 chunk_size 20 ; \
 		rm -rf ../../data/attack_interval/base/base-wget-attack-interval-$$number.txt.* ; \
 		rm -rf ../../data/attack_interval/base/base-wget-attack-interval-$$number.txt_* ; \
 		number=`expr $$number + 1` ; \
