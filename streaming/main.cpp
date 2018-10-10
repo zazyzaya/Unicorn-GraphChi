@@ -223,6 +223,7 @@ int main(int argc, const char ** argv) {
 	/* Metrics object for keeping track of performance counters and other information. 
 	 * Currently required. */
 	metrics m("Streaming Extractor");
+	
 	global_logger().set_log_level(LOG_INFO);
 
 	/* Parameters from command line. */
