@@ -63,7 +63,6 @@ void * dynamic_graph_reader(void * info) {
 	// 	assert(false);
 	// 	return NULL;
 	// }
-
 	/* A busy loop to wait until the base graph histogram is constructed. */
 	while(!std::base_graph_constructed) {
 		// logstream(LOG_DEBUG) << "Waiting to proceed... Current iteration: " << ginfo.iteration << std::endl;
@@ -204,12 +203,6 @@ void * dynamic_graph_reader(void * info) {
 	if (ferror(f) != 0 || fclose(f) != 0) {
 		logstream(LOG_ERROR) << "Unable to close the stream file: " << stream_file << ". Error code: " << strerror(errno) << std::endl;
 		return NULL;
-	}
-	// if (ferror(fp) != 0 || fclose(fp) != 0) {
-	// 	logstream(LOG_ERROR) << "Unable to close the sketch file: " << sketch_file << ". Error code: " << strerror(errno) << std::endl;
-	// }
-	if (ferror(fs) != 0 || fclose(fs) != 0) {
-		logstream(LOG_ERROR) << "Unable to close the stats file: stats.txt. Error code: " << strerror(errno) << std::endl;
 	}
 	/* After the file is closed, the engine will stop 1000 iterations after the current iteration in which the addition is finished. */
 	// dyngraph_engine->finish_after_iters(1000);
