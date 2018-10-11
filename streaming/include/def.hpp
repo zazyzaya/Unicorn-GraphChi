@@ -31,14 +31,14 @@ extern int DECAY;
 /* The rate of the decay. */
 extern float LAMBDA;
 /* Determines how many new edges we see before we record the hashed streaming histogram. */
+extern int WINDOW;
+/* Batch size. */
 extern int INTERVAL;
 /* Determine if we want to chunk the string, and how big each chunk is. CHUNK_SIZE > 1 */
 extern bool CHUNKIFY;
 extern int CHUNK_SIZE;
 /* Sketch file to write the sketch. */
 extern FILE * sfp;
-
-// extern bool next_itr; /* We do not need any more iterations if next_itr is false. GraphChi should stop. */
 
 /* In a truly streaming setting, GraphChi does not allow dynamic vertex/edge type.
  * We therefore must fixed the neighborhood we are exploring.
@@ -94,9 +94,6 @@ struct hist_elem {
 	double c[SKETCH_SIZE]; 
 };
 
-// std::default_random_engine r_generator(24);
-// std::default_random_engine c_generator(12);
-// std::default_random_engine beta_generator(3);
 std::gamma_distribution<double> gamma_dist(2.0, 1.0);
 std::uniform_real_distribution<double> uniform_dist(0.0, 1.0);
 
