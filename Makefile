@@ -346,7 +346,7 @@ run_cadets:
 
 run_cadets_attack:
 	cd ../../data && mkdir -p test_cadets
-	number=0 ; while [ $$number -le 24 ] ; do \
+	number=0 ; while [ $$number -le 2 ] ; do \
 		bin/streaming/main filetype edgelist file ../../data/attack/base/base-attack-$$number.txt niters 10000 stream_file ../../data/attack/stream/stream-attack-$$number.txt decay 500 lambda 0.02 window 500 interval 3000 sketch_file ../../data/test_cadets/sketch-attack-$$number.txt chunkify 1 chunk_size 5 ; \
 		rm -rf ../../data/attack/base/base-attack-$$number.txt.* ; \
 		rm -rf ../../data/attack/base/base-attack-$$number.txt_* ; \
