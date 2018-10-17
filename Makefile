@@ -218,7 +218,7 @@ run_attack:
 	mv ../../data/train_streamspot/sketch-vgame-259.txt ../../data/test_streamspot/
 	mv ../../data/train_streamspot/sketch-vgame-261.txt ../../data/test_streamspot/
 	mv ../../data/train_streamspot/sketch-vgame-263.txt ../../data/test_streamspot/
-	mv ../../data/train_streamspot/sketch-vgame-266.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-vgame-264.txt ../../data/test_streamspot/
 	mv ../../data/train_streamspot/sketch-vgame-273.txt ../../data/test_streamspot/
 	mv ../../data/train_streamspot/sketch-vgame-276.txt ../../data/test_streamspot/
 	mv ../../data/train_streamspot/sketch-vgame-282.txt ../../data/test_streamspot/
@@ -232,22 +232,22 @@ run_attack:
 	mv ../../data/train_streamspot/sketch-download-424.txt ../../data/test_streamspot/
 	mv ../../data/train_streamspot/sketch-download-426.txt ../../data/test_streamspot/
 	mv ../../data/train_streamspot/sketch-download-428.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-download-432.txt ../../data/test_streamspot/
 	mv ../../data/train_streamspot/sketch-download-435.txt ../../data/test_streamspot/
-	mv ../../data/train_streamspot/sketch-download-439.txt ../../data/test_streamspot/
 	mv ../../data/train_streamspot/sketch-download-441.txt ../../data/test_streamspot/
 	mv ../../data/train_streamspot/sketch-download-445.txt ../../data/test_streamspot/
-	mv ../../data/train_streamspot/sketch-download-448.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-download-446.txt ../../data/test_streamspot/
 	mv ../../data/train_streamspot/sketch-download-452.txt ../../data/test_streamspot/
 	mv ../../data/train_streamspot/sketch-download-457.txt ../../data/test_streamspot/
 	mv ../../data/train_streamspot/sketch-download-461.txt ../../data/test_streamspot/
 	mv ../../data/train_streamspot/sketch-download-462.txt ../../data/test_streamspot/
 	mv ../../data/train_streamspot/sketch-download-469.txt ../../data/test_streamspot/
 	mv ../../data/train_streamspot/sketch-download-471.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-download-472.txt ../../data/test_streamspot/
 	mv ../../data/train_streamspot/sketch-download-473.txt ../../data/test_streamspot/
-	mv ../../data/train_streamspot/sketch-download-475.txt ../../data/test_streamspot/
 	mv ../../data/train_streamspot/sketch-download-478.txt ../../data/test_streamspot/
-	mv ../../data/train_streamspot/sketch-download-483.txt ../../data/test_streamspot/
-	mv ../../data/train_streamspot/sketch-download-486.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-download-480.txt ../../data/test_streamspot/
+	mv ../../data/train_streamspot/sketch-download-485.txt ../../data/test_streamspot/
 	mv ../../data/train_streamspot/sketch-download-495.txt ../../data/test_streamspot/
 	mv ../../data/train_streamspot/sketch-download-499.txt ../../data/test_streamspot/
 	mv ../../data/train_streamspot/sketch-cnn-500.txt ../../data/test_streamspot/
@@ -282,6 +282,8 @@ run_wget:
 		bin/streaming/main filetype edgelist file ../../data/benign/base/base-wget-$$number.txt niters 10000 stream_file ../../data/benign/stream/stream-wget-$$number.txt decay 450 lambda 0.02 window 450 interval 3000 sketch_file ../../data/train_wget/sketch-wget-$$number.txt chunkify 1 chunk_size 5 ; \
 		rm -rf ../../data/benign/base/base-wget-$$number.txt.* ; \
 		rm -rf ../../data/benign/base/base-wget-$$number.txt_* ; \
+		python streaming/stats.py stats.txt ../../output/perf-wget-$$number.txt 500 ; \
+		rm stats.txt ; \
 		number=`expr $$number + 1` ; \
 	done
 
@@ -291,6 +293,8 @@ run_wget_baseline_attack:
 		bin/streaming/main filetype edgelist file ../../data/attack_baseline/base/base-wget-attack-baseline-$$number.txt niters 10000 stream_file ../../data/attack_baseline/stream/stream-wget-attack-baseline-$$number.txt decay 450 lambda 0.02 window 450 interval 3000 sketch_file ../../data/test_wget_baseline/sketch-wget-attack-baseline-$$number.txt chunkify 1 chunk_size 5 ; \
 		rm -rf ../../data/attack_baseline/base/base-wget-attack-baseline-$$number.txt.* ; \
 		rm -rf ../../data/attack_baseline/base/base-wget-attack-baseline-$$number.txt_* ; \
+		python streaming/stats.py stats.txt ../../output/perf-wget-attack-baseline-$$number.txt 500 ; \
+		rm stats.txt ; \
 		number=`expr $$number + 1` ; \
 	done
 	cp ../../data/train_wget/sketch-wget-12.txt ../../data/test_wget_baseline
@@ -310,6 +314,8 @@ run_wget_interval_attack:
 		bin/streaming/main filetype edgelist file ../../data/attack_interval/base/base-wget-attack-interval-$$number.txt niters 10000 stream_file ../../data/attack_interval/stream/stream-wget-attack-interval-$$number.txt decay 450 lambda 0.02 window 450 interval 3000 sketch_file ../../data/test_wget_interval/sketch-wget-attack-interval-$$number.txt chunkify 1 chunk_size 5 ; \
 		rm -rf ../../data/attack_interval/base/base-wget-attack-interval-$$number.txt.* ; \
 		rm -rf ../../data/attack_interval/base/base-wget-attack-interval-$$number.txt_* ; \
+		python streaming/stats.py stats.txt ../../output/perf-wget-attack-interval-$$number.txt 500 ; \
+		rm stats.txt ; \
 		number=`expr $$number + 1` ; \
 	done
 	mv ../../data/train_wget/sketch-wget-12.txt ../../data/test_wget_interval
@@ -323,43 +329,47 @@ run_wget_interval_attack:
 	mv ../../data/train_wget/sketch-wget-95.txt ../../data/test_wget_interval
 	mv ../../data/train_wget/sketch-wget-102.txt ../../data/test_wget_interval
 
-run_cadets:
-	cd ../../data && mkdir -p train_cadets
-	number=0 ; while [ $$number -le 49 ] ; do \
-		bin/streaming/main filetype edgelist file ../../data/benign/base/base-benign1-$$number.txt niters 10000 stream_file ../../data/benign/stream/stream-benign1-$$number.txt decay 500 lambda 0.02 window 500 interval 3000 sketch_file ../../data/train_cadets/sketch-benign1-$$number.txt chunkify 1 chunk_size 5 ; \
-		rm -rf ../../data/benign/base/base-benign1-$$number.txt.* ; \
-		rm -rf ../../data/benign/base/base-benign1-$$number.txt_* ; \
-		number=`expr $$number + 1` ; \
-	done
-	number=0 ; while [ $$number -le 9 ] ; do \
-		bin/streaming/main filetype edgelist file ../../data/benign/base/base-benign2-$$number.txt niters 10000 stream_file ../../data/benign/stream/stream-benign2-$$number.txt decay 500 lambda 0.02 window 500 interval 3000 sketch_file ../../data/train_cadets/sketch-benign2-$$number.txt chunkify 1 chunk_size 5 ; \
-		rm -rf ../../data/benign/base/base-benign2-$$number.txt.* ; \
-		rm -rf ../../data/benign/base/base-benign2-$$number.txt_* ; \
-		number=`expr $$number + 1` ; \
-	done
-	number=0 ; while [ $$number -le 49 ] ; do \
-		bin/streaming/main filetype edgelist file ../../data/benign/base/base-benign3-$$number.txt niters 10000 stream_file ../../data/benign/stream/stream-benign3-$$number.txt decay 500 lambda 0.02 window 500 interval 3000 sketch_file ../../data/train_cadets/sketch-benign3-$$number.txt chunkify 1 chunk_size 5 ; \
-		rm -rf ../../data/benign/base/base-benign3-$$number.txt.* ; \
-		rm -rf ../../data/benign/base/base-benign3-$$number.txt_* ; \
-		number=`expr $$number + 1` ; \
+run_wget_subset:
+	cd ../../data && mkdir -p train_wget
+	number=0 ; while [ $$number -le 100 ] ; do \
+		bin/streaming/main filetype edgelist file ../../data/benign/base/base-wget-$$number.txt niters 10000 stream_file ../../data/benign/stream/stream-wget-$$number.txt decay 450 lambda 0.02 window 2000 interval 10000 sketch_file ../../data/train_wget/sketch-wget-$$number.txt chunkify 1 chunk_size 5 ; \
+		rm -rf ../../data/benign/base/base-wget-$$number.txt.* ; \
+		rm -rf ../../data/benign/base/base-wget-$$number.txt_* ; \
+		rm stats.txt ; \
+		number=`expr $$number + 4` ; \
 	done
 
-run_cadets_attack:
-	cd ../../data && mkdir -p test_cadets
-	number=0 ; while [ $$number -le 2 ] ; do \
-		bin/streaming/main filetype edgelist file ../../data/attack/base/base-attack-$$number.txt niters 10000 stream_file ../../data/attack/stream/stream-attack-$$number.txt decay 500 lambda 0.02 window 500 interval 3000 sketch_file ../../data/test_cadets/sketch-attack-$$number.txt chunkify 1 chunk_size 5 ; \
-		rm -rf ../../data/attack/base/base-attack-$$number.txt.* ; \
-		rm -rf ../../data/attack/base/base-attack-$$number.txt_* ; \
-		number=`expr $$number + 1` ; \
+run_wget_baseline_attack_subset:
+	cd ../../data && mkdir -p test_wget_baseline
+	number=0 ; while [ $$number -le 24 ] ; do \
+		bin/streaming/main filetype edgelist file ../../data/attack_baseline/base/base-wget-attack-baseline-$$number.txt niters 10000 stream_file ../../data/attack_baseline/stream/stream-wget-attack-baseline-$$number.txt decay 450 lambda 0.02 window 2000 interval 10000 sketch_file ../../data/test_wget_baseline/sketch-wget-attack-baseline-$$number.txt chunkify 1 chunk_size 5 ; \
+		rm -rf ../../data/attack_baseline/base/base-wget-attack-baseline-$$number.txt.* ; \
+		rm -rf ../../data/attack_baseline/base/base-wget-attack-baseline-$$number.txt_* ; \
+		rm stats.txt ; \
+		number=`expr $$number + 5` ; \
 	done
-	mv ../../data/train_cadets/sketch-benign1-6.txt ../../data/test_cadets
-	mv ../../data/train_cadets/sketch-benign1-15.txt ../../data/test_cadets
-	mv ../../data/train_cadets/sketch-benign1-23.txt ../../data/test_cadets
-	mv ../../data/train_cadets/sketch-benign1-37.txt ../../data/test_cadets
-	mv ../../data/train_cadets/sketch-benign1-46.txt ../../data/test_cadets
-	mv ../../data/train_cadets/sketch-benign2-3.txt ../../data/test_cadets
-	mv ../../data/train_cadets/sketch-benign3-2.txt ../../data/test_cadets
-	mv ../../data/train_cadets/sketch-benign3-13.txt ../../data/test_cadets
-	mv ../../data/train_cadets/sketch-benign3-27.txt ../../data/test_cadets
-	mv ../../data/train_cadets/sketch-benign3-32.txt ../../data/test_cadets
-	mv ../../data/train_cadets/sketch-benign3-48.txt ../../data/test_cadets
+	cp ../../data/train_wget/sketch-wget-8.txt ../../data/test_wget_baseline
+	cp ../../data/train_wget/sketch-wget-20.txt ../../data/test_wget_baseline
+	cp ../../data/train_wget/sketch-wget-40.txt ../../data/test_wget_baseline
+	cp ../../data/train_wget/sketch-wget-52.txt ../../data/test_wget_baseline
+	cp ../../data/train_wget/sketch-wget-72.txt ../../data/test_wget_baseline
+
+number=0
+
+run_single_benign_wget:
+	cd ../../data && mkdir -p single_benign_wget
+	bin/streaming/main filetype edgelist file ../../data/benign/base/base-wget-$(number).txt niters 10000 stream_file ../../data/benign/stream/stream-wget-$(number).txt decay 450 lambda 0.02 window 450 interval 3000 sketch_file ../../data/single_benign_wget/sketch-wget-$(number).txt chunkify 1 chunk_size 5
+	rm -rf ../../data/benign/base/base-wget-$(number).txt.*
+	rm -rf ../../data/benign/base/base-wget-$(number).txt_*
+	python streaming/stats.py stats.txt ../../output/perf-wget-$(number)-s-2000-h-3-w-450-i-3000.txt 3000
+	rm stats.txt
+
+attack-type=baseline
+
+run_single_attack_wget:
+	cd ../../data && mkdir -p single_attack_wget
+	bin/streaming/main filetype edgelist file ../../data/attack_$(attack-type)/base/base-wget-attack-$(attack-type)-$(number).txt niters 10000 stream_file ../../data/attack_$(attack-type)/stream/stream-wget-attack-$(attack-type)-$(number).txt decay 450 lambda 0.02 window 450 interval 10000 sketch_file ../../data/single_attack_wget/sketch-wget-attack-$(attack-type)-$(number).txt chunkify 1 chunk_size 5
+	rm -rf ../../data/attack_$(attack-type)/base/base-wget-attack-$(attack-type)-$(number).txt.*
+	rm -rf ../../data/attack_$(attack-type)/base/base-wget-attack-$(attack-type)-$(number).txt_*
+	python streaming/stats.py stats.txt ../../output/perf-wget-attack-$(attack-type)-$(number)-s-2000-h-3-w-450-i-10000.txt 10000
+	rm stats.txt
