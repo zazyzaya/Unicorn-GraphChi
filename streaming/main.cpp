@@ -118,6 +118,7 @@ void * dynamic_graph_reader(void * info) {
 		assert(k != NULL);
 		to = atoi(k);
 
+		el.itr = 0; /* new itr count is always 0. */
 		t = (unsigned char *)strtok(NULL, delims);
 		if (t == NULL)
 			logstream(LOG_ERROR) << "Source label does not exist." << std::endl;
