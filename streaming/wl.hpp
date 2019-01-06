@@ -181,12 +181,14 @@ namespace graphchi {
 							hist->update(*ti, true);
 						}
 					}
-
+#ifdef DEBUG
+					logstream(LOG_DEBUG) << "New label of vertex (" << vertex.id() << "): " << new_label << std::endl;
+#endif
 					/* Update the vertex's label*/
 					nl.lb[gcontext.iteration] = new_label;
 					nl.tm[gcontext.iteration] = neighborhood[0].tme[gcontext.iteration - 1];
 					vertex.set_data(nl);
-
+					
 					/* Now update all of its out-going edges.*/
 					for (int i = 0; i < vertex.num_outedges(); i++) {
 						graphchi_edge<EdgeDataType> * out_edge = vertex.outedge(i);
@@ -254,6 +256,9 @@ namespace graphchi {
 						/* Update node label. */
 						vertex.set_data(nl);
 						/* Populate histogram map of all its labels. */
+#ifdef DEBUG
+						logstream(LOG_DEBUG) << "Vertex (" << vertex.id() << ") label: " << nl.lb[0] << std::endl;
+#endif
 						for (int i = 0; i < K_HOPS + 1; i++) {
 							hist->decay(sfp);
 							hist->update(nl.lb[i], false);	
@@ -300,6 +305,9 @@ namespace graphchi {
 							el.new_src = false; /* We make sure next iteration, we won't count the node as a new node. */
 							out_edge->set_data(el);
 						}
+#ifdef DEBUG
+						logstream(LOG_DEBUG) << "Vertex (" << vertex.id() << ") label: " << nl.lb[0] << std::endl;
+#endif
 
 						/* Populate histogram map. */
 						hist->decay(sfp);
@@ -419,10 +427,13 @@ namespace graphchi {
 						new_label_str += " " + node_str;
 					}
 #ifdef DEBUG
-					logstream(LOG_DEBUG) << "New label string of the vertex (" << vertex.id() << ") is: " << new_label_str << std::endl;
+					logstream(LOG_DEBUG) << "New label string of the vertex (" << vertex.id() << "): " << new_label_str << std::endl;
 #endif
 					/* Relabel by hashing. */
 					unsigned long new_label = hash((unsigned char *)new_label_str.c_str());
+#ifdef DEBUG
+					logstream(LOG_DEBUG) << "New label of the vertex (" << vertex.id() << "): " << new_label << std::endl;
+#endif
 					/* Populate histogram map. */
 					if (!CHUNKIFY) {
 						hist->decay(sfp);
@@ -440,6 +451,9 @@ namespace graphchi {
 					}
 					if (!CHUNKIFY && LAMBDA == 0.0) {
 						// We can remove labels if there is no chunks and no decay.
+#ifdef DEBUG
+						logstream(LOG_DEBUG) << "Removing counts of vertex: " << vertex.id() << std::endl;
+#endif
 						hist->remove_label(nl.lb[min_itr]);
 					}
 					/* Update the vertex's label*/
@@ -458,13 +472,13 @@ namespace graphchi {
 						/* Update their itr value. 
 						 */
 #ifdef DEBUG
-						logstream(LOG_DEBUG) << "Outgoing vertex (" << out_edge->vertex_id() << ") current itr is " << el.itr << std::endl;
+						logstream(LOG_DEBUG) << "Outgoing vertex (" << out_edge->vertex_id() << ") current itr:" << el.itr << std::endl;
 #endif
 						if (el.itr == K_HOPS + 1) {
 							// We only need to update those nodes whose that would not be scheduled otherwise.
 							el.itr = min_itr + 1;
 #ifdef DEBUG
-							logstream(LOG_DEBUG) << "Update outgoing vertex #" << out_edge->vertex_id() << "'s itr to' " << el.itr << std::endl;
+							logstream(LOG_DEBUG) << "Update outgoing vertex #" << out_edge->vertex_id() << "'s itr to: " << el.itr << std::endl;
 #endif
 						}
 						out_edge->set_data(el);
@@ -503,7 +517,7 @@ namespace graphchi {
 		void after_iteration(int iteration, graphchi_context &gcontext) {
 #ifdef DEBUG
 			logstream(LOG_DEBUG) << "Current Iteration: " << iteration << std::endl;
-			// hist->print_histogram();
+			hist->print_histogram();
 #endif
 			if (iteration == K_HOPS) {
 				std::base_graph_constructed = true;

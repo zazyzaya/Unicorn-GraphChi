@@ -40,18 +40,18 @@ struct hist_elem Histogram::construct_hist_elem(unsigned long label) {
 	std::default_random_engine c_generator(label / 2);
 	std::default_random_engine beta_generator(label);
 #ifdef DEBUG
-	logstream(LOG_DEBUG) << "(new construction) c = ";
+	// logstream(LOG_DEBUG) << "(new construction) c = ";
 #endif
 	for (int i = 0; i < SKETCH_SIZE; i++) {
 		new_elem.r[i] = gamma_dist(r_generator);
 		new_elem.beta[i] = uniform_dist(beta_generator);
 		new_elem.c[i] = gamma_dist(c_generator);
 #ifdef DEBUG
-		logstream(LOG_DEBUG) << new_elem.c[i] << " ";
+		// logstream(LOG_DEBUG) << new_elem.c[i] << " ";
 #endif
 	}
 #ifdef DEBUG
-	logstream(LOG_DEBUG) << std::endl;
+	// logstream(LOG_DEBUG) << std::endl;
 #endif
 	gamma_dist.reset();
 	this->histo_param_lock.unlock();
@@ -164,12 +164,18 @@ void Histogram::remove_label(unsigned long label) {
 	this->histogram_map_lock.lock();
 	/* We decrease the value of the existing element in the histogram map. */
 	std::map<unsigned long, double>::iterator it;
-	
+#ifdef DEBUG
+	logstream(LOG_DEBUG) << "Decreasing count of label: " << label << std::endl;
+#endif	
 	it = this->histogram_map.find(label);
 	if (it != this->histogram_map.end()) {
 		it->second--;
-		if (it->second == 0)
+		if (it->second == 0) {
+#ifdef DEBUG
+			logstream(LOG_DEBUG) << "Erasing label: " << label << std::endl;
+#endif
 			this->histogram_map.erase(it);
+		}
 	}
 #ifdef DEBUG
 	else {
