@@ -438,7 +438,10 @@ namespace graphchi {
 							first = false;
 						}
 					}
-					// hist->remove_label(nl.lb[min_itr]);
+					if (!CHUNKIFY && LAMBDA == 0.0) {
+						// We can remove labels if there is no chunks and no decay.
+						hist->remove_label(nl.lb[min_itr]);
+					}
 					/* Update the vertex's label*/
 					nl.lb[min_itr] = new_label;
 					vertex.set_data(nl);

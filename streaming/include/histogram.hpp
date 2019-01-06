@@ -34,6 +34,7 @@ public:
 	struct hist_elem construct_hist_elem(unsigned long label);
 	void decay(FILE* fp);
 	void update(unsigned long label, bool base);
+	void remove_label(unsigned long label);
 	void create_sketch();
 	void record_sketch(FILE* fp);
 #ifdef DEBUG
