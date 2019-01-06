@@ -118,17 +118,22 @@ namespace graphchi {
 					 * The vertex could also be a node in the base graph that simply does not have any in-coming edges.
 					 * i.e., a vertex with is_leaf == true.
 					 */
+					/* A new label is constructed from itself. */
+					std::string self_str;
+					std::stringstream self_out;
+					self_out << nl.lb[gcontext.iteration - 1];
+					self_str = self_out.str();
+					unsigned long new_label = hash((unsigned char *)self_str.c_str());
 					/* Simply use the last label/timestamp of the vertex itself since it has no incoming neighbors. */
-					unsigned long last_itr_label = nl.lb[gcontext.iteration - 1];
 					int last_timestamp = nl.tm[gcontext.iteration - 1];
 #ifdef DEBUG
-					logstream(LOG_DEBUG) << "Label of base vertex (w/o in-edges) (" << vertex.id() << "): " << last_itr_label << std::endl;
+					logstream(LOG_DEBUG) << "Label of base vertex (w/o in-edges) (" << vertex.id() << "): " << new_label << std::endl;
 #endif
 					/* Populate histogram map. */
-					hist->update(last_itr_label, true);
+					hist->update(new_label, true);
 
 					/* Update the vertex's label vector. */
-					nl.lb[gcontext.iteration] = last_itr_label;
+					nl.lb[gcontext.iteration] = new_label;
 					nl.tm[gcontext.iteration] = last_timestamp;
 					vertex.set_data(nl);
 
@@ -136,7 +141,7 @@ namespace graphchi {
 					for (int i = 0; i < vertex.num_outedges(); i++) {
 						graphchi_edge<EdgeDataType> * out_edge = vertex.outedge(i);
 						struct edge_label el = out_edge->get_data();
-						el.src[gcontext.iteration] = last_itr_label;
+						el.src[gcontext.iteration] = new_label;
 						/* Time stamp does not change for nodes with no in-coming neighbors. */
 						el.tme[gcontext.iteration] = el.tme[gcontext.iteration - 1]; 
 						out_edge->set_data(el);
@@ -246,19 +251,24 @@ namespace graphchi {
 						struct node_label nl;
 						nl.lb[0] = el.src[0];
 						nl.tm[0] = 0;
-						/* Since the node has no incoming edges, all of its labels are the same as the initial label. 
+						/* Since the node has no incoming edges, all of its labels are the derivation of previous self. 
 						 * All of its timestamps are set to 0. */
 						for (int i = 1; i < K_HOPS + 1; i++) {
-							nl.lb[i] = nl.lb[0];
+							std::string self_str;
+							std::stringstream self_out;
+							self_out << nl.lb[i - 1];
+							self_str = self_out.str();
+							unsigned long new_label = hash((unsigned char *)self_str.c_str());
+#ifdef DEBUG
+							logstream(LOG_DEBUG) << "Vertex (" << vertex.id() << ") label: " << new_label << std::endl;
+#endif
+							nl.lb[i] = new_label;
 							nl.tm[i] = 0;
 						}
 						nl.is_leaf = true;
 						/* Update node label. */
 						vertex.set_data(nl);
 						/* Populate histogram map of all its labels. */
-#ifdef DEBUG
-						logstream(LOG_DEBUG) << "Vertex (" << vertex.id() << ") label: " << nl.lb[0] << std::endl;
-#endif
 						for (int i = 0; i < K_HOPS + 1; i++) {
 							hist->decay(sfp);
 							hist->update(nl.lb[i], false);	
@@ -287,6 +297,12 @@ namespace graphchi {
 						nl.lb[0] = edge->get_data().dst;
 						nl.tm[0] = 0;
 						nl.is_leaf = false;
+						/* Set the rest of labels to 0 to indicate that they are not valid values at this point. 
+						 * This may be redundant because modern C++ initialize values to 0 anyways.
+						 */
+						for (int i = 1; i < K_HOPS + 1; i++) {
+							nl.lb[i] = 0;
+						}
 						vertex.set_data(nl); 
 
 						for (int i = 0; i < vertex.num_inedges(); i++) {
@@ -449,8 +465,8 @@ namespace graphchi {
 							first = false;
 						}
 					}
-					if (!CHUNKIFY && LAMBDA == 0.0) {
-						// We can remove labels if there is no chunks and no decay.
+					if (!CHUNKIFY && LAMBDA == 0.0 && nl.lb[min_itr] != 0) {
+						// We can remove labels if there is no chunks, no decay, and the label used to be valid.
 #ifdef DEBUG
 						logstream(LOG_DEBUG) << "Removing counts of vertex: " << vertex.id() << std::endl;
 #endif

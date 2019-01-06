@@ -27,14 +27,17 @@
 namespace graphchi {
 	/*!
 	 * @brief Deterministically hash character strings to a unique unsigned long integer.
-	 *
+	 * 
+	 * We use 0 as a special value so we make sure we will never hash to get 0 this way.
 	 */
 	unsigned long hash(unsigned char *str) {
 		unsigned long hash = 5381;
 		int c;
 
-		while (c = *str++)
-			hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+		do {
+			while (c = *str++)
+				hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+		} while (hash == 0);
 		return hash;
 	}
 
