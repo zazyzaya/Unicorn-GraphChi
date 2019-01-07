@@ -194,6 +194,9 @@ void Histogram::remove_label(unsigned long label) {
 	for (int i = 0; i < SKETCH_SIZE; i++) {
 		/* only need to recompute if the sketch element is the same as the label. */
 		if (this->sketch[i] == label) {
+#ifdef DEBUG
+			logstream(LOG_INFO) << "Regenerate sketches..." << std::endl;
+#endif
 			/* Compute the hash value a. */
 			std::map<unsigned long, double>::iterator histoit = this->histogram_map.begin();
 			unsigned long label = histoit->first;
