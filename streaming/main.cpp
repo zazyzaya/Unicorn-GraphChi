@@ -237,10 +237,10 @@ int main(int argc, const char ** argv) {
 	/* More parameters from command line to configure hyperparameters of feature vector generation. 
 	 * All the variables below are declared in def.hpp as extern.
 	 */
-	DECAY = get_option_int("decay", 10);
-	LAMBDA = get_option_float("lambda", 0.02);
+	DECAY = get_option_int("decay", 10);	/* TODO: To be retired. */
+	LAMBDA = get_option_float("lambda", 0.02);	
 	INTERVAL = get_option_int("interval", 1000);
-	WINDOW = get_option_int("window", 500);
+	WINDOW = get_option_int("window", 500);	/* TODO: To be retired. */
 	sketch_file = get_option_string("sketch_file");
 	int to_chunk = get_option_int("chunkify", 1);
 	if (!to_chunk)

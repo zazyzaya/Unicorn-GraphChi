@@ -270,7 +270,7 @@ namespace graphchi {
 						vertex.set_data(nl);
 						/* Populate histogram map of all its labels. */
 						for (int i = 0; i < K_HOPS + 1; i++) {
-							hist->decay(sfp);
+							// hist->decay(sfp);
 							hist->update(nl.lb[i], false);	
 						}
 
@@ -326,7 +326,7 @@ namespace graphchi {
 #endif
 
 						/* Populate histogram map. */
-						hist->decay(sfp);
+						// hist->decay(sfp);
 						hist->update(nl.lb[0], false);
 					}
 				}
@@ -452,17 +452,17 @@ namespace graphchi {
 #endif
 					/* Populate histogram map. */
 					if (!CHUNKIFY) {
-						hist->decay(sfp);
+						// hist->decay(sfp);
 						hist->update(new_label, false);
 					} else {
 						std::vector<unsigned long> to_insert = chunkify((unsigned char *)new_label_str.c_str(), CHUNK_SIZE);
-						bool first = true;
+						// bool first = true;
 						for (std::vector<unsigned long>::iterator ti = to_insert.begin(); ti != to_insert.end(); ++ti) {
-							if (first) {
-								hist->decay(sfp); /* Only increment decay value once. */
-							}
+							// if (first) {
+							// 	hist->decay(sfp);  /* Only increment decay value once. */ 
+							// }
 							hist->update(*ti, false);
-							first = false;
+							// first = false;
 						}
 					}
 					if (!CHUNKIFY && LAMBDA == 0.0 && nl.lb[min_itr] != 0) {
@@ -533,13 +533,20 @@ namespace graphchi {
 		void after_iteration(int iteration, graphchi_context &gcontext) {
 #ifdef DEBUG
 			logstream(LOG_DEBUG) << "Current Iteration: " << iteration << std::endl;
-			hist->print_histogram();
+			// hist->print_histogram();
 #endif
 			if (iteration == K_HOPS) {
 				std::base_graph_constructed = true;
 			}
 			if (std::no_new_tasks){
 				logstream(LOG_DEBUG) << "No new task at the moment...Let's see if we need to stop or wait." << std::endl;
+				/* But first we decay (if needed) and record the sketch. */
+				if (LAMBDA != 0.0) {
+					/* Only decays if LAMBDA is not zero. */
+					hist->decay();
+				}
+				hist->record_sketch(sfp);
+				
 				if (std::stop) {
 					logstream(LOG_DEBUG) << "Everything is done!" << std::endl;
 					gcontext.set_last_iteration(iteration);/* Set this iteration as the last one. */
