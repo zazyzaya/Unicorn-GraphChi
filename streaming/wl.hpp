@@ -465,13 +465,13 @@ namespace graphchi {
 							// first = false;
 						}
 					}
-					if (!CHUNKIFY && LAMBDA == 0.0 && nl.lb[min_itr] != 0) {
-						// We can remove labels if there is no chunks, no decay, and the label used to be valid.
-#ifdef DEBUG
-						logstream(LOG_DEBUG) << "Removing counts of vertex: " << vertex.id() << std::endl;
-#endif
-						hist->remove_label(nl.lb[min_itr]);
-					}
+// 					if (!CHUNKIFY && LAMBDA == 0.0 && nl.lb[min_itr] != 0) {
+// 						// We can remove labels if there is no chunks, no decay, and the label used to be valid.
+// #ifdef DEBUG
+// 						logstream(LOG_DEBUG) << "Removing counts of vertex: " << vertex.id() << std::endl;
+// #endif
+// 						hist->remove_label(nl.lb[min_itr]);
+// 					}
 					/* Update the vertex's label*/
 					nl.lb[min_itr] = new_label;
 					vertex.set_data(nl);
