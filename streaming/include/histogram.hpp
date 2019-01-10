@@ -38,6 +38,7 @@ public:
 	void remove_label(unsigned long label);
 	void create_sketch();
 	void record_sketch(FILE* fp);
+	void force_record(FILE* fp);
 #ifdef DEBUG
 	void comp(unsigned long label, struct hist_elem a, struct hist_elem b);
 	void print_histogram();

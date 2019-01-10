@@ -289,7 +289,7 @@ int main(int argc, const char ** argv) {
 	if (sfp == NULL) {
 		logstream(LOG_ERROR) << "Sketch file no longer exists... " << std::endl;
 	}
-	hist->record_sketch(sfp);
+	hist->force_record(sfp);
 
 	if (ferror(sfp) != 0 || fclose(sfp) != 0) {
 		logstream(LOG_ERROR) << "Unable to close the sketch file: " << sketch_file <<  std::endl;

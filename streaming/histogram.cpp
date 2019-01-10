@@ -263,6 +263,22 @@ void Histogram::record_sketch(FILE* fp) {
 	return;
 }
 
+/*!
+ * @brief Same as record_sketch except that we just do it instead of checking the value @this->r
+ *
+ */
+void Histogram::force_record(FILE* fp) {
+	this->histogram_map_lock.lock();
+
+	this->r = 0;
+	for (int i = 0; i < SKETCH_SIZE; i++) {
+		fprintf(fp,"%lu ", this->sketch[i]);
+	}
+	fprintf(fp, "\n");
+	this->histogram_map_lock.unlock();
+	return;
+}
+
 #ifdef DEBUG
 /*!
  * @brief Print the histogram map for debugging.
