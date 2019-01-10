@@ -39,6 +39,8 @@ extern bool CHUNKIFY;
 extern int CHUNK_SIZE;
 /* Sketch file to write the sketch. */
 extern FILE * sfp;
+/* After MULTIPLE of INTERVAL, we will record the sketch. (i.e., how often do we record a sketch). */
+extern int MULTIPLE;
 
 /* In a truly streaming setting, GraphChi does not allow dynamic vertex/edge type.
  * We therefore must fixed the neighborhood we are exploring.

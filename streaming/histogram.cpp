@@ -249,10 +249,16 @@ void Histogram::create_sketch() {
 
 void Histogram::record_sketch(FILE* fp) {
 	this->histogram_map_lock.lock();
-	for (int i = 0; i < SKETCH_SIZE; i++) {
-		fprintf(fp,"%lu ", this->sketch[i]);
+	/* Test if recording the sketch is needed. */
+	this->r++;
+	if (this->r == MULTIPLE) {
+		/* Record the sketch. */
+		this->r = 0;
+		for (int i = 0; i < SKETCH_SIZE; i++) {
+			fprintf(fp,"%lu ", this->sketch[i]);
+		}
+		fprintf(fp, "\n");
 	}
-	fprintf(fp, "\n");
 	this->histogram_map_lock.unlock();
 	return;
 }

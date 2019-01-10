@@ -45,6 +45,7 @@ int INTERVAL;
 int WINDOW;
 bool CHUNKIFY = true;
 int CHUNK_SIZE;
+int MULTIPLE;
 
 /* The following varible is global. */
 // bool next_itr = false;
@@ -246,6 +247,7 @@ int main(int argc, const char ** argv) {
 	if (!to_chunk)
 		CHUNKIFY = false;
 	CHUNK_SIZE = get_option_int("chunk_size", 5);
+	MULTIPLE = get_option_int("multiple", 1);
 
 	/* Open the sketch file to write. */
 	sfp = fopen(sketch_file.c_str(), "a");
