@@ -299,8 +299,8 @@ namespace graphchi {
          * keep running from memory.
          */
         virtual bool is_inmemory_mode() {
-            // return (nshards == 1 && num_vertices() < 2 * maxwindow); // Do not switch to in-memory mode if num of vertices too high. Ugly heuristic.
-            return false;
+            return (nshards == 1 && num_vertices() < 2 * maxwindow); // Do not switch to in-memory mode if num of vertices too high. Ugly heuristic.
+            // return false;
         }
         
         
@@ -479,8 +479,10 @@ namespace graphchi {
                 if (use_selective_scheduling) {
                     if (iter > 0 && !scheduler->has_new_tasks) {
                         logstream(LOG_INFO) << "No new tasks to run!" << std::endl;
-                        niters = iter;
-                        break;
+                        std::no_new_tasks = true;
+                        logstream(LOG_INFO) << "Scheduler indicates no new tasks, but streaming engine may disagree..." << std::endl;
+                        // niters = iter;
+                        // break;
                     }
                     scheduler->new_iteration(iter);
                     
@@ -497,8 +499,10 @@ namespace graphchi {
                     }
                     if (!newtasks) {
                         // Finished
-                        niters = iter;
-                        break;
+                        // niters = iter;
+                        // break;
+                        logstream(LOG_INFO) << "No vertices are scheduled in this around; check with streaming engine..." << std::endl;
+                        std::no_new_tasks = true;
 
                     }
                     scheduler->has_new_tasks = false; // Kind of misleading since scheduler may still have tasks - but no new tasks.
