@@ -38,7 +38,6 @@ public:
     void record_sketch(FILE* fp);
     unsigned long* get_sketch();
 #ifdef DEBUG
-    void comp(unsigned long label, struct hist_elem a, struct hist_elem b);
     void print_histogram();
 #endif
 
@@ -47,8 +46,12 @@ private:
 
     Histogram() {
         this->t = 0;
+#ifdef USEWINDOW
         this->w = 0;
+#endif
+#ifdef VIZ
 	this->c = 0;
+#endif
         this->powerful = pow(M_E, -LAMBDA);
     }
 
@@ -56,24 +59,27 @@ private:
     unsigned long sketch[SKETCH_SIZE];
     double hash[SKETCH_SIZE];
     double powerful;
-   
+#ifdef MEMORY   
     /* PREGEN is a compilation constant defined using -D flag.
      * It is the number of random variables we sampled ahead of time. */
     double gamma_param[PREGEN][SKETCH_SIZE];
     double r_beta_param[PREGEN][SKETCH_SIZE];
     double power_r[PREGEN][SKETCH_SIZE];
+#endif
 
     int t; /* If t reaches DECAY, we decay the values in the histogram and hashed value by e^(-lambda). */
+#ifdef USEWINDOW
     int w; /* If WINDOW is used, when we reach WINDOW, we record the sketch.
 	    * We may also use BATCH as the frequency to record the sketches.
 	    * In that case, w is not used. */
+#endif
+#ifdef VIZ
+    int c; /* Count of histogram files to write. We write one histogram per
+            * file, this counter is appended to the HIST_FILE file path. */
+#endif
     
-
     /* The lock needed to update histogram map. */
     std::mutex histogram_map_lock;
-    /* The lock needed to construct new histogram parameters. */
-    std::mutex histo_param_lock;
-
 };
 
 #include "histogram.cpp"

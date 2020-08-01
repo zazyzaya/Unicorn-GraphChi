@@ -29,7 +29,11 @@ extern int DECAY;
 /* The rate of the decay. */
 extern float LAMBDA;
 /* We see WINDOW node updates before
- * we record a new graph sketch. */
+ * we record a new graph sketch (if
+ * BATCH is not used to determine
+ * update frequency). This variable
+ * is used if USEWINDOW (a compilation
+ * flag) is set.*/
 extern int WINDOW;
 /* Batch size. If WINDOW is not used,
  * we record a new graph sketch every
@@ -41,10 +45,10 @@ extern bool CHUNKIFY;
 extern int CHUNK_SIZE;
 /* Sketch file to write the sketch. */
 extern FILE * SFP;
-#ifdef DEBUG
+#ifdef VIZ
 /* Histogram file path to write histogram values.
  * We write one histogram per file. This is for
- * debugging only since file I/O is costly. */
+ * visualization only since file I/O is costly. */
 extern std::string HIST_FILE;
 #endif
 

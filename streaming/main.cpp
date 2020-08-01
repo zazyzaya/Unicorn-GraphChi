@@ -47,7 +47,7 @@ int BATCH;
 bool CHUNKIFY = true;
 int CHUNK_SIZE;
 FILE * SFP;
-#ifdef DEBUG
+#ifdef VIZ
 std::string HIST_FILE;
 #endif
 
@@ -258,7 +258,7 @@ int main(int argc, const char ** argv) {
     BATCH = get_option_int("batch", 1000);
     WINDOW = get_option_int("window", 500);
     sketch_file = get_option_string("sketch");
-#ifdef DEBUG
+#ifdef VIZ
     hist_file = get_option_string("histogram");
 #endif
     int to_chunk = get_option_int("chunkify", 1);
