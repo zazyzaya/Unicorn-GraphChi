@@ -40,15 +40,15 @@ extractor/% : extractor/%.cpp $(HEADERS)
 edebug: CPPFLAGS += -DDEBUG -g
 edebug: extractor/main
 
-streaming/% : streaming/%.cpp $(HEADERS)
+unicorn/% : unicorn/%.cpp $(HEADERS)
 	@mkdir -p bin/$(@D)
-	$(CPP) $(CPPFLAGS) -Istreaming/ $@.cpp -o bin/$@ $(LINKERFLAGS)
+	$(CPP) $(CPPFLAGS) -Iunicorn/ $@.cpp -o bin/$@ $(LINKERFLAGS)
 
 swdebug: CPPFLAGS += -DSKETCH_SIZE=2000 -DK_HOPS=3 -DMEMORY -DPREGEN=10000 -DUSEWINDOW -DDEBUG -g
-swdebug: streaming/main
+swdebug: unicorn/main
 
 sbdebug: CPPFLAGS += -DSKETCH_SIZE=2000 -DK_HOPS=3 -DMEMORY -DPREGEN=10000 -DBASESKETCH -DDEBUG -g
-sbdebug: streaming/main
+sbdebug: unicorn/main
 
 myapps/% : myapps/%.cpp $(HEADERS)
 	@mkdir -p bin/$(@D)
