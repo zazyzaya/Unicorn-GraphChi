@@ -372,7 +372,7 @@ namespace graphchi {
                     }
                 }
             }
-            logstream(LOG_INFO) << "::: Used " << ncreated << " buffered edges." << std::endl;
+            logstream(LOG_DEBUG) << "::: Used " << ncreated << " buffered edges." << std::endl;
         }
         
         bool incorporate_new_edge_degrees(int window, vid_t window_st, vid_t window_en) {
@@ -487,7 +487,7 @@ namespace graphchi {
             this->intervals[this->nshards - 1].second = max_vertex_id;
             this->vertex_data_handler->check_size(max_vertex_id + 1);
 #ifdef DEBUG
-            logstream(LOG_INFO) << "This iteration with max vertex ID: " << max_vertex_id << std::endl;
+            logstream(LOG_DEBUG) << "This iteration with max vertex ID: " << max_vertex_id << std::endl;
 #endif
             initialize_sliding_shards();
             
@@ -558,8 +558,8 @@ namespace graphchi {
             logstream(LOG_DEBUG) << "Total deleted: " << ndeleted << " total edges: " << this->num_edges() << std::endl;
 
             if (added_edges - last_commit < max_edge_buffer * 0.8 && ndeleted < this->num_edges() * 0.1) {
-                std::cout << "==============================" << std::endl;
-                std::cout << "No time to commit yet.... Only " << (added_edges - last_commit) << " / " << max_edge_buffer
+                logstream(LOG_DEBUG) << "==============================" << std::endl;
+                logstream(LOG_DEBUG) << "No time to commit yet.... Only " << (added_edges - last_commit) << " / " << max_edge_buffer
                 << " in buffers" << std::endl;
                 return;
             }

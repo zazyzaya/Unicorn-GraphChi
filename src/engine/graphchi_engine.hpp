@@ -56,7 +56,7 @@
 #include "shards/slidingshard.hpp"
 #include "util/pthread_tools.hpp"
 #include "output/output.hpp"
-
+/* Unicorn header file */
 #include "../extern/extern.hpp"
 
 namespace graphchi {
@@ -298,8 +298,8 @@ namespace graphchi {
          * If the data is only in one shard, we can just
          * keep running from memory.
          */
+	/* Unicorn: do not run in memory mode. */
         virtual bool is_inmemory_mode() {
-            // return (nshards == 1 && num_vertices() < 2 * maxwindow); // Do not switch to in-memory mode if num of vertices too high. Ugly heuristic.
             return false;
         }
         
@@ -479,10 +479,8 @@ namespace graphchi {
                 if (use_selective_scheduling) {
                     if (iter > 0 && !scheduler->has_new_tasks) {
                         logstream(LOG_INFO) << "No new tasks to run!" << std::endl;
-                        std::no_new_tasks = true;
-                        logstream(LOG_INFO) << "Scheduler indicates no new tasks, but streaming engine may disagree..." << std::endl;
-                        // niters = iter;
-                        // break;
+                        niters = iter;
+                        break;
                     }
                     scheduler->new_iteration(iter);
                     
@@ -499,10 +497,8 @@ namespace graphchi {
                     }
                     if (!newtasks) {
                         // Finished
-                        // niters = iter;
-                        // break;
-                        logstream(LOG_INFO) << "No vertices are scheduled in this around; check with streaming engine..." << std::endl;
-                        std::no_new_tasks = true;
+                        niters = iter;
+                        break;
 
                     }
                     scheduler->has_new_tasks = false; // Kind of misleading since scheduler may still have tasks - but no new tasks.
@@ -785,8 +781,10 @@ namespace graphchi {
             /* Main loop */
             for(iter=0; iter < niters; iter++) {
                 logstream(LOG_INFO) << "Start iteration: " << iter << std::endl;
-                logstream(LOG_INFO) << "Total number of iterations: " << niters << std::endl;
-                
+		/* Print out something useful to debug Unicorn. */
+#ifdef DEBUG
+                logstream(LOG_DEBUG) << "(Unicorn) Total number of iterations: " << niters << std::endl;
+#endif    
                 initialize_iter();
                 
                 /* Check vertex data file has the right size (number of vertices may change) */
@@ -810,7 +808,9 @@ namespace graphchi {
                 if (use_selective_scheduling) {
                     if (scheduler != NULL) {
                         if (!scheduler->has_new_tasks) {
-                            logstream(LOG_INFO) << "No new tasks to run!" << std::endl;
+#ifdef DEBUG
+                            logstream(LOG_DEBUG) << "(Unicorn) No new tasks to run!" << std::endl;
+#endif
                             std::no_new_tasks = true;
                             // break;
                         }
@@ -831,7 +831,6 @@ namespace graphchi {
                 }
                 
                 /* Interval loop */
-                logstream(LOG_INFO) << "Interval Loops -- nshards: " << nshards << std::endl;
                 for(int interval_idx=0; interval_idx < nshards; ++interval_idx) {
                     exec_interval = interval_idx;
                     
@@ -850,7 +849,6 @@ namespace graphchi {
                     vid_t interval_st = get_interval_start(exec_interval);
                     vid_t interval_en = get_interval_end(exec_interval);
                     
-                    logstream(LOG_INFO) << "interval_st: " << interval_st << std::endl;
                     if (interval_st > interval_en) continue; // Can happen on very very small graphs.
 
                     if (!is_inmemory_mode())
@@ -880,11 +878,11 @@ namespace graphchi {
                                                                 size_t(membudget_mb) * 1024 * 1024);
                         assert(sub_interval_en >= sub_interval_st);
                         
-                        logstream(LOG_INFO) << "Iteration " << iter << "/" << (niters - 1) << ", subinterval: " << sub_interval_st << " - " << sub_interval_en << std::endl;
+                        logstream(LOG_DEBUG) << "Iteration " << iter << "/" << (niters - 1) << ", subinterval: " << sub_interval_st << " - " << sub_interval_en << std::endl;
                                                 
                         bool any_vertex_scheduled = is_any_vertex_scheduled(sub_interval_st, sub_interval_en);
                         if (!any_vertex_scheduled) {
-                            logstream(LOG_INFO) << "No vertices scheduled, skip." << std::endl;
+                            logstream(LOG_DEBUG) << "No vertices scheduled, skip." << std::endl;
                             sub_interval_st = sub_interval_en + 1;
                             modification_lock.unlock();
                             continue;
@@ -904,7 +902,7 @@ namespace graphchi {
                         
                         modification_lock.unlock();
                         
-                        logstream(LOG_INFO) << "Start updates" << std::endl;
+                        logstream(LOG_DEBUG) << "Start updates" << std::endl;
                         /* Execute updates */
                         if (!is_inmemory_mode()) {
                             exec_updates(userprogram, vertices);
@@ -914,7 +912,7 @@ namespace graphchi {
 
                             exec_updates_inmemory_mode(userprogram, vertices); 
                         }
-                        logstream(LOG_INFO) << "Finished updates" << std::endl;
+                        logstream(LOG_DEBUG) << "Finished updates" << std::endl;
                         
                         
                         /* Save vertices */
