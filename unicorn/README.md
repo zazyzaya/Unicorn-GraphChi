@@ -1,8 +1,8 @@
 # GraphChi for Unicorn
 Unicorn uses GraphChi to perform vertex-centric graph processing.
 The input graph should be in the format output from one of the [parsers](https://github.com/crimson-unicorn/parsers).
-The code specific for Unicorn is in this (i.e., `graphchi-cpp/unicorn`) directory,
-but you must should the `Makefile` in the parent (i.e., `graphchi-cpp/`) directory to compile and run the code.
+The code specific for Unicorn is in this directory (i.e., `graphchi-cpp/unicorn`),
+but you should use the `Makefile` in the parent directory (i.e., `graphchi-cpp/`) to compile and run the code.
 
 ## Compile
 Unicorn uses a number of `gcc` preprocessor macros:
