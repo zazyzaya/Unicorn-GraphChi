@@ -76,9 +76,9 @@ void * dynamic_graph_reader(void * info) {
     /* Initailize the first sketch of the histogram. */
     hist->create_sketch();
     /* If BASESKETCH is set, we record the first sketch
-     * from the base graph. The base graph ideally should
-     * be at least as big as the BATCH size if BASESKETCH
-     * is set. */
+     * from the base graph. BASESKETCH is recommended to
+     * be set if USEWINDOW is also set. Do NOT set
+     * BASESKETCH if USEWINDOW is not set. */
     /* SFP must exist to write. */
     if (SFP == NULL)
 	logstream(LOG_ERROR) << "Sketch file no longer exists..." << std::endl;
@@ -115,7 +115,9 @@ void * dynamic_graph_reader(void * info) {
 	     * then we will start streaming new edges. */
             pthread_barrier_wait(&std::stream_barrier);
 	    /* If USEWINDOW is not set, we record a new sketch
-	     * every BATCH streaming edges are processed. */
+	     * every BATCH streaming edges are processed. We
+	     * also record the first sketch as the base graph
+	     * automatically. */
 #ifndef USEWINDOW
 	    for (int i = 0; i < SKETCH_SIZE; i++)
 		fprintf(SFP,"%lu ", hist->get_sketch()[i]);
