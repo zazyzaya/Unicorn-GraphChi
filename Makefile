@@ -44,9 +44,11 @@ streaming/% : streaming/%.cpp $(HEADERS)
 	@mkdir -p bin/$(@D)
 	$(CPP) $(CPPFLAGS) -Istreaming/ $@.cpp -o bin/$@ $(LINKERFLAGS)
 
-sdebug: CPPFLAGS += -DSKETCH_SIZE=2000 -DK_HOPS=3 -DDEBUG -g
-sdebug: streaming/main
+swdebug: CPPFLAGS += -DSKETCH_SIZE=2000 -DK_HOPS=3 -DMEMORY -DPREGEN=10000 -DUSEWINDOW -DDEBUG -g
+swdebug: streaming/main
 
+sbdebug: CPPFLAGS += -DSKETCH_SIZE=2000 -DK_HOPS=3 -DMEMORY -DPREGEN=10000 -DBASESKETCH -DDEBUG -g
+sbdebug: streaming/main
 
 myapps/% : myapps/%.cpp $(HEADERS)
 	@mkdir -p bin/$(@D)

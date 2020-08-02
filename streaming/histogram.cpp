@@ -79,26 +79,7 @@ void Histogram::decay(FILE* fp) {
 	 * corresponding histogram to a separate file too. We
 	 * write one histogram per file (but we write all sketches
 	 * to one file). */
-	/* Use this->c to create different file names for different histograms. */
-	std::string hist_file_name(HIST_FILE); /* HIST_FILE is defined in def.hpp */
-	hist_file_name += ".";
-	hist_file_name += std::to_string(this->c);
-	/* Open the file to write. */
-	FILE *hfp = fopen(hist_file_name.c_str(), "w");
-	if (hfp == NULL)
-	    logstream(LOG_ERROR) << "Cannot open the histogram file to write: " << hist_file_name << ". Error code: " << strerror(errno) << std::endl;
-	assert(hfp != NULL);
-	/* Write to the histogram file. */
-	std::map<unsigned long, double>::iterator it;
-	for (it = this->histogram_map.begin(); it != this->histogram_map.end(); it++)
-	    fprintf(hfp,"%lu,%lf\n", it->first, it->second);
-	fprintf(hfp, "\n");
-	/* Close the file */
-	if (ferror(hfp) != 0 || fclose(hfp) != 0) {
-	    logstream(LOG_ERROR) << "Unable to close the histogram file: " << hist_file_name << std::endl;
-	    assert(false);
-	}
-	this->c++;
+	this->write_histogram();
 #endif
     }
 #endif
@@ -283,6 +264,33 @@ void Histogram::record_sketch(FILE* fp) {
 unsigned long* Histogram::get_sketch() {
     return this->sketch;
 }
+
+#ifdef VIZ
+/* Write the histogram to a file. */
+void Histogram::write_histogram() {
+    std::string hist_file_name(HIST_FILE); /* HIST_FILE is defined in def.hpp */
+    hist_file_name += ".";
+    hist_file_name += std::to_string(this->c);
+    /* Open the file to write. */
+    FILE *hfp = fopen(hist_file_name.c_str(), "w");
+    if (hfp == NULL)
+        logstream(LOG_ERROR) << "Cannot open the histogram file to write: " << hist_file_name << ". Error code: " << strerror(errno) << std::endl;
+    assert(hfp != NULL);
+    /* Write to the histogram file. */
+    std::map<unsigned long, double>::iterator it;
+    for (it = this->histogram_map.begin(); it != this->histogram_map.end(); it++)
+        fprintf(hfp,"%lu,%lf\n", it->first, it->second);
+    fprintf(hfp, "\n");
+    /* Close the file */
+    if (ferror(hfp) != 0 || fclose(hfp) != 0) {
+        logstream(LOG_ERROR) << "Unable to close the histogram file: " << hist_file_name << std::endl;
+        assert(false);
+    }
+    /* Use this->c to create different file names for different histograms. */
+    this->c++;
+    return;
+}
+#endif
 
 #ifdef DEBUG
 /* Print the histogram map for debugging. */

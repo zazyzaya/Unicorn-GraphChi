@@ -30,7 +30,6 @@ using namespace graphchi;
 graphchi_dynamicgraph_engine<VertexDataType, EdgeDataType> * dyngraph_engine;
 std::string stream_file;
 std::string sketch_file;
-
 pthread_barrier_t std::graph_barrier;
 pthread_barrier_t std::stream_barrier;
 int std::stop = 0;
@@ -39,7 +38,7 @@ bool std::no_new_tasks = false;
 
 /* The following variables are declared in def.hpp.
  * They are defined here and will be assigned values
- *  in the main function. */
+ * in the main function. */
 int DECAY;
 float LAMBDA;
 int WINDOW;
@@ -71,6 +70,19 @@ void * dynamic_graph_reader(void * info) {
     Histogram* hist = Histogram::get_instance();
     /* Initailize the first sketch of the histogram. */
     hist->create_sketch();
+    /* If BASESKETCH is set, we record the first sketch
+     * from the base graph. The base graph ideally should
+     * be at least as big as the BATCH size if BASESKETCH
+     * is set. */
+    /* SFP must exist to write. */
+    if (SFP == NULL)
+	logstream(LOG_ERROR) << "Sketch file no longer exists..." << std::endl;
+    assert(SFP != NULL);
+#ifdef BASESKETCH
+    for (int i = 0; i < SKETCH_SIZE; i++)
+	fprintf(SFP,"%lu ", hist->get_sketch()[i]);
+    fprintf(SFP, "\n");
+#endif
     /* Open the file for streaming. */
     FILE * f = fopen(stream_file.c_str(), "r");
     if (f == NULL)
@@ -97,6 +109,18 @@ void * dynamic_graph_reader(void * info) {
 	     * finishes the current batch for all nodes), and
 	     * then we will start streaming new edges. */
             pthread_barrier_wait(&std::stream_barrier);
+	    /* If USEWINDOW is not set, we record a new sketch
+	     * every BATCH streaming edges are processed. */
+#ifndef USEWINDOW
+	    for (int i = 0; i < SKETCH_SIZE; i++)
+		fprintf(SFP,"%lu ", hist->get_sketch()[i]);
+	    fprintf(SFP, "\n");
+#ifdef VIZ
+	    /* We output a histogram file (one histogram per file)
+	     * for visualization. */
+	    hist->write_histogram();
+#endif
+#endif
         }
         passed_barrier = true;
 	FIXLINE(s);
@@ -190,7 +214,7 @@ void * dynamic_graph_reader(void * info) {
 #ifdef DEBUG
         logstream(LOG_DEBUG) << "Schedule a new edge: " << srcID << " -> " << dstID << std::endl;
 #endif
-        if (cnt == INTERVAL) {
+        if (cnt == BATCH) {
             /* We continue to add new edges until INTERVAL edges are added.
 	     * When we are in this block, we have added INTERVAL edges and
 	     * we can now let GraphChi WL starts its computation. */
@@ -237,7 +261,11 @@ int main(int argc, const char ** argv) {
     metrics m("Streaming Extractor");
 
     /* Set up logging. */
+#ifdef DEBUG
+    global_logger().set_log_level(LOG_DEBUG);
+#else
     global_logger().set_log_level(LOG_INFO);
+#endif
 
     /* Parameters from command line. */
     /* The base graph file path. */

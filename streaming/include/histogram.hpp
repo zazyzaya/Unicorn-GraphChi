@@ -37,6 +37,9 @@ public:
     void create_sketch();
     void record_sketch(FILE* fp);
     unsigned long* get_sketch();
+#ifdef VIZ
+    void write_histogram();
+#endif
 #ifdef DEBUG
     void print_histogram();
 #endif
