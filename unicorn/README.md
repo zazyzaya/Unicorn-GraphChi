@@ -13,6 +13,7 @@ Unicorn uses a number of `gcc` preprocessor macros:
 * `-DBASESKETCH`: (optional) uses the base graph sketch as the first sketch; this macro is recommended if `-DUSEWINDOW` is *not* set
 * `-DDEBUG`: (optional) runs in debug mode with verbose output
 * `-DVIZ`: (optional) writes histogram to files for analysis and histogram visualization
+
 You should set them to compile the code. For example, in `Makefile`, we have:
 ```
 swdebug: CPPFLAGS += -DSKETCH_SIZE=2000 -DK_HOPS=3 -DMEMORY -DPREGEN=10000 -DUSEWINDOW -DDEBUG -g
