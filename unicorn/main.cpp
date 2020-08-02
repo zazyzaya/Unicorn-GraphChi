@@ -14,28 +14,33 @@
 #include <fstream>
 #include <pthread.h>
 #include <sys/types.h>
-
-/* GraphChi header files we use. */
+/* Unicorn header files we use. */
+/* NOTE: helper.hpp must be included first.
+ * It defines the parser that overwrites
+ * GraphChi's dummy parser.*/
+#include "include/helper.hpp"
+#include "include/def.hpp"
+#include "include/histogram.hpp"
 #include "../extern/extern.hpp"
+#include "wl.hpp"
+/* GraphChi header files we use. */
 #include "graphchi_basic_includes.hpp"
 #include "logger/logger.hpp"
-/* Unicorn header files we use. */
-#include "include/def.hpp"
-#include "include/helper.hpp"
-#include "include/histogram.hpp"
-#include "wl.hpp"
 
 using namespace graphchi;
 
 graphchi_dynamicgraph_engine<VertexDataType, EdgeDataType> * dyngraph_engine;
 std::string stream_file;
 std::string sketch_file;
+/* The following variables are declared
+ * in extern.hpp. They are defined here
+ * and will be used in various place in
+ * GraphChi and Unicorn. */
 pthread_barrier_t std::graph_barrier;
 pthread_barrier_t std::stream_barrier;
 int std::stop = 0;
 bool std::base_graph_constructed = false;
 bool std::no_new_tasks = false;
-
 /* The following variables are declared in def.hpp.
  * They are defined here and will be assigned values
  * in the main function. */

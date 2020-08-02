@@ -23,8 +23,8 @@
 #include "graphchi_basic_includes.hpp"
 #include "engine/dynamic_graphs/graphchi_dynamicgraph_engine.hpp"
 #include "logger/logger.hpp"
-#include "../extern/extern.hpp"
 /* Unicorn header files. */
+#include "../extern/extern.hpp"
 #include "include/def.hpp"
 #include "include/helper.hpp"
 #include "include/histogram.hpp"
