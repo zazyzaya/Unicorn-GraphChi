@@ -287,7 +287,7 @@ int main(int argc, const char ** argv) {
     WINDOW = get_option_int("window", 500);
     sketch_file = get_option_string("sketch");
 #ifdef VIZ
-    hist_file = get_option_string("histogram");
+    HIST_FILE = get_option_string("histogram");
 #endif
     int to_chunk = get_option_int("chunkify", 1);
     if (!to_chunk) CHUNKIFY = false;
