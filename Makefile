@@ -1,8 +1,8 @@
 INCFLAGS = -I/usr/local/include/ -I./src/
 
 CPP = g++
-CPPFLAGS = -std=c++11 -g -O3 $(INCFLAGS)  -fopenmp -ffast-math -Wall -Wno-strict-aliasing -lpthread
-CPPFLAGSPG = -std=c++11 -g -O3 $(INCFLAGS)  -fopenmp -Wall -Wno-strict-aliasing -lpthread -pg
+CPPFLAGS = -std=c++11 -g -O3 $(INCFLAGS) -fopenmp -ffast-math -Wall -Wno-strict-aliasing -lpthread
+CPPFLAGSPG = -std=c++11 -g -O3 $(INCFLAGS) -fopenmp -Wall -Wno-strict-aliasing -lpthread -pg
 LINKERFLAGS = -lz
 LINKERFLAGSPG = -lz -pg
 DEBUGFLAGS = -g -ggdb $(INCFLAGS)
@@ -77,7 +77,4 @@ swdebug: unicorn/main
 
 sb: CPPFLAGS += -DSKETCH_SIZE=2000 -DK_HOPS=3 -DMEMORY -DPREGEN=10000 -g
 sb: unicorn/main
-
-sv: CPPFLAGS += -DSKETCH_SIZE=2000 -DK_HOPS=3 -DMEMORY -DPREGEN=10000 -DUSEWINDOW -DVIZ -g
-sv: unicorn/main
 
