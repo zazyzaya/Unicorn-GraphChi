@@ -78,3 +78,20 @@ swdebug: unicorn/main
 sb: CPPFLAGS += -DSKETCH_SIZE=2000 -DK_HOPS=3 -DMEMORY -DPREGEN=10000 -g
 sb: unicorn/main
 
+######################Unicorn Toy Example################################################
+toy:
+	cd ../../data && mkdir -p train_toy
+	number=0 ; while [ $$number -le 99 ] ; do \
+		bin/unicorn/main filetype edgelist base ../../data/toy_data/base_train/base-toy-$$number.txt stream ../../data/toy_data/stream_train/stream-toy-$$number.txt decay 500 lambda 0.02 batch 2000 sketch ../../data/train_toy/sketch-toy-$$number.txt chunkify 1 chunk_size 50 ; \
+		rm -rf ../../data/toy_data/base_train/base-toy-$$number.txt.* ; \
+		rm -rf ../../data/toy_data/base_train/base-toy-$$number.txt_* ; \
+		number=`expr $$number + 4` ; \
+	done
+	cd ../../data && mkdir -p test_toy
+	number=300 ; while [ $$number -le 399 ] ; do \
+		bin/unicorn/main filetype edgelist base ../../data/toy_data/base_test/base-attack-$$number.txt stream ../../data/toy_data/stream_test/stream-attack-$$number.txt decay 500 lambda 0.02 batch 2000 sketch ../../data/test_toy/sketch-attack-$$number.txt chunkify 1 chunk_size 50 ; \
+		rm -rf ../../data/toy_data/base_test/base-attack-$$number.txt.* ; \
+		rm -rf ../../data/toy_data/base_test/base-attack-$$number.txt_* ; \
+		number=`expr $$number + 16` ; \
+	done
+
