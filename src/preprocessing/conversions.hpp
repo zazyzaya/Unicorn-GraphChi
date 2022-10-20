@@ -288,6 +288,53 @@ namespace graphchi {
     }
     
     
+        vid_t streamconv_id(unsigned char *arr, int len) {
+        vid_t out = 0;
+        for (int i=0; i<len; i++){
+            out = out + (arr[i] << ((len-i-1)*8));
+        }   
+        return out; 
+    }
+    
+    /**
+     * Added by Isaiah J. King for StreamConv
+     */
+    template <typename EdgeDataType, typename FinalEdgeDataType>
+    void convert_streamconv(std::string inputfile, sharder<EdgeDataType, FinalEdgeDataType> &sharderobj, bool multivalue_edges=false) {
+        
+        FILE * inf = fopen(inputfile.c_str(), "r");
+        size_t bytesread = 0;
+        size_t linenum = 0;
+        if (inf == NULL) {
+            logstream(LOG_FATAL) << "Could not load :" << inputfile << " error: " << strerror(errno) << std::endl;
+        }
+        assert(inf != NULL);
+        
+        logstream(LOG_INFO) << "Reading in StreamConv format!" << std::endl;
+        unsigned char s[41];
+        while(fread(s, 41, 1, inf)) {
+            linenum++;
+            if (linenum % 10000000 == 0) {
+                logstream(LOG_DEBUG) << "Read " << linenum << " lines, " << bytesread / 1024 / 1024.  << " MB" << std::endl;
+            }
+            
+            bytesread += 41;
+            vid_t from = streamconv_id(s, 16);
+            vid_t to = streamconv_id(s+16, 16);
+            
+            // The way it's written, it's impossible for multivalue_edges == True 
+            // So I did away with that pointless if-else block 
+            EdgeDataType val;
+            parse(val, s);
+            
+            if (from != to) {
+                sharderobj.preprocessing_add_edge(from, to, val);
+            }
+            
+        fclose(inf);
+        }
+    }
+
     
     /**
      * Converts a graph from adjacency list format. Edge values are not supported,
@@ -558,6 +605,8 @@ namespace graphchi {
             }
         }
     }
+
+    
     
     // TODO: remove code duplication.
     template <typename EdgeDataType, typename FinalEdgeDataType>
@@ -601,8 +650,6 @@ namespace graphchi {
         }
     }
     
-    
-    
 
     /**
      * Converts a graph input to shards. Preprocessing has several steps,
@@ -634,6 +681,8 @@ namespace graphchi {
             convert_binedgelistval<EdgeDataType, FinalEdgeDataType>(basefilename, sharderobj);
         } else if (file_type_str == "metis") {
             convert_metis<EdgeDataType, FinalEdgeDataType>(basefilename, sharderobj);
+        } else if (file_type_str == "streamconv") {
+            convert_streamconv<EdgeDataType, FinalEdgeDataType>(basefilename, sharderobj);
         } else {
             assert(false);
         }

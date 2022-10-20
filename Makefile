@@ -75,6 +75,7 @@ unicorn/% : unicorn/%.cpp $(HEADERS)
 swdebug: CPPFLAGS += -DSKETCH_SIZE=2000 -DK_HOPS=3 -DMEMORY -DPREGEN=10000 -DUSEWINDOW -DBASESKETCH -DDEBUG -g
 swdebug: unicorn/main
 
+# My addition for StreamConv
 sb: CPPFLAGS += -DSKETCH_SIZE=2000 -DK_HOPS=3 -DMEMORY -DPREGEN=10000 -g
 sb: unicorn/main
 

@@ -18,7 +18,7 @@
 /* NOTE: helper.hpp must be included first.
  * It defines the parser that overwrites
  * GraphChi's dummy parser.*/
-#include "include/helper.hpp" // Also includes arr_to_long for StreamConv
+#include "include/helper.hpp"
 #include "include/def.hpp"
 #include "include/histogram.hpp"
 #include "../extern/extern.hpp"
@@ -55,20 +55,6 @@ FILE * SFP;
 std::string HIST_FILE;
 #endif
 
-/* Convert from bytes to vid_t; doubtful the uint_32 variables can
-hold these massive identifiers, but if it's a true hash function, 
-then the last bits should be unique enough? Possible hash collisions,
-but unlikely 
-*/
-vid_t arr_to_int(unsigned char *arr, int len){
-    vid_t out = 0;
-    for (int i=0; i<len; i++){
-        out = out + (arr[i] << ((len-i-1)*8));
-    }   
-    return out; 
-}
-
-
 /*!
  * @brief A separate thread execute this function to stream graph from a file.
  */
@@ -103,25 +89,22 @@ void * dynamic_graph_reader(void * info) {
     fprintf(SFP, "\n");
 #endif
     /* Open the file for streaming. */
-    FILE * f = fopen(stream_file.c_str(), "rb");
+    FILE * f = fopen(stream_file.c_str(), "r");
     if (f == NULL)
         logstream(LOG_ERROR) << "Unable to open the file for streaming: " << stream_file << ". Error code: " << strerror(errno) << std::endl;
     assert(f != NULL);
-    
     /* Read the file. */
-    vid_t srcID; // uint32
+    vid_t srcID;
     vid_t dstID;
     EdgeDataType e;
-    
+    /* Char buffer to hold each line. */
+    char s[1024];
     /* Count the number of batched edges. */
     int cnt = 0;
     /* For synchronization with GraphChi algorithm. */
     bool passed_barrier = false;
 
-    // Our format uses binary; each row is 40 bytes exactly + 1 for 
-    // extra unicorn data (if nodes are new)
-    unsigned char s[41];
-    while(fread(s, 41, 1, f)) {
+    while(fgets(s, 1024, f) != NULL) {
         /* We add more edges for the GraphChi WL to compute, but we
          * will wait until all the previously added edges have finished
          * before we add new ones. */
@@ -147,28 +130,77 @@ void * dynamic_graph_reader(void * info) {
 #endif
         }
         passed_barrier = true;
+	FIXLINE(s);
+        /* Parse the line. */
+        char delims[] = ":\t ";
+        unsigned char *t;
+        char *k;
 
 	/* Obtain source node ID. */
-        srcID = arr_to_int(s, 16);
+        k = strtok(s, delims);
+        if (k == NULL)
+            logstream(LOG_ERROR) << "Source ID is missing." << std::endl;
+        assert(k != NULL);
+        srcID = atoi(k);
 
 	/* Obtain destination node ID. */
-        dstID = arr_to_int(s+16, 16);
+        k = strtok(NULL, delims);
+        if (k == NULL)
+            logstream(LOG_ERROR) << "Destination ID is missing." << std::endl;
+        assert(k != NULL);
+        dstID = atoi(k);
 
 	/* Populate EdgeDataType for the edge. */
         e.itr = 0; /* new itr count is always 0. */
-        
-        // Src and dst types stored in same byte
-        e.src[0] = (s[32] >> 4) & 0x0f;
-        e.dst = (s[32] & 0x0f);
+        t = (unsigned char *)strtok(NULL, delims);
+        if (t == NULL)
+            logstream(LOG_ERROR) << "Source label is missing." << std::endl;
+        assert(t != NULL);
+        e.src[0] = hash(t);
 
-        // Edge data
-        e.edg = arr_to_long(s+33, 1);
-        e.tme[0] = arr_to_long(s+34, 6);
+        t = (unsigned char *)strtok(NULL, delims);
+        if (t == NULL)
+            logstream(LOG_ERROR) << "Destination label is missing." << std::endl;
+        assert (t != NULL);
+        e.dst = hash(t);
 
-        // Last byte has flags for new src/dst 
-        e.new_src = (s[40] & 0x2) == 0x2; 
-        e.new_dst = (s[40] & 0x1) == 0x1; 
-        
+        t = (unsigned char *)strtok(NULL, delims);
+        if (t == NULL)
+            logstream(LOG_ERROR) << "Edge label is missing." << std::endl;
+        assert (t != NULL);
+        e.edg = hash(t);
+
+        k = strtok(NULL, delims);
+        if (k == NULL)
+            logstream(LOG_ERROR) << "New_src info is missing." << std::endl;
+        assert(k != NULL);
+        int new_src = atoi(k);
+        if (new_src == 1)
+            e.new_src = true;
+        else
+            e.new_src = false;
+
+        k = strtok(NULL, delims);
+        if (k == NULL)
+            logstream(LOG_ERROR) << "New_dst info is missing." << std::endl;
+        assert(k != NULL);
+        int new_dst = atoi(k);
+        if (new_dst == 1)
+            e.new_dst = true;
+        else
+            e.new_dst = false;
+
+        k = strtok(NULL, delims);
+        if (k == NULL)
+            logstream(LOG_ERROR) << "Time is missing." << std::endl;
+        assert (k != NULL);
+        e.tme[0] = strtoul(k, NULL, 10);
+
+#ifdef DEBUG
+        k = strtok(NULL, delims);
+        if (k != NULL)
+            logstream(LOG_DEBUG) << "Extra info in the edge is ignored." << std::endl;
+#endif
         if (srcID == dstID) {
 #ifdef DEBUG
             logstream(LOG_ERROR) << "Ignore an edge because it is a self-loop: " << srcID << "<->" << dstID <<std::endl;

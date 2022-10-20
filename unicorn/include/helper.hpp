@@ -82,6 +82,35 @@ namespace graphchi {
         return;
     }
 
+    /* Same as above, but unsigned long (for time stamps)*/
+    unsigned long arr_to_long(unsigned char *arr, int len){
+        unsigned long out = 0;
+        for (int i=0; i<len; i++){
+            out = out + (arr[i] << ((len-i-1)*8));
+        }   
+        return out; 
+    }
+
+    /* Customized parse function to parse edge labels for StreamConv
+     * from edgelist-formatted file (for base graph). */
+    void parse(EdgeDataType &e, unsigned char *s) {
+        e.itr = 0; /* At the beginning, itr count is always 0. */
+        /* GraphChi WL handle base grpah different, so @new_src
+	 * and @new_dst fields are not used in base graph. */
+        e.new_src = false;
+        e.new_dst = false;
+	
+        // Src and dst types stored in same byte
+        e.src[0] = (s[32] >> 4) & 0x0f;
+        e.dst = (s[32] & 0x0f);
+
+        // Edge data
+        e.edg = arr_to_long(s+33, 1);
+        e.tme[0] = arr_to_long(s+34, 6);
+
+        return;
+    }
+
     /* Chunk a string into a vector of hashed 
      * substrings (hashed to unsigned long)
      * to be inserted into the histogram. */
