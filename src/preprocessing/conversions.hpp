@@ -288,7 +288,7 @@ namespace graphchi {
     }
     
     
-        vid_t streamconv_id(unsigned char *arr, int len) {
+    vid_t streamconv_id(unsigned char *arr, int len) {
         vid_t out = 0;
         for (int i=0; i<len; i++){
             out = out + (arr[i] << ((len-i-1)*8));
@@ -301,10 +301,8 @@ namespace graphchi {
      */
     template <typename EdgeDataType, typename FinalEdgeDataType>
     void convert_streamconv(std::string inputfile, sharder<EdgeDataType, FinalEdgeDataType> &sharderobj, bool multivalue_edges=false) {
-        
         FILE * inf = fopen(inputfile.c_str(), "r");
-        size_t bytesread = 0;
-        size_t linenum = 0;
+        
         if (inf == NULL) {
             logstream(LOG_FATAL) << "Could not load :" << inputfile << " error: " << strerror(errno) << std::endl;
         }
@@ -312,15 +310,14 @@ namespace graphchi {
         
         logstream(LOG_INFO) << "Reading in StreamConv format!" << std::endl;
         unsigned char s[41];
+        int i = 0;
         while(fread(s, 41, 1, inf)) {
-            linenum++;
-            if (linenum % 10000000 == 0) {
-                logstream(LOG_DEBUG) << "Read " << linenum << " lines, " << bytesread / 1024 / 1024.  << " MB" << std::endl;
-            }
-            
-            bytesread += 41;
             vid_t from = streamconv_id(s, 16);
             vid_t to = streamconv_id(s+16, 16);
+
+            if (++i % 10000 == 0) {
+                logstream(LOG_INFO) << "Added " << i << " edges" << std::endl;
+            }
             
             // The way it's written, it's impossible for multivalue_edges == True 
             // So I did away with that pointless if-else block 
@@ -330,9 +327,10 @@ namespace graphchi {
             if (from != to) {
                 sharderobj.preprocessing_add_edge(from, to, val);
             }
-            
-        fclose(inf);
         }
+
+        fclose(inf);
+        logstream(LOG_DEBUG) << "Exiting convert_streamconv" << std::endl;
     }
 
     
@@ -659,10 +657,10 @@ namespace graphchi {
     int convert(std::string basefilename, std::string nshards_string) {
         sharder<EdgeDataType, FinalEdgeDataType> sharderobj(basefilename);
         
-        std::string file_type_str = get_option_string_interactive("filetype", "edgelist, adjlist, binedgelist, metis");
+        std::string file_type_str = get_option_string_interactive("filetype", "edgelist, adjlist, binedgelist, metis, streamconv");
         if (file_type_str != "adjlist" && file_type_str != "edgelist"  && file_type_str != "binedgelist" &&
-            file_type_str != "multivalueedgelist" && file_type_str != "metis") {
-            logstream(LOG_ERROR) << "You need to specify filetype: 'edgelist',  'adjlist', 'binedgelist', or 'metis'." << std::endl;
+            file_type_str != "multivalueedgelist" && file_type_str != "metis" && file_type_str != "streamconv") {
+            logstream(LOG_ERROR) << "You need to specify filetype: 'edgelist',  'adjlist', 'binedgelist', 'streamconv', or 'metis'." << std::endl;
             assert(false);
         }
         

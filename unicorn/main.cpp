@@ -277,6 +277,7 @@ int main(int argc, const char ** argv) {
 
     /* Process input file - if not already preprocessed */
     int nshards = convert_if_notexists<EdgeDataType>(base_file, get_option_string("nshards", "auto"));
+    logstream(LOG_DEBUG) << "Finished sharding" << std::endl;
 
     /* Create the engine object. */
     dyngraph_engine = new graphchi_dynamicgraph_engine<VertexDataType, EdgeDataType>(base_file, nshards, scheduler, m); 
